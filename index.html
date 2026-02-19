@@ -29,7 +29,7 @@
             backdrop-filter: blur(10px);
             border-radius: 48px;
             padding: 32px 24px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.1);
             width: 90%;
             max-width: 380px;
@@ -44,7 +44,6 @@
             padding: 8px 12px;
             background: rgba(0, 0, 0, 0.3);
             border-radius: 40px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .avatar {
@@ -64,20 +63,10 @@
             font-weight: 600;
             flex: 1;
             text-align: left;
-            font-size: 16px;
-        }
-
-        .user-status {
-            font-size: 12px;
-            color: #4caf50;
-            background: rgba(76, 175, 80, 0.2);
-            padding: 4px 8px;
-            border-radius: 20px;
         }
 
         h1 {
             font-size: 2rem;
-            font-weight: 700;
             margin-bottom: 15px;
             background: linear-gradient(135deg, #ff99cc, #b3d9ff);
             -webkit-background-clip: text;
@@ -93,7 +82,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 15px 0 #b3540b, 0 20px 30px rgba(0, 0, 0, 0.6), inset 0 -5px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 15px 0 #b3540b, 0 20px 30px rgba(0, 0, 0, 0.6);
             cursor: pointer;
             transition: transform 0.1s ease, box-shadow 0.1s ease;
             border: 3px solid #ffb347;
@@ -110,7 +99,7 @@
             cursor: not-allowed;
             pointer-events: none;
             transform: translateY(5px);
-            box-shadow: 0 8px 0 #7a4a1f, 0 15px 20px rgba(0,0,0,0.5);
+            box-shadow: 0 8px 0 #7a4a1f;
             animation: none;
         }
 
@@ -135,10 +124,8 @@
 
         .size-label {
             font-size: 1.5rem;
-            font-weight: 600;
             color: #f5c6a0;
             margin-bottom: 5px;
-            text-transform: lowercase;
         }
 
         .change-indicator {
@@ -148,8 +135,8 @@
             margin: 5px 0;
         }
 
-        .positive { color: #4caf50; text-shadow: 0 0 10px #4caf50; }
-        .negative { color: #f44336; text-shadow: 0 0 10px #f44336; }
+        .positive { color: #4caf50; }
+        .negative { color: #f44336; }
 
         .timer-text {
             font-size: 1.3rem;
@@ -160,14 +147,21 @@
             color: #aaa;
             border: 1px solid #444;
             margin: 15px 0;
-            font-family: monospace;
-            letter-spacing: 2px;
         }
 
         .timer-text.active {
             color: #ffd966;
             border-color: #ffd966;
-            box-shadow: 0 0 15px #ffb347;
+        }
+
+        .error-message {
+            color: #f44336;
+            background: rgba(244, 67, 54, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-size: 14px;
+            display: none;
         }
 
         .loading {
@@ -178,7 +172,6 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            font-size: 1.5rem;
             z-index: 1000;
             gap: 20px;
         }
@@ -213,7 +206,6 @@
         <div class="user-info">
             <div class="avatar" id="avatar">👤</div>
             <div class="username" id="username">Загрузка...</div>
-            <div class="user-status" id="userStatus">⚡ онлайн</div>
         </div>
 
         <h1>⚡ MEM-метр ⚡</h1>
@@ -225,16 +217,20 @@
         <div class="change-indicator" id="changeIndicator"></div>
         
         <div class="timer-text" id="timerDisplay">⚡ готов ⚡</div>
+        
+        <div class="error-message" id="errorMessage"></div>
 
         <footer>тапай раз в секунду</footer>
     </div>
 
     <script>
-        // Telegram WebApp
+        // ========== НАСТРОЙКИ ==========
+        const API_URL = 'https://zhenya4700.pythonanywhere.com/'; // ЗАМЕНИ НА СВОЙ АДРЕС!
+        // ===============================
+
         let tg = window.Telegram.WebApp;
-        tg.expand(); // Растягиваем на весь экран
+        tg.expand();
         
-        // Данные пользователя из Telegram
         let user = tg.initDataUnsafe?.user;
         
         // Элементы DOM
@@ -245,113 +241,101 @@
         const sizeEl = document.getElementById('sizeValue');
         const changeEl = document.getElementById('changeIndicator');
         const timerEl = document.getElementById('timerDisplay');
+        const errorEl = document.getElementById('errorMessage');
         const circle = document.getElementById('tapCircle');
         
         // Игровые переменные
         let size = 0;
-        let lastClickTime = 0;
         let cooldown = false;
         let timerInterval = null;
-        let userInitialized = false;
         
-        // Проверка, открыто ли в Telegram
-        if (!user) {
-            // Демо-режим для теста вне Telegram
-            usernameEl.textContent = 'Тестовый режим';
-            avatar.textContent = '👤';
-            loading.style.display = 'none';
-            gameContent.style.display = 'block';
-            userInitialized = true;
-            loadFromLocalStorage();
-        } else {
-            // Режим Telegram
-            usernameEl.textContent = user.first_name || user.username || 'Игрок';
-            avatar.textContent = (user.first_name ? user.first_name[0] : '👤').toUpperCase();
-            loading.style.display = 'none';
-            gameContent.style.display = 'block';
-            loadFromCloud();
+        // Показываем ошибку
+        function showError(text) {
+            errorEl.textContent = text;
+            errorEl.style.display = 'block';
+            setTimeout(() => {
+                errorEl.style.display = 'none';
+            }, 3000);
         }
         
-        // Загрузка из Cloud Storage Telegram
-        async function loadFromCloud() {
+        // Загрузка с сервера
+        async function loadFromServer() {
             try {
-                // Пробуем получить сохраненный размер
-                tg.CloudStorage.getItem('memberSize', (error, value) => {
-                    if (error) {
-                        console.log('Ошибка загрузки:', error);
-                        size = 0;
-                    } else {
-                        size = value ? parseInt(value) : 0;
-                    }
+                const response = await fetch(`${API_URL}/api/state/${user.id}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+                
+                size = data.size || 0;
+                updateSize();
+                
+                // Проверяем кулдаун
+                if (data.last_click) {
+                    const lastClick = new Date(data.last_click);
+                    const now = new Date();
+                    const diff = (now - lastClick) / 1000;
                     
-                    // Пробуем получить время последнего клика
-                    tg.CloudStorage.getItem('lastClick', (err, timeValue) => {
-                        if (!err && timeValue) {
-                            lastClickTime = parseInt(timeValue);
-                            checkCooldown();
-                        }
-                        updateSize();
-                        userInitialized = true;
-                    });
-                });
-            } catch (e) {
-                console.log('Cloud Storage недоступен, используем LocalStorage');
-                loadFromLocalStorage();
+                    if (diff < 1) {
+                        startCooldown(1 - diff);
+                    } else {
+                        circle.classList.add('ready');
+                    }
+                } else {
+                    circle.classList.add('ready');
+                }
+                
+            } catch (error) {
+                showError('Ошибка соединения с сервером');
+                console.error(error);
             }
         }
         
-        // Запасной вариант: LocalStorage
-        function loadFromLocalStorage() {
-            size = localStorage.getItem('memberSize') ? parseInt(localStorage.getItem('memberSize')) : 0;
-            lastClickTime = localStorage.getItem('lastClick') ? parseInt(localStorage.getItem('lastClick')) : 0;
-            checkCooldown();
-            updateSize();
-            userInitialized = true;
-        }
-        
-        // Сохранение в Cloud Storage
-        function saveToCloud() {
-            if (!user) {
-                // Режим без Telegram
-                localStorage.setItem('memberSize', size.toString());
-                localStorage.setItem('lastClick', lastClickTime.toString());
-                return;
-            }
-            
+        // Авторизация
+        async function auth() {
             try {
-                tg.CloudStorage.setItem('memberSize', size.toString(), (error) => {
-                    if (error) console.log('Ошибка сохранения размера:', error);
+                const response = await fetch(`${API_URL}/api/auth`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: user.id,
+                        username: user.username || user.first_name || ''
+                    })
                 });
-                tg.CloudStorage.setItem('lastClick', lastClickTime.toString(), (error) => {
-                    if (error) console.log('Ошибка сохранения времени:', error);
-                });
-            } catch (e) {
-                // Если Cloud Storage не работает, сохраняем в localStorage
-                localStorage.setItem('memberSize', size.toString());
-                localStorage.setItem('lastClick', lastClickTime.toString());
+                
+                const data = await response.json();
+                
+                size = data.size || 0;
+                updateSize();
+                
+                if (data.last_click) {
+                    const lastClick = new Date(data.last_click);
+                    const now = new Date();
+                    const diff = (now - lastClick) / 1000;
+                    
+                    if (diff < 1) {
+                        startCooldown(1 - diff);
+                    } else {
+                        circle.classList.add('ready');
+                    }
+                } else {
+                    circle.classList.add('ready');
+                }
+                
+                loading.style.display = 'none';
+                gameContent.style.display = 'block';
+                
+            } catch (error) {
+                showError('Ошибка авторизации');
+                console.error(error);
+                loading.style.display = 'none';
+                gameContent.style.display = 'block';
             }
         }
         
-        // Проверка кулдауна (1 секунда)
-        function checkCooldown() {
-            const now = Date.now();
-            const timeSinceLastClick = (now - lastClickTime) / 1000;
-            
-            if (timeSinceLastClick < 1 && lastClickTime > 0) {
-                // Все еще на кулдауне
-                const remainingTime = 1 - timeSinceLastClick;
-                startCooldown(remainingTime);
-            } else {
-                // Можно кликать
-                circle.classList.remove('cooldown');
-                circle.classList.add('ready');
-                timerEl.textContent = '⚡ готов ⚡';
-                timerEl.classList.remove('active');
-                cooldown = false;
-            }
-        }
-        
-        // Запуск таймера
+        // Запуск кулдауна
         function startCooldown(seconds) {
             cooldown = true;
             circle.classList.add('cooldown');
@@ -378,38 +362,40 @@
             }, 100);
         }
         
-        // Клик по кружку
-        function handleTap() {
-            if (!userInitialized) return;
+        // Клик
+        async function handleTap() {
             if (cooldown) return;
             
-            const now = Date.now();
-            
-            // Проверяем, прошла ли секунда (двойная защита)
-            if (lastClickTime > 0) {
-                const timeDiff = (now - lastClickTime) / 1000;
-                if (timeDiff < 1) {
-                    startCooldown(1 - timeDiff);
+            try {
+                const response = await fetch(`${API_URL}/api/click`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({telegram_id: user.id})
+                });
+                
+                const data = await response.json();
+                
+                if (response.status === 429) {
+                    // Слишком быстро
+                    startCooldown(data.wait);
+                    showError('Слишком быстро! Подожди');
                     return;
                 }
+                
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+                
+                // Обновляем интерфейс
+                size = data.size;
+                updateSize();
+                showChange(data.change);
+                startCooldown(1);
+                
+            } catch (error) {
+                showError('Ошибка соединения');
             }
-            
-            // Генерация случайного изменения от -10 до +10
-            let change = Math.floor(Math.random() * 21) - 10;
-            
-            // Применяем изменение (может уйти в минус!)
-            size += change;
-            
-            // Обновляем время последнего клика
-            lastClickTime = now;
-            
-            // Сохраняем
-            saveToCloud();
-            
-            // Обновляем интерфейс
-            updateSize();
-            showChange(change);
-            startCooldown(1);
         }
         
         function updateSize() {
@@ -430,13 +416,21 @@
             }, 800);
         }
         
-        // Обработчики событий
-        circle.addEventListener('click', handleTap);
+        // Инициализация
+        if (!user) {
+            // Тест вне Telegram
+            usernameEl.textContent = 'Тестовый режим';
+            avatar.textContent = '👤';
+            loading.style.display = 'none';
+            gameContent.style.display = 'block';
+            circle.classList.add('ready');
+        } else {
+            usernameEl.textContent = user.first_name || user.username || 'Игрок';
+            avatar.textContent = (user.first_name ? user.first_name[0] : '👤').toUpperCase();
+            auth(); // Авторизуемся на сервере
+        }
         
-        // Сохраняем при закрытии
-        window.addEventListener('beforeunload', function() {
-            saveToCloud();
-        });
+        circle.addEventListener('click', handleTap);
     </script>
 </body>
 </html>
