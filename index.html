@@ -170,25 +170,6 @@
             box-shadow: 0 0 15px #ffb347;
         }
 
-        .reset-btn {
-            background: #3a3f55;
-            color: white;
-            border: none;
-            font-size: 1.1rem;
-            padding: 10px 30px;
-            border-radius: 40px;
-            margin-top: 20px;
-            font-weight: 600;
-            cursor: pointer;
-            border-bottom: 3px solid #1e2230;
-            transition: 0.07s;
-        }
-
-        .reset-btn:active {
-            transform: translateY(3px);
-            border-bottom-width: 1px;
-        }
-
         .loading {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -213,14 +194,6 @@
 
         @keyframes spin {
             to { transform: rotate(360deg); }
-        }
-
-        .error {
-            color: #f44336;
-            background: rgba(244, 67, 54, 0.1);
-            padding: 10px;
-            border-radius: 10px;
-            font-size: 14px;
         }
 
         footer {
@@ -253,7 +226,6 @@
         
         <div class="timer-text" id="timerDisplay">⚡ готов ⚡</div>
 
-        <button class="reset-btn" id="resetBtn">⟲ Заново</button>
         <footer>тапай раз в секунду</footer>
     </div>
 
@@ -274,7 +246,6 @@
         const changeEl = document.getElementById('changeIndicator');
         const timerEl = document.getElementById('timerDisplay');
         const circle = document.getElementById('tapCircle');
-        const resetBtn = document.getElementById('resetBtn');
         
         // Игровые переменные
         let size = 0;
@@ -441,26 +412,6 @@
             startCooldown(1);
         }
         
-        // Сброс игры
-        function resetGame() {
-            if (!userInitialized) return;
-            
-            if (confirm('Точно сбросить размер до нуля?')) {
-                size = 0;
-                lastClickTime = 0;
-                saveToCloud();
-                updateSize();
-                
-                // Сбрасываем кулдаун если был
-                if (timerInterval) clearInterval(timerInterval);
-                cooldown = false;
-                circle.classList.remove('cooldown');
-                circle.classList.add('ready');
-                timerEl.textContent = '⚡ готов ⚡';
-                timerEl.classList.remove('active');
-            }
-        }
-        
         function updateSize() {
             sizeEl.textContent = size;
         }
@@ -481,7 +432,6 @@
         
         // Обработчики событий
         circle.addEventListener('click', handleTap);
-        resetBtn.addEventListener('click', resetGame);
         
         // Сохраняем при закрытии
         window.addEventListener('beforeunload', function() {
