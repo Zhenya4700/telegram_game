@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Тапалка члена</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Стили */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            user-select: none; /* Чтобы нельзя было выделить текст при кликах */
+            user-select: none;
         }
 
         body {
@@ -21,6 +21,7 @@
             justify-content: center;
             align-items: center;
             margin: 0;
+            color: white;
         }
 
         .game-container {
@@ -35,22 +36,58 @@
             text-align: center;
         }
 
-        h1 {
-            font-size: 2.4rem;
-            font-weight: 700;
-            letter-spacing: 2px;
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             margin-bottom: 20px;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff99cc, #b3d9ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+            color: #1a1e2c;
+        }
+
+        .username {
+            font-weight: 600;
+            flex: 1;
+            text-align: left;
+            font-size: 16px;
+        }
+
+        .user-status {
+            font-size: 12px;
+            color: #4caf50;
+            background: rgba(76, 175, 80, 0.2);
+            padding: 4px 8px;
+            border-radius: 20px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
             background: linear-gradient(135deg, #ff99cc, #b3d9ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        /* Кружочек */
         .tap-area {
             width: 200px;
             height: 200px;
-            margin: 20px auto 25px;
+            margin: 15px auto 20px;
             background: radial-gradient(circle at 30% 30%, #ffd966, #e68a2e);
             border-radius: 50%;
             display: flex;
@@ -62,16 +99,23 @@
             border: 3px solid #ffb347;
         }
 
-        /* Эффект нажатия */
         .tap-area:active {
             transform: translateY(8px);
             box-shadow: 0 8px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6);
         }
 
-        /* Анимация пульсации когда таймер готов */
+        .tap-area.cooldown {
+            opacity: 0.6;
+            filter: grayscale(50%);
+            cursor: not-allowed;
+            pointer-events: none;
+            transform: translateY(5px);
+            box-shadow: 0 8px 0 #7a4a1f, 0 15px 20px rgba(0,0,0,0.5);
+            animation: none;
+        }
+
         .tap-area.ready {
             animation: pulse 1.5s infinite;
-            box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7), 0 15px 0 #b3540b;
         }
 
         @keyframes pulse {
@@ -80,43 +124,42 @@
             100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0), 0 15px 0 #b3540b; }
         }
 
-        /* Заблокированное состояние (кружок темнеет) */
-        .tap-area.disabled {
-            opacity: 0.6;
-            filter: grayscale(50%);
-            cursor: not-allowed;
-            pointer-events: none; /* Блокируем клики */
-            animation: none;
-            transform: translateY(5px);
-            box-shadow: 0 8px 0 #7a4a1f, 0 15px 20px rgba(0,0,0,0.5);
-        }
-
         .size-display {
-            font-size: 3.5rem;
+            font-size: 4rem;
             font-weight: 900;
             color: #ffe484;
             text-shadow: 0 3px 0 #b3540b, 0 5px 15px black;
-            line-height: 1.2;
-            margin-bottom: 10px;
+            line-height: 1;
+            margin-bottom: 5px;
         }
 
         .size-label {
-            font-size: 2rem;
+            font-size: 1.5rem;
             font-weight: 600;
             color: #f5c6a0;
-            margin-bottom: 15px;
+            margin-bottom: 5px;
             text-transform: lowercase;
         }
 
+        .change-indicator {
+            font-size: 2rem;
+            font-weight: bold;
+            min-height: 50px;
+            margin: 5px 0;
+        }
+
+        .positive { color: #4caf50; text-shadow: 0 0 10px #4caf50; }
+        .negative { color: #f44336; text-shadow: 0 0 10px #f44336; }
+
         .timer-text {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             background: rgba(0, 0, 0, 0.4);
-            padding: 8px 16px;
+            padding: 8px 20px;
             border-radius: 50px;
             display: inline-block;
             color: #aaa;
             border: 1px solid #444;
-            margin: 10px 0;
+            margin: 15px 0;
             font-family: monospace;
             letter-spacing: 2px;
         }
@@ -124,17 +167,17 @@
         .timer-text.active {
             color: #ffd966;
             border-color: #ffd966;
-            box-shadow: 0 0 10px #ffb347;
+            box-shadow: 0 0 15px #ffb347;
         }
 
         .reset-btn {
             background: #3a3f55;
             color: white;
             border: none;
-            font-size: 1rem;
-            padding: 8px 25px;
+            font-size: 1.1rem;
+            padding: 10px 30px;
             border-radius: 40px;
-            margin-top: 25px;
+            margin-top: 20px;
             font-weight: 600;
             cursor: pointer;
             border-bottom: 3px solid #1e2230;
@@ -146,6 +189,40 @@
             border-bottom-width: 1px;
         }
 
+        .loading {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #1a1e2c;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            z-index: 1000;
+            gap: 20px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #3a3f55;
+            border-top-color: #ffd966;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: #f44336;
+            background: rgba(244, 67, 54, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
         footer {
             margin-top: 20px;
             font-size: 0.8rem;
@@ -154,153 +231,262 @@
     </style>
 </head>
 <body>
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div>Загрузка игры...</div>
+    </div>
 
-<div class="game-container">
-    <h1>⚡ MEM-метр ⚡</h1>
+    <div class="game-container" id="gameContent" style="display: none;">
+        <div class="user-info">
+            <div class="avatar" id="avatar">👤</div>
+            <div class="username" id="username">Загрузка...</div>
+            <div class="user-status" id="userStatus">⚡ онлайн</div>
+        </div>
 
-    <!-- Кружок -->
-    <div class="tap-area" id="tapCircle"></div>
+        <h1>⚡ MEM-метр ⚡</h1>
 
-    <!-- Размер -->
-    <div class="size-display" id="sizeValue">0</div>
-    <div class="size-label">сантиметров</div>
+        <div class="tap-area" id="tapCircle"></div>
+        
+        <div class="size-display" id="sizeValue">0</div>
+        <div class="size-label">сантиметров</div>
+        <div class="change-indicator" id="changeIndicator"></div>
+        
+        <div class="timer-text" id="timerDisplay">⚡ готов ⚡</div>
 
-    <!-- Таймер -->
-    <div class="timer-text" id="timerDisplay">⚡ готов ⚡</div>
+        <button class="reset-btn" id="resetBtn">⟲ Заново</button>
+        <footer>тапай раз в секунду</footer>
+    </div>
 
-    <!-- Кнопка сброса -->
-    <button class="reset-btn" id="resetBtn">⟲ Заново</button>
-    <footer>тапай раз в минуту</footer>
-</div>
-
-<script>
-    // ================== ВЕСЬ КОД ТУТ ==================
-    (function() {
-        // Элементы на странице
+    <script>
+        // Telegram WebApp
+        let tg = window.Telegram.WebApp;
+        tg.expand(); // Растягиваем на весь экран
+        
+        // Данные пользователя из Telegram
+        let user = tg.initDataUnsafe?.user;
+        
+        // Элементы DOM
+        const loading = document.getElementById('loading');
+        const gameContent = document.getElementById('gameContent');
+        const avatar = document.getElementById('avatar');
+        const usernameEl = document.getElementById('username');
+        const sizeEl = document.getElementById('sizeValue');
+        const changeEl = document.getElementById('changeIndicator');
+        const timerEl = document.getElementById('timerDisplay');
         const circle = document.getElementById('tapCircle');
-        const sizeSpan = document.getElementById('sizeValue');
-        const timerDiv = document.getElementById('timerDisplay');
-
-        // Переменные игры
-        let size = 0;                      // текущий размер
-        let canTap = true;                 // можно ли сейчас нажимать?
-        let timerInterval = null;           // для обновления таймера
-        let timeLeft = 0;                   // сколько секунд осталось (0 = можно жать)
-
-        // Константа: лимит ожидания 60 секунд = 1 минута
-        const COOLDOWN_SECONDS = 60;
-
-        // Обновление отображения счётчика (размера)
-        function updateSizeDisplay() {
-            sizeSpan.textContent = size;
+        const resetBtn = document.getElementById('resetBtn');
+        
+        // Игровые переменные
+        let size = 0;
+        let lastClickTime = 0;
+        let cooldown = false;
+        let timerInterval = null;
+        let userInitialized = false;
+        
+        // Проверка, открыто ли в Telegram
+        if (!user) {
+            // Демо-режим для теста вне Telegram
+            usernameEl.textContent = 'Тестовый режим';
+            avatar.textContent = '👤';
+            loading.style.display = 'none';
+            gameContent.style.display = 'block';
+            userInitialized = true;
+            loadFromLocalStorage();
+        } else {
+            // Режим Telegram
+            usernameEl.textContent = user.first_name || user.username || 'Игрок';
+            avatar.textContent = (user.first_name ? user.first_name[0] : '👤').toUpperCase();
+            loading.style.display = 'none';
+            gameContent.style.display = 'block';
+            loadFromCloud();
         }
-
-        // Обновление текста таймера и класса кружка
-        function updateTimerDisplay() {
-            if (timeLeft <= 0) {
-                // Если время вышло - можно тапать
-                timerDiv.textContent = '⚡ готов ⚡';
-                timerDiv.classList.remove('active');
-                circle.classList.remove('disabled');
-                circle.classList.add('ready');   // пульсация
-                canTap = true;
+        
+        // Загрузка из Cloud Storage Telegram
+        async function loadFromCloud() {
+            try {
+                // Пробуем получить сохраненный размер
+                tg.CloudStorage.getItem('memberSize', (error, value) => {
+                    if (error) {
+                        console.log('Ошибка загрузки:', error);
+                        size = 0;
+                    } else {
+                        size = value ? parseInt(value) : 0;
+                    }
+                    
+                    // Пробуем получить время последнего клика
+                    tg.CloudStorage.getItem('lastClick', (err, timeValue) => {
+                        if (!err && timeValue) {
+                            lastClickTime = parseInt(timeValue);
+                            checkCooldown();
+                        }
+                        updateSize();
+                        userInitialized = true;
+                    });
+                });
+            } catch (e) {
+                console.log('Cloud Storage недоступен, используем LocalStorage');
+                loadFromLocalStorage();
+            }
+        }
+        
+        // Запасной вариант: LocalStorage
+        function loadFromLocalStorage() {
+            size = localStorage.getItem('memberSize') ? parseInt(localStorage.getItem('memberSize')) : 0;
+            lastClickTime = localStorage.getItem('lastClick') ? parseInt(localStorage.getItem('lastClick')) : 0;
+            checkCooldown();
+            updateSize();
+            userInitialized = true;
+        }
+        
+        // Сохранение в Cloud Storage
+        function saveToCloud() {
+            if (!user) {
+                // Режим без Telegram
+                localStorage.setItem('memberSize', size.toString());
+                localStorage.setItem('lastClick', lastClickTime.toString());
+                return;
+            }
+            
+            try {
+                tg.CloudStorage.setItem('memberSize', size.toString(), (error) => {
+                    if (error) console.log('Ошибка сохранения размера:', error);
+                });
+                tg.CloudStorage.setItem('lastClick', lastClickTime.toString(), (error) => {
+                    if (error) console.log('Ошибка сохранения времени:', error);
+                });
+            } catch (e) {
+                // Если Cloud Storage не работает, сохраняем в localStorage
+                localStorage.setItem('memberSize', size.toString());
+                localStorage.setItem('lastClick', lastClickTime.toString());
+            }
+        }
+        
+        // Проверка кулдауна (1 секунда)
+        function checkCooldown() {
+            const now = Date.now();
+            const timeSinceLastClick = (now - lastClickTime) / 1000;
+            
+            if (timeSinceLastClick < 1 && lastClickTime > 0) {
+                // Все еще на кулдауне
+                const remainingTime = 1 - timeSinceLastClick;
+                startCooldown(remainingTime);
             } else {
-                // Идёт обратный отсчёт
-                const mins = Math.floor(timeLeft / 60);
-                const secs = timeLeft % 60;
-                timerDiv.textContent = `⏳ ${mins}:${secs < 10 ? '0' : ''}${secs}`;
-                timerDiv.classList.add('active');
-                circle.classList.add('disabled');
-                circle.classList.remove('ready');
-                canTap = false;
+                // Можно кликать
+                circle.classList.remove('cooldown');
+                circle.classList.add('ready');
+                timerEl.textContent = '⚡ готов ⚡';
+                timerEl.classList.remove('active');
+                cooldown = false;
             }
         }
-
-        // Запуск таймера на 60 секунд (после клика)
-        function startCooldown() {
-            // Если уже идёт какой-то таймер, убиваем его
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
-
-            timeLeft = COOLDOWN_SECONDS;      // ставим 60 секунд
-            updateTimerDisplay();              // сразу показываем 1:00 и блокируем кнопку
-
-            // Запускаем интервал, который тикает каждую секунду
+        
+        // Запуск таймера
+        function startCooldown(seconds) {
+            cooldown = true;
+            circle.classList.add('cooldown');
+            circle.classList.remove('ready');
+            
+            let timeLeft = seconds;
+            
+            if (timerInterval) clearInterval(timerInterval);
+            
             timerInterval = setInterval(() => {
-                timeLeft -= 1;                  // прошла секунда
-
-                if (timeLeft <= 0) {
-                    // Время вышло
-                    timeLeft = 0;
-                    updateTimerDisplay();
-
-                    // Останавливаем интервал
+                timeLeft -= 0.1;
+                
+                if (timeLeft <= 0.05) {
                     clearInterval(timerInterval);
-                    timerInterval = null;
+                    cooldown = false;
+                    circle.classList.remove('cooldown');
+                    circle.classList.add('ready');
+                    timerEl.textContent = '⚡ готов ⚡';
+                    timerEl.classList.remove('active');
                 } else {
-                    // Просто обновляем цифры на таймере
-                    updateTimerDisplay();
+                    timerEl.textContent = `⏳ ${timeLeft.toFixed(1)}с`;
+                    timerEl.classList.add('active');
                 }
-            }, 1000); // 1000 мс = 1 секунда
+            }, 100);
         }
-
-        // Функция, которая вызывается при клике на кружок
+        
+        // Клик по кружку
         function handleTap() {
-            if (!canTap) return;  // если нельзя жать, игнорируем
-
-            // 1. Меняем размер
-            // Генерируем случайное изменение от -10 до +10, но не ноль? можно и 0
-            let change = Math.floor(Math.random() * 21) - 10; // от -10 до 10
-
-            // Но чтобы было веселее, можно исключить 0, а то скучно (опционально)
-            // Раскомментируй следующие 3 строки, если хочешь, чтобы 0 не выпадал
-            // while (change === 0) {
-            //     change = Math.floor(Math.random() * 21) - 10;
-            // }
-
-            let newSize = size + change;
-
-            // Ограничиваем размер от 0 до 30 (чтобы совсем в минус не уходило и до бесконечности не росло)
-            if (newSize < 0) newSize = 0;
-            if (newSize > 30) newSize = 30; // можешь увеличить лимит, если хочешь
-
-            size = newSize;
-            updateSizeDisplay();
-
-            // 2. Активируем блокировку на 1 минуту
-            startCooldown();
+            if (!userInitialized) return;
+            if (cooldown) return;
+            
+            const now = Date.now();
+            
+            // Проверяем, прошла ли секунда (двойная защита)
+            if (lastClickTime > 0) {
+                const timeDiff = (now - lastClickTime) / 1000;
+                if (timeDiff < 1) {
+                    startCooldown(1 - timeDiff);
+                    return;
+                }
+            }
+            
+            // Генерация случайного изменения от -10 до +10
+            let change = Math.floor(Math.random() * 21) - 10;
+            
+            // Применяем изменение (может уйти в минус!)
+            size += change;
+            
+            // Обновляем время последнего клика
+            lastClickTime = now;
+            
+            // Сохраняем
+            saveToCloud();
+            
+            // Обновляем интерфейс
+            updateSize();
+            showChange(change);
+            startCooldown(1);
         }
-
+        
         // Сброс игры
         function resetGame() {
-            // Сбрасываем размер
-            size = 0;
-            updateSizeDisplay();
-
-            // Останавливаем старый таймер, если он есть
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
+            if (!userInitialized) return;
+            
+            if (confirm('Точно сбросить размер до нуля?')) {
+                size = 0;
+                lastClickTime = 0;
+                saveToCloud();
+                updateSize();
+                
+                // Сбрасываем кулдаун если был
+                if (timerInterval) clearInterval(timerInterval);
+                cooldown = false;
+                circle.classList.remove('cooldown');
+                circle.classList.add('ready');
+                timerEl.textContent = '⚡ готов ⚡';
+                timerEl.classList.remove('active');
             }
-
-            // Сбрасываем переменные времени
-            timeLeft = 0;
-            canTap = true;
-            updateTimerDisplay();  // поставит "готов" и уберёт класс disabled
         }
-
-        // Навешиваем обработчик на кружок
+        
+        function updateSize() {
+            sizeEl.textContent = size;
+        }
+        
+        function showChange(change) {
+            if (change > 0) {
+                changeEl.innerHTML = `<span class="positive">+${change}</span>`;
+            } else if (change < 0) {
+                changeEl.innerHTML = `<span class="negative">${change}</span>`;
+            } else {
+                changeEl.innerHTML = `<span>0</span>`;
+            }
+            
+            setTimeout(() => {
+                changeEl.innerHTML = '';
+            }, 800);
+        }
+        
+        // Обработчики событий
         circle.addEventListener('click', handleTap);
-
-        // Кнопка сброса
-        document.getElementById('resetBtn').addEventListener('click', resetGame);
-
-        // Инициализация при загрузке страницы
-        resetGame();  // всё ставит в ноль и готовность
-    })();
-    // ================== КОНЕЦ КОДА ==================
-</script>
+        resetBtn.addEventListener('click', resetGame);
+        
+        // Сохраняем при закрытии
+        window.addEventListener('beforeunload', function() {
+            saveToCloud();
+        });
+    </script>
 </body>
 </html>
