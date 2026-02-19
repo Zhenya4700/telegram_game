@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тапалка члена</title>
+    <style>
+        /* Стили */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none; /* Чтобы нельзя было выделить текст при кликах */
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(145deg, #1a1e2c 0%, #2a2f42 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 48px;
+            padding: 32px 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 90%;
+            max-width: 380px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            background: linear-gradient(135deg, #ff99cc, #b3d9ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Кружочек */
+        .tap-area {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto 25px;
+            background: radial-gradient(circle at 30% 30%, #ffd966, #e68a2e);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 15px 0 #b3540b, 0 20px 30px rgba(0, 0, 0, 0.6), inset 0 -5px 15px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            border: 3px solid #ffb347;
+        }
+
+        /* Эффект нажатия */
+        .tap-area:active {
+            transform: translateY(8px);
+            box-shadow: 0 8px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Анимация пульсации когда таймер готов */
+        .tap-area.ready {
+            animation: pulse 1.5s infinite;
+            box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7), 0 15px 0 #b3540b;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 #ffd966, 0 15px 0 #b3540b; }
+            70% { box-shadow: 0 0 0 20px rgba(255, 215, 0, 0), 0 15px 0 #b3540b; }
+            100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0), 0 15px 0 #b3540b; }
+        }
+
+        /* Заблокированное состояние (кружок темнеет) */
+        .tap-area.disabled {
+            opacity: 0.6;
+            filter: grayscale(50%);
+            cursor: not-allowed;
+            pointer-events: none; /* Блокируем клики */
+            animation: none;
+            transform: translateY(5px);
+            box-shadow: 0 8px 0 #7a4a1f, 0 15px 20px rgba(0,0,0,0.5);
+        }
+
+        .size-display {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: #ffe484;
+            text-shadow: 0 3px 0 #b3540b, 0 5px 15px black;
+            line-height: 1.2;
+            margin-bottom: 10px;
+        }
+
+        .size-label {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #f5c6a0;
+            margin-bottom: 15px;
+            text-transform: lowercase;
+        }
+
+        .timer-text {
+            font-size: 1.2rem;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 8px 16px;
+            border-radius: 50px;
+            display: inline-block;
+            color: #aaa;
+            border: 1px solid #444;
+            margin: 10px 0;
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+
+        .timer-text.active {
+            color: #ffd966;
+            border-color: #ffd966;
+            box-shadow: 0 0 10px #ffb347;
+        }
+
+        .reset-btn {
+            background: #3a3f55;
+            color: white;
+            border: none;
+            font-size: 1rem;
+            padding: 8px 25px;
+            border-radius: 40px;
+            margin-top: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 3px solid #1e2230;
+            transition: 0.07s;
+        }
+
+        .reset-btn:active {
+            transform: translateY(3px);
+            border-bottom-width: 1px;
+        }
+
+        footer {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: #6a6f84;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>⚡ MEM-метр ⚡</h1>
+
+    <!-- Кружок -->
+    <div class="tap-area" id="tapCircle"></div>
+
+    <!-- Размер -->
+    <div class="size-display" id="sizeValue">0</div>
+    <div class="size-label">сантиметров</div>
+
+    <!-- Таймер -->
+    <div class="timer-text" id="timerDisplay">⚡ готов ⚡</div>
+
+    <!-- Кнопка сброса -->
+    <button class="reset-btn" id="resetBtn">⟲ Заново</button>
+    <footer>тапай раз в минуту</footer>
+</div>
+
+<script>
+    // ================== ВЕСЬ КОД ТУТ ==================
+    (function() {
+        // Элементы на странице
+        const circle = document.getElementById('tapCircle');
+        const sizeSpan = document.getElementById('sizeValue');
+        const timerDiv = document.getElementById('timerDisplay');
+
+        // Переменные игры
+        let size = 0;                      // текущий размер
+        let canTap = true;                 // можно ли сейчас нажимать?
+        let timerInterval = null;           // для обновления таймера
+        let timeLeft = 0;                   // сколько секунд осталось (0 = можно жать)
+
+        // Константа: лимит ожидания 60 секунд = 1 минута
+        const COOLDOWN_SECONDS = 60;
+
+        // Обновление отображения счётчика (размера)
+        function updateSizeDisplay() {
+            sizeSpan.textContent = size;
+        }
+
+        // Обновление текста таймера и класса кружка
+        function updateTimerDisplay() {
+            if (timeLeft <= 0) {
+                // Если время вышло - можно тапать
+                timerDiv.textContent = '⚡ готов ⚡';
+                timerDiv.classList.remove('active');
+                circle.classList.remove('disabled');
+                circle.classList.add('ready');   // пульсация
+                canTap = true;
+            } else {
+                // Идёт обратный отсчёт
+                const mins = Math.floor(timeLeft / 60);
+                const secs = timeLeft % 60;
+                timerDiv.textContent = `⏳ ${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                timerDiv.classList.add('active');
+                circle.classList.add('disabled');
+                circle.classList.remove('ready');
+                canTap = false;
+            }
+        }
+
+        // Запуск таймера на 60 секунд (после клика)
+        function startCooldown() {
+            // Если уже идёт какой-то таймер, убиваем его
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+
+            timeLeft = COOLDOWN_SECONDS;      // ставим 60 секунд
+            updateTimerDisplay();              // сразу показываем 1:00 и блокируем кнопку
+
+            // Запускаем интервал, который тикает каждую секунду
+            timerInterval = setInterval(() => {
+                timeLeft -= 1;                  // прошла секунда
+
+                if (timeLeft <= 0) {
+                    // Время вышло
+                    timeLeft = 0;
+                    updateTimerDisplay();
+
+                    // Останавливаем интервал
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                } else {
+                    // Просто обновляем цифры на таймере
+                    updateTimerDisplay();
+                }
+            }, 1000); // 1000 мс = 1 секунда
+        }
+
+        // Функция, которая вызывается при клике на кружок
+        function handleTap() {
+            if (!canTap) return;  // если нельзя жать, игнорируем
+
+            // 1. Меняем размер
+            // Генерируем случайное изменение от -10 до +10, но не ноль? можно и 0
+            let change = Math.floor(Math.random() * 21) - 10; // от -10 до 10
+
+            // Но чтобы было веселее, можно исключить 0, а то скучно (опционально)
+            // Раскомментируй следующие 3 строки, если хочешь, чтобы 0 не выпадал
+            // while (change === 0) {
+            //     change = Math.floor(Math.random() * 21) - 10;
+            // }
+
+            let newSize = size + change;
+
+            // Ограничиваем размер от 0 до 30 (чтобы совсем в минус не уходило и до бесконечности не росло)
+            if (newSize < 0) newSize = 0;
+            if (newSize > 30) newSize = 30; // можешь увеличить лимит, если хочешь
+
+            size = newSize;
+            updateSizeDisplay();
+
+            // 2. Активируем блокировку на 1 минуту
+            startCooldown();
+        }
+
+        // Сброс игры
+        function resetGame() {
+            // Сбрасываем размер
+            size = 0;
+            updateSizeDisplay();
+
+            // Останавливаем старый таймер, если он есть
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+
+            // Сбрасываем переменные времени
+            timeLeft = 0;
+            canTap = true;
+            updateTimerDisplay();  // поставит "готов" и уберёт класс disabled
+        }
+
+        // Навешиваем обработчик на кружок
+        circle.addEventListener('click', handleTap);
+
+        // Кнопка сброса
+        document.getElementById('resetBtn').addEventListener('click', resetGame);
+
+        // Инициализация при загрузке страницы
+        resetGame();  // всё ставит в ноль и готовность
+    })();
+    // ================== КОНЕЦ КОДА ==================
+</script>
+</body>
+</html>
