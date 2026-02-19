@@ -201,24 +201,6 @@
             font-size: 0.8rem;
             color: #6a6f84;
         }
-
-        .reset-btn {
-            background: #3a3f55;
-            color: white;
-            border: none;
-            font-size: 1rem;
-            padding: 10px 20px;
-            border-radius: 40px;
-            margin-top: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            border-bottom: 3px solid #1e2230;
-        }
-
-        .reset-btn:active {
-            transform: translateY(3px);
-            border-bottom-width: 1px;
-        }
     </style>
 </head>
 <body>
@@ -247,8 +229,6 @@
         
         <div class="sync-status" id="syncStatus"></div>
 
-        <button class="reset-btn" id="resetBtn">⟲ Сбросить</button>
-
         <footer>тапай раз в секунду</footer>
     </div>
 
@@ -273,7 +253,6 @@
         const errorEl = document.getElementById('errorMessage');
         const syncEl = document.getElementById('syncStatus');
         const circle = document.getElementById('tapCircle');
-        const resetBtn = document.getElementById('resetBtn');
         
         // Игровые переменные
         let size = 0;
@@ -496,24 +475,6 @@
             showSync(`${oldSize} ${change > 0 ? '+' : ''}${change} = ${size}`);
         }
         
-        function resetGame() {
-            if (confirm('Сбросить размер до 0?')) {
-                size = 0;
-                lastClickTime = 0;
-                saveToCloud();
-                updateSize();
-                
-                if (timerInterval) clearInterval(timerInterval);
-                cooldown = false;
-                circle.classList.remove('cooldown');
-                circle.classList.add('ready');
-                timerEl.textContent = '⚡ готов ⚡';
-                timerEl.classList.remove('active');
-                
-                showSync('🔄 сброшено');
-            }
-        }
-        
         function updateSize() {
             sizeEl.textContent = size;
         }
@@ -537,7 +498,6 @@
         
         // События
         circle.addEventListener('click', handleTap);
-        resetBtn.addEventListener('click', resetGame);
         
         // Периодическая синхронизация (каждые 30 секунд)
         setInterval(() => {
@@ -553,4 +513,3 @@
     </script>
 </body>
 </html>
-
