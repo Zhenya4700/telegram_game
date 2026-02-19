@@ -225,7 +225,7 @@
 
     <script>
         // ========== НАСТРОЙКИ ==========
-        const API_URL = 'https://zhenya4700.pythonanywhere.com'; // ЗАМЕНИ НА СВОЙ АДРЕС!
+        const API_URL = 'https://zhenya4700.pythonanywhere.com';
         // ===============================
 
         let tg = window.Telegram.WebApp;
@@ -249,7 +249,6 @@
         let cooldown = false;
         let timerInterval = null;
         
-        // Показываем ошибку
         function showError(text) {
             errorEl.textContent = text;
             errorEl.style.display = 'block';
@@ -258,54 +257,45 @@
             }, 3000);
         }
         
-        // Загрузка с сервера
-        async function loadFromServer() {
+        // Простая проверка сервера
+        async function checkServer() {
             try {
-                const response = await fetch(`${API_URL}/api/state/${user.id}`);
-                const data = await response.json();
-                
-                if (data.error) {
-                    showError(data.error);
-                    return;
-                }
-                
-                size = data.size || 0;
-                updateSize();
-                
-                // Проверяем кулдаун
-                if (data.last_click) {
-                    const lastClick = new Date(data.last_click);
-                    const now = new Date();
-                    const diff = (now - lastClick) / 1000;
-                    
-                    if (diff < 1) {
-                        startCooldown(1 - diff);
-                    } else {
-                        circle.classList.add('ready');
-                    }
-                } else {
-                    circle.classList.add('ready');
-                }
-                
+                let response = await fetch(API_URL, { mode: 'cors' });
+                let text = await response.text();
+                console.log('Сервер ответил:', text);
+                return true;
             } catch (error) {
-                showError('Ошибка соединения с сервером');
-                console.error(error);
+                console.error('Сервер не доступен:', error);
+                showError('Сервер не отвечает');
+                return false;
             }
         }
         
         // Авторизация
         async function auth() {
+            // Сначала проверим сервер
+            let serverOk = await checkServer();
+            if (!serverOk) {
+                loading.style.display = 'none';
+                gameContent.style.display = 'block';
+                return;
+            }
+            
             try {
+                console.log('Отправляем запрос на /api/auth');
                 const response = await fetch(`${API_URL}/api/auth`, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
                     body: JSON.stringify({
-                        telegram_id: user.id,
+                        telegram_id: String(user.id),
                         username: user.username || user.first_name || ''
                     })
                 });
                 
                 const data = await response.json();
+                console.log('Ответ от сервера:', data);
                 
                 size = data.size || 0;
                 updateSize();
@@ -328,14 +318,13 @@
                 gameContent.style.display = 'block';
                 
             } catch (error) {
+                console.error('Ошибка авторизации:', error);
                 showError('Ошибка авторизации');
-                console.error(error);
                 loading.style.display = 'none';
                 gameContent.style.display = 'block';
             }
         }
         
-        // Запуск кулдауна
         function startCooldown(seconds) {
             cooldown = true;
             circle.classList.add('cooldown');
@@ -362,23 +351,22 @@
             }, 100);
         }
         
-        // Клик
         async function handleTap() {
             if (cooldown) return;
+            if (!user) return;
             
             try {
                 const response = await fetch(`${API_URL}/api/click`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({telegram_id: user.id})
+                    body: JSON.stringify({telegram_id: String(user.id)})
                 });
                 
                 const data = await response.json();
                 
                 if (response.status === 429) {
-                    // Слишком быстро
                     startCooldown(data.wait);
-                    showError('Слишком быстро! Подожди');
+                    showError('Слишком быстро!');
                     return;
                 }
                 
@@ -387,13 +375,13 @@
                     return;
                 }
                 
-                // Обновляем интерфейс
                 size = data.size;
                 updateSize();
                 showChange(data.change);
                 startCooldown(1);
                 
             } catch (error) {
+                console.error('Ошибка клика:', error);
                 showError('Ошибка соединения');
             }
         }
@@ -418,7 +406,6 @@
         
         // Инициализация
         if (!user) {
-            // Тест вне Telegram
             usernameEl.textContent = 'Тестовый режим';
             avatar.textContent = '👤';
             loading.style.display = 'none';
@@ -427,11 +414,12 @@
         } else {
             usernameEl.textContent = user.first_name || user.username || 'Игрок';
             avatar.textContent = (user.first_name ? user.first_name[0] : '👤').toUpperCase();
-            auth(); // Авторизуемся на сервере
+            
+            // Запускаем авторизацию
+            auth();
         }
         
         circle.addEventListener('click', handleTap);
     </script>
 </body>
 </html>
-
