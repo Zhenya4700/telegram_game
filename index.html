@@ -189,6 +189,13 @@
             to { transform: rotate(360deg); }
         }
 
+        .sync-status {
+            font-size: 12px;
+            color: #4caf50;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+
         footer {
             margin-top: 20px;
             font-size: 0.8rem;
@@ -237,6 +244,8 @@
         <div class="timer-text" id="timerDisplay">⚡ готов ⚡</div>
         
         <div class="error-message" id="errorMessage"></div>
+        
+        <div class="sync-status" id="syncStatus"></div>
 
         <button class="reset-btn" id="resetBtn">⟲ Сбросить</button>
 
@@ -245,7 +254,7 @@
 
     <script>
         // ==================================
-        // ВЕРСИЯ БЕЗ СЕРВЕРА - Telegram Cloud Storage
+        // ВЕРСИЯ С ПРОВЕРКОЙ ПЕРЕД КАЖДЫМ КЛИКОМ
         // ==================================
 
         let tg = window.Telegram.WebApp;
@@ -262,6 +271,7 @@
         const changeEl = document.getElementById('changeIndicator');
         const timerEl = document.getElementById('timerDisplay');
         const errorEl = document.getElementById('errorMessage');
+        const syncEl = document.getElementById('syncStatus');
         const circle = document.getElementById('tapCircle');
         const resetBtn = document.getElementById('resetBtn');
         
@@ -270,6 +280,7 @@
         let lastClickTime = 0;
         let cooldown = false;
         let timerInterval = null;
+        let isSyncing = false;
         
         function showError(text) {
             errorEl.textContent = text;
@@ -277,6 +288,13 @@
             setTimeout(() => {
                 errorEl.style.display = 'none';
             }, 2000);
+        }
+        
+        function showSync(text) {
+            syncEl.textContent = text;
+            setTimeout(() => {
+                syncEl.textContent = '';
+            }, 1000);
         }
         
         // Загрузка из Cloud Storage
@@ -295,7 +313,7 @@
             try {
                 // Пробуем загрузить размер
                 tg.CloudStorage.getItem('memberSize', function(err, value) {
-                    if (!err && value !== null) {
+                    if (!err && value !== null && value !== undefined) {
                         size = parseInt(value) || 0;
                     } else {
                         size = 0;
@@ -303,8 +321,10 @@
                     
                     // Загружаем время последнего клика
                     tg.CloudStorage.getItem('lastClick', function(err2, timeValue) {
-                        if (!err2 && timeValue !== null) {
+                        if (!err2 && timeValue !== null && timeValue !== undefined) {
                             lastClickTime = parseInt(timeValue) || 0;
+                        } else {
+                            lastClickTime = 0;
                         }
                         
                         updateSize();
@@ -332,7 +352,7 @@
             gameContent.style.display = 'block';
         }
         
-        // Сохранение
+        // Сохранение в Cloud Storage
         function saveToCloud() {
             if (!user) {
                 localStorage.setItem('memberSize', size.toString());
@@ -351,6 +371,52 @@
                 localStorage.setItem('memberSize', size.toString());
                 localStorage.setItem('lastClick', lastClickTime.toString());
             }
+        }
+        
+        // ========== НОВАЯ ФУНКЦИЯ: синхронизация перед кликом ==========
+        async function syncBeforeClick() {
+            if (!user || isSyncing) return false;
+            
+            isSyncing = true;
+            showSync('🔄 синхронизация...');
+            
+            return new Promise((resolve) => {
+                try {
+                    // Запрашиваем актуальный размер с облака
+                    tg.CloudStorage.getItem('memberSize', function(err, value) {
+                        if (!err && value !== null && value !== undefined) {
+                            let cloudSize = parseInt(value) || 0;
+                            
+                            // Если облачный размер отличается от текущего
+                            if (cloudSize !== size) {
+                                showSync(`📱 обновлено: ${size} → ${cloudSize}`);
+                                size = cloudSize;  // Обновляем локальный размер
+                                updateSize();
+                            }
+                        }
+                        
+                        // Также проверяем время последнего клика
+                        tg.CloudStorage.getItem('lastClick', function(err2, timeValue) {
+                            if (!err2 && timeValue !== null && timeValue !== undefined) {
+                                let cloudTime = parseInt(timeValue) || 0;
+                                
+                                // Если облачное время больше (кто-то кликнул позже)
+                                if (cloudTime > lastClickTime) {
+                                    lastClickTime = cloudTime;
+                                }
+                            }
+                            
+                            isSyncing = false;
+                            showSync('✅ синхронизировано');
+                            resolve(true);
+                        });
+                    });
+                } catch (e) {
+                    console.log('Sync error:', e);
+                    isSyncing = false;
+                    resolve(false);
+                }
+            });
         }
         
         // Проверка кулдауна
@@ -395,11 +461,15 @@
             }, 100);
         }
         
-        function handleTap() {
-            if (cooldown) return;
+        // ========== ОБНОВЛЕННАЯ ФУНКЦИЯ КЛИКА ==========
+        async function handleTap() {
+            if (cooldown || isSyncing) return;
             
+            // Сначала синхронизируемся с облаком
+            await syncBeforeClick();
+            
+            // Проверяем кулдаун еще раз (мог измениться после синхронизации)
             const now = Date.now();
-            
             if (lastClickTime > 0) {
                 const diff = (now - lastClickTime) / 1000;
                 if (diff < 1) {
@@ -408,15 +478,22 @@
                 }
             }
             
-            // Рандом на клиенте (от -10 до +10)
+            // Генерируем рандом (от -10 до +10)
             let change = Math.floor(Math.random() * 21) - 10;
+            let oldSize = size;
             size += change;
             lastClickTime = now;
             
+            // Сохраняем в облако
             saveToCloud();
+            
+            // Обновляем интерфейс
             updateSize();
             showChange(change);
             startCooldown(1);
+            
+            // Показываем изменение
+            showSync(`${oldSize} ${change > 0 ? '+' : ''}${change} = ${size}`);
         }
         
         function resetGame() {
@@ -432,6 +509,8 @@
                 circle.classList.add('ready');
                 timerEl.textContent = '⚡ готов ⚡';
                 timerEl.classList.remove('active');
+                
+                showSync('🔄 сброшено');
             }
         }
         
@@ -459,6 +538,13 @@
         // События
         circle.addEventListener('click', handleTap);
         resetBtn.addEventListener('click', resetGame);
+        
+        // Периодическая синхронизация (каждые 30 секунд)
+        setInterval(() => {
+            if (!cooldown && !isSyncing) {
+                syncBeforeClick();
+            }
+        }, 30000);
         
         // Сохраняем при закрытии
         window.addEventListener('beforeunload', function() {
