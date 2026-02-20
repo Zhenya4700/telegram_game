@@ -6,6 +6,7 @@
     <title>Тапалка члена</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* Стили такие же как в прошлой версии */
         * {
             margin: 0;
             padding: 0;
@@ -21,47 +22,26 @@
             align-items: center;
             margin: 0;
             color: white;
-            transition: background 0.5s ease, box-shadow 0.5s ease;
+            transition: background 0.5s ease;
         }
 
-        body.bg-default {
-            background: linear-gradient(145deg, #1a1e2c 0%, #2a2f42 100%);
-        }
-
-        body.bg-neon {
-            background: linear-gradient(145deg, #20002c, #6a1b9a);
-        }
-
-        body.bg-gold {
-            background: linear-gradient(145deg, #7d6608, #b8860b);
-        }
-
+        body.bg-default { background: linear-gradient(145deg, #1a1e2c 0%, #2a2f42 100%); }
+        body.bg-neon { background: linear-gradient(145deg, #20002c, #6a1b9a); }
+        body.bg-gold { background: linear-gradient(145deg, #7d6608, #b8860b); }
         body.bg-rainbow {
             background: linear-gradient(145deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
             background-size: 400% 400%;
             animation: rainbow 10s ease infinite;
         }
+        body.bg-dark { background: linear-gradient(145deg, #0a0a0a, #1a1a1a); }
+        body.bg-forest { background: linear-gradient(145deg, #1b4d1b, #2e7d32); }
+        body.bg-ocean { background: linear-gradient(145deg, #01579b, #0288d1); }
+        body.bg-lava { background: linear-gradient(145deg, #bf360c, #d84315); }
 
         @keyframes rainbow {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
-        }
-
-        body.bg-dark {
-            background: linear-gradient(145deg, #0a0a0a, #1a1a1a);
-        }
-
-        body.bg-forest {
-            background: linear-gradient(145deg, #1b4d1b, #2e7d32);
-        }
-
-        body.bg-ocean {
-            background: linear-gradient(145deg, #01579b, #0288d1);
-        }
-
-        body.bg-lava {
-            background: linear-gradient(145deg, #bf360c, #d84315);
         }
 
         .game-container {
@@ -115,14 +95,8 @@
             border: 1px solid rgba(147, 112, 219, 0.3);
         }
 
-        .star-icon {
-            font-size: 16px;
-        }
-
-        .star-amount {
-            font-weight: 600;
-            color: #c0a0ff;
-        }
+        .star-icon { font-size: 16px; }
+        .star-amount { font-weight: 600; color: #c0a0ff; }
 
         h1 {
             font-size: 2rem;
@@ -151,13 +125,11 @@
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
             border: 3px solid #ffb347;
-            position: relative;
         }
 
         .tap-area:active {
             transform: translateY(8px) scale(0.95);
             box-shadow: 0 8px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6);
-            transition: all 0.1s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .tap-area.cooldown {
@@ -167,7 +139,6 @@
             pointer-events: none;
             transform: translateY(5px) scale(0.98);
             box-shadow: 0 5px 0 #7a4a1f;
-            transition: all 0.3s ease;
         }
 
         .tap-area.ready {
@@ -175,15 +146,9 @@
         }
 
         @keyframes smoothPulse {
-            0% {
-                box-shadow: 0 15px 0 #b3540b, 0 20px 30px rgba(0, 0, 0, 0.6);
-            }
-            50% {
-                box-shadow: 0 15px 0 #b3540b, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 30px #ffd966;
-            }
-            100% {
-                box-shadow: 0 15px 0 #b3540b, 0 20px 30px rgba(0, 0, 0, 0.6);
-            }
+            0% { box-shadow: 0 15px 0 #b3540b, 0 20px 30px rgba(0, 0, 0, 0.6); }
+            50% { box-shadow: 0 15px 0 #b3540b, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 30px #ffd966; }
+            100% { box-shadow: 0 15px 0 #b3540b, 0 20px 30px rgba(0, 0, 0, 0.6); }
         }
 
         .size-display {
@@ -193,20 +158,6 @@
             text-shadow: 0 3px 0 #b3540b, 0 5px 15px black;
             line-height: 1;
             margin-bottom: 5px;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            display: inline-block;
-            animation: sizePop 0.4s ease-out;
-        }
-
-        @keyframes sizePop {
-            0% {
-                transform: scale(0.8) translateY(20px);
-                opacity: 0;
-            }
-            100% {
-                transform: scale(1) translateY(0);
-                opacity: 1;
-            }
         }
 
         .size-label {
@@ -220,30 +171,10 @@
             font-weight: bold;
             min-height: 50px;
             margin: 5px 0;
-            animation: floatChange 0.8s ease-out forwards;
         }
 
-        @keyframes floatChange {
-            0% {
-                transform: scale(0.5) translateY(20px);
-                opacity: 0;
-            }
-            30% {
-                transform: scale(1.2) translateY(-5px);
-                opacity: 1;
-            }
-            70% {
-                transform: scale(1) translateY(-10px);
-                opacity: 0.8;
-            }
-            100% {
-                transform: scale(0.8) translateY(-30px);
-                opacity: 0;
-            }
-        }
-
-        .positive { color: #4caf50; text-shadow: 0 0 15px rgba(76, 175, 80, 0.5); }
-        .negative { color: #f44336; text-shadow: 0 0 15px rgba(244, 67, 54, 0.5); }
+        .positive { color: #4caf50; }
+        .negative { color: #f44336; }
 
         .timer-text {
             font-size: 1.3rem;
@@ -256,63 +187,12 @@
             margin: 15px 0;
             font-family: monospace;
             letter-spacing: 2px;
-            transition: all 0.3s ease;
         }
 
         .timer-text.active {
             color: #ffd966;
             border-color: #ffd966;
             box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
-            animation: timerGlow 1s ease-in-out infinite;
-        }
-
-        @keyframes timerGlow {
-            0%, 100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
-            50% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.6); }
-        }
-
-        .error-message {
-            color: #f44336;
-            background: rgba(244, 67, 54, 0.1);
-            padding: 10px;
-            border-radius: 10px;
-            margin: 10px 0;
-            font-size: 14px;
-            display: none;
-            animation: shake 0.4s ease-in-out;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20% { transform: translateX(-10px); }
-            40% { transform: translateX(10px); }
-            60% { transform: translateX(-5px); }
-            80% { transform: translateX(5px); }
-        }
-
-        .loading {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: #1a1e2c;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            gap: 20px;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #3a3f55;
-            border-top-color: #ffd966;
-            border-radius: 50%;
-            animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
         }
 
         .nav-menu {
@@ -330,7 +210,6 @@
             font-size: 0.9rem;
             padding: 8px 0;
             cursor: pointer;
-            transition: all 0.2s ease;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -344,9 +223,7 @@
             background: rgba(255, 215, 0, 0.1);
         }
 
-        .nav-icon {
-            font-size: 1.5rem;
-        }
+        .nav-icon { font-size: 1.5rem; }
 
         .leaderboard-item {
             display: flex;
@@ -390,19 +267,8 @@
             border: 1px solid rgba(255, 215, 0, 0.3);
         }
 
-        .page {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .page.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .page { display: none; }
+        .page.active { display: block; }
 
         .leaderboard-header {
             display: flex;
@@ -420,12 +286,6 @@
             border-radius: 50%;
             font-size: 1.2rem;
             cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .refresh-btn:active {
-            transform: rotate(180deg);
-            background: rgba(255, 215, 0, 0.2);
         }
 
         .shop-item {
@@ -439,34 +299,15 @@
         }
 
         .shop-item-info {
-            text-align: left;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .shop-item-icon {
-            font-size: 2.5rem;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .shop-item-text {
-            text-align: left;
-        }
-
-        .shop-item-title {
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .shop-item-desc {
-            font-size: 0.8rem;
-            color: #8e94ab;
-        }
+        .shop-item-icon { font-size: 2.5rem; width: 50px; height: 50px; }
+        .shop-item-text { text-align: left; }
+        .shop-item-title { font-weight: 600; margin-bottom: 4px; }
+        .shop-item-desc { font-size: 0.8rem; color: #8e94ab; }
 
         .shop-item-price {
             display: flex;
@@ -486,19 +327,12 @@
             font-weight: 600;
             cursor: pointer;
             border-bottom: 2px solid #2e7d32;
-            transition: all 0.1s ease;
-        }
-
-        .buy-btn:active {
-            transform: translateY(2px);
-            border-bottom-width: 0;
         }
 
         .buy-btn:disabled {
             opacity: 0.3;
             cursor: not-allowed;
             background: #7f8c8d;
-            border-bottom-color: #4a4a4a;
         }
 
         .current-skin {
@@ -530,26 +364,11 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .inventory-item.owned {
-            border-color: #ffd966;
-            background: rgba(255, 215, 0, 0.1);
-        }
+        .inventory-item.owned { border-color: #ffd966; background: rgba(255, 215, 0, 0.1); }
+        .inventory-item.default { border-color: #ffffff; background: rgba(255, 255, 255, 0.15); }
 
-        .inventory-item.default {
-            border-color: #ffffff;
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .inventory-item-icon {
-            font-size: 3rem;
-            margin-bottom: 10px;
-        }
-
-        .inventory-item-title {
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-        }
+        .inventory-item-icon { font-size: 3rem; margin-bottom: 10px; }
+        .inventory-item-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 10px; }
 
         .inventory-item-controls {
             display: flex;
@@ -568,12 +387,6 @@
             font-size: 0.8rem;
             cursor: pointer;
             border-bottom: 2px solid #1e2230;
-            transition: all 0.1s ease;
-        }
-
-        .inv-btn:active {
-            transform: translateY(2px);
-            border-bottom-width: 0;
         }
 
         .equipped-badge {
@@ -583,72 +396,48 @@
             background: rgba(76, 175, 80, 0.2);
             padding: 4px 8px;
             border-radius: 12px;
-            display: inline-block;
         }
 
-        .sold-out {
-            color: #ff6b6b;
-            font-size: 0.8rem;
-            margin-top: 4px;
-        }
+        .sold-out { color: #ff6b6b; font-size: 0.8rem; margin-top: 4px; }
     </style>
 </head>
 <body class="bg-default" id="body">
-    <div class="loading" id="loading">
-        <div class="spinner"></div>
-        <div>Загрузка игры...</div>
-    </div>
+    <div class="loading" id="loading">Загрузка...</div>
 
     <div class="game-container" id="gameContent" style="display: none;">
         <div class="user-info">
             <div class="avatar" id="avatar">👤</div>
             <div class="username" id="username">Загрузка...</div>
-            <div class="stars" id="starsDisplay">
+            <div class="stars">
                 <span class="star-icon">⭐</span>
                 <span class="star-amount" id="starAmount">20</span>
             </div>
         </div>
 
-        <!-- Главная страница (тапалка) -->
+        <!-- Главная -->
         <div class="page active" id="homePage">
             <h1>⚡ MEM-метр ⚡</h1>
-
             <div class="tap-area default" id="tapCircle"></div>
-            
             <div class="size-display" id="sizeValue">0</div>
             <div class="size-label">сантиметров</div>
             <div class="change-indicator" id="changeIndicator"></div>
-            
             <div class="timer-text" id="timerDisplay">⚡ готов ⚡</div>
-            
-            <div class="error-message" id="errorMessage"></div>
         </div>
 
         <!-- Лидерборд -->
         <div class="page" id="leaderboardPage">
             <div class="leaderboard-header">
                 <h2>🏆 Топ игроков</h2>
-                <button class="refresh-btn" onclick="updateLeaderboard()">🔄</button>
+                <button class="refresh-btn" onclick="loadLeaderboard()">🔄</button>
             </div>
-            <div id="leaderboardList">
-                <div style="text-align: center; color: #8e94ab; padding: 20px;">
-                    Загрузка лидеров...
-                </div>
-            </div>
+            <div id="leaderboardList">Загрузка...</div>
         </div>
 
         <!-- Магазин -->
         <div class="page" id="shopPage">
-            <h2 style="margin-bottom: 20px;">🏪 Магазин членов</h2>
-            
+            <h2>🏪 Магазин</h2>
             <div class="current-skin" id="currentSkinDisplay">Текущий фон: Обычный</div>
-            
-            <div style="margin-bottom: 15px; font-size: 0.9rem; color: #8e94ab; text-align: left;">
-                Покупай фоны за звёзды ⭐ (тест: 20 ⭐ не тратятся)
-            </div>
-            
-            <!-- Сброс таймера -->
-            <div class="shop-item cooldown-reset">
+            <div class="shop-item cooldown-reset" onclick="resetCooldown()">
                 <div class="shop-item-info">
                     <div class="shop-item-icon">⏱️</div>
                     <div class="shop-item-text">
@@ -656,82 +445,47 @@
                         <div class="shop-item-desc">Мгновенно сбрасывает 100 секунд</div>
                     </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div class="shop-item-price">
-                        <span>⭐</span>
-                        <span>0</span>
-                    </div>
-                    <button class="buy-btn" onclick="resetCooldown()">Сбросить</button>
-                </div>
             </div>
-            
-            <div id="shopItems">
-                <!-- Сюда будут подгружаться доступные для покупки скины -->
-            </div>
+            <div id="shopItems"></div>
         </div>
 
         <!-- Инвентарь -->
         <div class="page" id="inventoryPage">
-            <h2 style="margin-bottom: 20px;">🎒 Инвентарь</h2>
-            
+            <h2>🎒 Инвентарь</h2>
             <div class="current-skin" id="inventoryCurrentSkin">Текущий фон: Обычный</div>
-            
-            <div class="inventory-grid" id="inventoryGrid">
-                <!-- Сюда будет подгружаться инвентарь -->
-            </div>
+            <div class="inventory-grid" id="inventoryGrid"></div>
         </div>
 
-        <!-- Навигационное меню -->
+        <!-- Навигация -->
         <div class="nav-menu">
-            <button class="nav-btn active" id="navHome" onclick="switchPage('home')">
-                <span class="nav-icon">🏠</span>
-                <span>Дом</span>
-            </button>
-            <button class="nav-btn" id="navLeaderboard" onclick="switchPage('leaderboard')">
-                <span class="nav-icon">🏆</span>
-                <span>Топ</span>
-            </button>
-            <button class="nav-btn" id="navShop" onclick="switchPage('shop')">
-                <span class="nav-icon">🏪</span>
-                <span>Магазин</span>
-            </button>
-            <button class="nav-btn" id="navInventory" onclick="switchPage('inventory')">
-                <span class="nav-icon">🎒</span>
-                <span>Инвентарь</span>
-            </button>
+            <button class="nav-btn active" onclick="switchPage('home')">🏠 Дом</button>
+            <button class="nav-btn" onclick="switchPage('leaderboard')">🏆 Топ</button>
+            <button class="nav-btn" onclick="switchPage('shop')">🏪 Магазин</button>
+            <button class="nav-btn" onclick="switchPage('inventory')">🎒 Инвентарь</button>
         </div>
     </div>
 
     <script>
-        // ==================================
-        // ИСПРАВЛЕННАЯ ВЕРСИЯ - ФОНЫ СОХРАНЯЮТСЯ
-        // ==================================
-
         const API_URL = 'https://zhenya4700.pythonanywhere.com';
         const COOLDOWN_SECONDS = 100;
         const MIN_SIZE = -10;
         
         let tg = window.Telegram.WebApp;
         tg.expand();
-        
         let user = tg.initDataUnsafe?.user;
         
-        // Элементы DOM
+        // Элементы
         const body = document.getElementById('body');
         const loading = document.getElementById('loading');
         const gameContent = document.getElementById('gameContent');
-        const avatar = document.getElementById('avatar');
         const usernameEl = document.getElementById('username');
         const sizeEl = document.getElementById('sizeValue');
         const changeEl = document.getElementById('changeIndicator');
         const timerEl = document.getElementById('timerDisplay');
-        const errorEl = document.getElementById('errorMessage');
         const circle = document.getElementById('tapCircle');
         const starAmountEl = document.getElementById('starAmount');
         const currentSkinDisplay = document.getElementById('currentSkinDisplay');
         const inventoryCurrentSkin = document.getElementById('inventoryCurrentSkin');
-        const inventoryGrid = document.getElementById('inventoryGrid');
-        const shopItems = document.getElementById('shopItems');
         
         // Страницы
         const pages = {
@@ -741,234 +495,51 @@
             inventory: document.getElementById('inventoryPage')
         };
         
-        const navBtns = {
-            home: document.getElementById('navHome'),
-            leaderboard: document.getElementById('navLeaderboard'),
-            shop: document.getElementById('navShop'),
-            inventory: document.getElementById('navInventory')
-        };
-        
-        // Игровые переменные
+        // Состояние
         let size = 0;
         let lastClickTime = 0;
         let cooldown = false;
         let timerInterval = null;
         let currentBackground = 'default';
-        let ownedSkins = new Set(['default']); // По умолчанию есть стандартный фон
+        let ownedSkins = ['default'];
         
-        // Список всех доступных скинов с иконками
         const allSkins = [
-            { id: 'neon', name: 'Неоновый член', desc: 'Фиолетовое неоновое сияние', icon: '💜' },
-            { id: 'gold', name: 'Золотой член', desc: 'Роскошный золотой фон', icon: '💛' },
-            { id: 'rainbow', name: 'Радужный член', desc: 'Переливающийся радужный фон', icon: '🌈' },
-            { id: 'dark', name: 'Тёмный член', desc: 'Зловещий тёмный фон', icon: '🖤' },
-            { id: 'forest', name: 'Лесной член', desc: 'Зелёный лесной фон', icon: '🌲' },
-            { id: 'ocean', name: 'Океанский член', desc: 'Глубокий синий океан', icon: '🌊' },
-            { id: 'lava', name: 'Лавовый член', desc: 'Огненный лавовый фон', icon: '🌋' }
+            { id: 'neon', name: 'Неоновый', icon: '💜' },
+            { id: 'gold', name: 'Золотой', icon: '💛' },
+            { id: 'rainbow', name: 'Радужный', icon: '🌈' },
+            { id: 'dark', name: 'Тёмный', icon: '🖤' },
+            { id: 'forest', name: 'Лесной', icon: '🌲' },
+            { id: 'ocean', name: 'Океанский', icon: '🌊' },
+            { id: 'lava', name: 'Лавовый', icon: '🌋' }
         ];
         
-        // Названия фонов
         const backgroundNames = {
-            'default': 'Обычный',
-            'neon': 'Неоновый',
-            'gold': 'Золотой',
-            'rainbow': 'Радужный',
-            'dark': 'Тёмный',
-            'forest': 'Лесной',
-            'ocean': 'Океанский',
-            'lava': 'Лавовый'
+            'default': 'Обычный', 'neon': 'Неоновый', 'gold': 'Золотой',
+            'rainbow': 'Радужный', 'dark': 'Тёмный', 'forest': 'Лесной',
+            'ocean': 'Океанский', 'lava': 'Лавовый'
         };
         
-        // Иконки фонов
         const backgroundIcons = {
-            'default': '⚪',
-            'neon': '💜',
-            'gold': '💛',
-            'rainbow': '🌈',
-            'dark': '🖤',
-            'forest': '🌲',
-            'ocean': '🌊',
-            'lava': '🌋'
+            'default': '⚪', 'neon': '💜', 'gold': '💛', 'rainbow': '🌈',
+            'dark': '🖤', 'forest': '🌲', 'ocean': '🌊', 'lava': '🌋'
         };
-        
-        // Обновление отображения
-        function updateStars() {
-            starAmountEl.textContent = '20';
-        }
-        
-        function updateCurrentSkinDisplay() {
-            const icon = backgroundIcons[currentBackground] || '⚪';
-            const text = `Текущий фон: ${icon} ${backgroundNames[currentBackground]}`;
-            if (currentSkinDisplay) currentSkinDisplay.textContent = text;
-            if (inventoryCurrentSkin) inventoryCurrentSkin.textContent = text;
-        }
-        
-        // Применить фон
-        function applyBackground(bgName) {
-            console.log('Applying background:', bgName);
-            currentBackground = bgName;
-            body.className = '';
-            body.classList.add(`bg-${bgName}`);
-            updateCurrentSkinDisplay();
-            updateInventoryDisplay(); // Обновляем инвентарь чтобы убрать кнопку "Надеть"
-            saveToServer(); // Сохраняем в таблицу
-        }
-        
-        // Обновление магазина
-        function updateShop() {
-            let html = '';
-            for (let skin of allSkins) {
-                const isOwned = ownedSkins.has(skin.id);
-                html += `
-                    <div class="shop-item">
-                        <div class="shop-item-info">
-                            <div class="shop-item-icon">${skin.icon}</div>
-                            <div class="shop-item-text">
-                                <div class="shop-item-title">${skin.name}</div>
-                                <div class="shop-item-desc">${skin.desc}</div>
-                                ${isOwned ? '<div class="sold-out">✅ Уже куплено</div>' : ''}
-                            </div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div class="shop-item-price">
-                                <span>⭐</span>
-                                <span>1</span>
-                            </div>
-                            <button class="buy-btn" onclick="buyBackground('${skin.id}')" ${isOwned ? 'disabled' : ''}>
-                                ${isOwned ? 'Куплено' : 'Купить'}
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
-            shopItems.innerHTML = html;
-        }
-        
-        // Обновление инвентаря
-        function updateInventoryDisplay() {
-            if (!inventoryGrid) return;
-            
-            let html = '';
-            
-            // Всегда показываем стандартный фон
-            const isDefaultActive = (currentBackground === 'default');
-            html += `
-                <div class="inventory-item default">
-                    <div class="inventory-item-icon">⚪</div>
-                    <div class="inventory-item-title">Обычный</div>
-                    <div class="inventory-item-controls">
-                        ${!isDefaultActive ? 
-                            `<button class="inv-btn" onclick="applyBackground('default')">Надеть</button>` : 
-                            '<span class="equipped-badge">✅ Надето</span>'}
-                    </div>
-                </div>
-            `;
-            
-            // Показываем купленные скины
-            for (let skin of allSkins) {
-                if (ownedSkins.has(skin.id)) {
-                    const isActive = (currentBackground === skin.id);
-                    html += `
-                        <div class="inventory-item owned">
-                            <div class="inventory-item-icon">${skin.icon}</div>
-                            <div class="inventory-item-title">${skin.name.replace(' член', '')}</div>
-                            <div class="inventory-item-controls">
-                                ${!isActive ? 
-                                    `<button class="inv-btn" onclick="applyBackground('${skin.id}')">Надеть</button>` : 
-                                    '<span class="equipped-badge">✅ Надето</span>'}
-                            </div>
-                        </div>
-                    `;
-                }
-            }
-            
-            if (ownedSkins.size <= 1) { // Только стандартный фон
-                html += '<div style="grid-column: span 2; text-align: center; color: #8e94ab; padding: 20px;">У тебя пока нет предметов</div>';
-            }
-            
-            inventoryGrid.innerHTML = html;
-        }
-        
+
         // Переключение страниц
         window.switchPage = function(page) {
             Object.values(pages).forEach(p => p.classList.remove('active'));
-            Object.values(navBtns).forEach(b => b.classList.remove('active'));
-            
             pages[page].classList.add('active');
-            navBtns[page].classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
             
-            if (page === 'leaderboard') {
-                updateLeaderboard();
-            } else if (page === 'inventory') {
-                updateInventoryDisplay();
-            } else if (page === 'shop') {
-                updateShop();
-            }
+            if (page === 'leaderboard') loadLeaderboard();
+            else if (page === 'inventory') renderInventory();
+            else if (page === 'shop') renderShop();
         };
-        
-        // Обновление лидерборда с сервера
-        window.updateLeaderboard = async function() {
-            const listEl = document.getElementById('leaderboardList');
-            listEl.innerHTML = '<div style="text-align: center; color: #8e94ab; padding: 20px;">Загрузка...</div>';
-            
+
+        // Загрузка с сервера
+        async function loadUser() {
             try {
-                const response = await fetch(`${API_URL}/api/leaderboard`);
-                const leaders = await response.json();
-                
-                if (leaders.length === 0) {
-                    listEl.innerHTML = '<div style="text-align: center; color: #8e94ab; padding: 20px;">Пока нет игроков</div>';
-                    return;
-                }
-                
-                listEl.innerHTML = leaders.map((item, index) => {
-                    const isYou = user && item.telegram_id === String(user.id);
-                    const rankClass = index === 0 ? 'leaderboard-rank-1' : (index === 1 ? 'leaderboard-rank-2' : (index === 2 ? 'leaderboard-rank-3' : ''));
-                    
-                    return `
-                        <div class="leaderboard-item ${isYou ? 'leaderboard-you' : ''}">
-                            <div class="leaderboard-rank ${rankClass}">${index + 1}</div>
-                            <div class="leaderboard-name">${item.name} ${isYou ? '(ты)' : ''}</div>
-                            <div class="leaderboard-size">${item.size} см</div>
-                        </div>
-                    `;
-                }).join('');
-                
-            } catch (error) {
-                console.error('Leaderboard error:', error);
-                listEl.innerHTML = '<div style="text-align: center; color: #f44336; padding: 20px;">Ошибка загрузки</div>';
-            }
-        };
-        
-        // Сброс таймера
-        window.resetCooldown = function() {
-            if (timerInterval) {
-                clearInterval(timerInterval);
-            }
-            cooldown = false;
-            lastClickTime = 0;
-            circle.classList.remove('cooldown');
-            circle.classList.add('ready');
-            timerEl.textContent = '⚡ готов ⚡';
-            timerEl.classList.remove('active');
-        };
-        
-        // Покупка фона
-        window.buyBackground = function(skinId) {
-            console.log('Buying skin:', skinId);
-            if (!ownedSkins.has(skinId)) {
-                ownedSkins.add(skinId);
-                console.log('Owned skins now:', Array.from(ownedSkins));
-                updateShop();
-                updateInventoryDisplay();
-                saveToServer(); // Сохраняем инвентарь в таблицу
-            }
-        };
-        
-        // Авторизация на сервере
-        async function auth() {
-            try {
-                console.log('Auth started');
-                const response = await fetch(`${API_URL}/api/auth`, {
+                const res = await fetch(`${API_URL}/api/auth`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
@@ -977,83 +548,226 @@
                         first_name: user.first_name || ''
                     })
                 });
+                const data = await res.json();
                 
-                const data = await response.json();
-                console.log('Auth response:', data);
+                size = data.size;
+                ownedSkins = data.ownedSkins;
+                currentBackground = data.background || 'default';
+                if (data.last_click) lastClickTime = new Date(data.last_click).getTime();
                 
-                size = data.size || 0;
-                
-                // Загружаем купленные скины из таблицы
-                if (data.ownedSkins && Array.isArray(data.ownedSkins)) {
-                    ownedSkins = new Set(data.ownedSkins);
-                }
-                ownedSkins.add('default'); // Стандартный фон всегда есть
-                console.log('Loaded owned skins:', Array.from(ownedSkins));
-                
-                // Загружаем текущий фон из таблицы
-                if (data.background) {
-                    currentBackground = data.background;
-                } else {
-                    currentBackground = 'default';
-                }
-                
-                // Применяем фон
-                body.className = '';
-                body.classList.add(`bg-${currentBackground}`);
-                updateCurrentSkinDisplay();
-                
-                if (data.last_click) {
-                    lastClickTime = new Date(data.last_click).getTime();
-                }
-                
+                applyBackground(currentBackground);
                 updateSize();
-                updateStars();
                 checkCooldown();
                 
                 loading.style.display = 'none';
                 gameContent.style.display = 'block';
                 
-                // Обновляем магазин и инвентарь после загрузки
-                updateShop();
-                updateInventoryDisplay();
-                
-            } catch (error) {
-                console.error('Auth error:', error);
-                loading.style.display = 'none';
-                gameContent.style.display = 'block';
+            } catch (e) {
+                console.error('Auth error:', e);
             }
         }
-        
-        // Сохранение на сервер (в таблицу)
-        async function saveToServer() {
-            if (!user) return;
-            
-            const saveData = {
-                telegram_id: String(user.id),
-                size: size,
-                background: currentBackground,
-                ownedSkins: Array.from(ownedSkins)
-            };
-            console.log('Saving to server:', saveData);
+
+        // Клик
+        async function handleTap() {
+            if (cooldown) return;
             
             try {
-                const response = await fetch(`${API_URL}/api/update`, {
+                const res = await fetch(`${API_URL}/api/click`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(saveData)
+                    body: JSON.stringify({telegram_id: String(user.id)})
                 });
-                const result = await response.json();
-                console.log('Save result:', result);
-            } catch (error) {
-                console.error('Save error:', error);
+                
+                if (res.status === 429) {
+                    const data = await res.json();
+                    startCooldown(data.wait);
+                    return;
+                }
+                
+                const data = await res.json();
+                size = Math.max(MIN_SIZE, data.size);
+                lastClickTime = new Date(data.last_click).getTime();
+                
+                updateSize();
+                showChange(data.change);
+                startCooldown(COOLDOWN_SECONDS);
+                
+            } catch (e) {
+                console.error('Click error:', e);
             }
         }
-        
-        // Проверка кулдауна
-        function checkCooldown() {
-            const now = Date.now();
-            const diff = (now - lastClickTime) / 1000;
+
+        // Покупка скина
+        window.buySkin = async function(skinId) {
+            try {
+                const res = await fetch(`${API_URL}/api/buy`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        skin_id: skinId
+                    })
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    ownedSkins = data.ownedSkins;
+                    renderShop();
+                    renderInventory();
+                }
+            } catch (e) {
+                console.error('Buy error:', e);
+            }
+        };
+
+        // Надеть скин
+        window.equipSkin = async function(skinId) {
+            try {
+                const res = await fetch(`${API_URL}/api/equip`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        skin_id: skinId
+                    })
+                });
+                
+                if (res.ok) {
+                    currentBackground = skinId;
+                    applyBackground(skinId);
+                    renderInventory();
+                }
+            } catch (e) {
+                console.error('Equip error:', e);
+            }
+        };
+
+        // Сброс таймера
+        window.resetCooldown = async function() {
+            try {
+                await fetch(`${API_URL}/api/reset_cooldown`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({telegram_id: String(user.id)})
+                });
+                
+                if (timerInterval) clearInterval(timerInterval);
+                cooldown = false;
+                lastClickTime = 0;
+                circle.classList.remove('cooldown');
+                circle.classList.add('ready');
+                timerEl.textContent = '⚡ готов ⚡';
+                timerEl.classList.remove('active');
+                
+            } catch (e) {
+                console.error('Reset error:', e);
+            }
+        };
+
+        // Лидерборд
+        window.loadLeaderboard = async function() {
+            const listEl = document.getElementById('leaderboardList');
+            listEl.innerHTML = 'Загрузка...';
             
+            try {
+                const res = await fetch(`${API_URL}/api/leaderboard`);
+                const leaders = await res.json();
+                
+                listEl.innerHTML = leaders.map((item, i) => `
+                    <div class="leaderboard-item ${user && item.telegram_id === String(user.id) ? 'leaderboard-you' : ''}">
+                        <div class="leaderboard-rank ${i === 0 ? 'leaderboard-rank-1' : i === 1 ? 'leaderboard-rank-2' : i === 2 ? 'leaderboard-rank-3' : ''}">${i+1}</div>
+                        <div class="leaderboard-name">${item.name} ${user && item.telegram_id === String(user.id) ? '(ты)' : ''}</div>
+                        <div class="leaderboard-size">${item.size} см</div>
+                    </div>
+                `).join('');
+                
+            } catch (e) {
+                listEl.innerHTML = 'Ошибка загрузки';
+            }
+        };
+
+        // Магазин
+        function renderShop() {
+            const html = allSkins.map(skin => `
+                <div class="shop-item">
+                    <div class="shop-item-info">
+                        <div class="shop-item-icon">${skin.icon}</div>
+                        <div class="shop-item-text">
+                            <div class="shop-item-title">${skin.name} член</div>
+                            <div class="shop-item-desc">Купи этот крутой фон</div>
+                            ${ownedSkins.includes(skin.id) ? '<div class="sold-out">✅ Уже куплено</div>' : ''}
+                        </div>
+                    </div>
+                    <button class="buy-btn" onclick="buySkin('${skin.id}')" ${ownedSkins.includes(skin.id) ? 'disabled' : ''}>
+                        Купить
+                    </button>
+                </div>
+            `).join('');
+            
+            document.getElementById('shopItems').innerHTML = html;
+        }
+
+        // Инвентарь
+        function renderInventory() {
+            let html = `
+                <div class="inventory-item default">
+                    <div class="inventory-item-icon">⚪</div>
+                    <div class="inventory-item-title">Обычный</div>
+                    <div class="inventory-item-controls">
+                        ${currentBackground !== 'default' ? 
+                            `<button class="inv-btn" onclick="equipSkin('default')">Надеть</button>` : 
+                            '<span class="equipped-badge">✅ Надето</span>'}
+                    </div>
+                </div>
+            `;
+            
+            for (let skin of allSkins) {
+                if (ownedSkins.includes(skin.id)) {
+                    html += `
+                        <div class="inventory-item owned">
+                            <div class="inventory-item-icon">${skin.icon}</div>
+                            <div class="inventory-item-title">${skin.name}</div>
+                            <div class="inventory-item-controls">
+                                ${currentBackground !== skin.id ? 
+                                    `<button class="inv-btn" onclick="equipSkin('${skin.id}')">Надеть</button>` : 
+                                    '<span class="equipped-badge">✅ Надето</span>'}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+            document.getElementById('inventoryGrid').innerHTML = html;
+        }
+
+        // Применить фон
+        function applyBackground(bg) {
+            body.className = '';
+            body.classList.add(`bg-${bg}`);
+            
+            const icon = backgroundIcons[bg] || '⚪';
+            const name = backgroundNames[bg] || 'Обычный';
+            const text = `Текущий фон: ${icon} ${name}`;
+            
+            if (currentSkinDisplay) currentSkinDisplay.textContent = text;
+            if (inventoryCurrentSkin) inventoryCurrentSkin.textContent = text;
+        }
+
+        // Обновление размера
+        function updateSize() {
+            sizeEl.textContent = size;
+        }
+
+        // Показать изменение
+        function showChange(change) {
+            changeEl.innerHTML = change > 0 ? `<span class="positive">+${change}</span>` :
+                                 change < 0 ? `<span class="negative">${change}</span>` : '0';
+            setTimeout(() => changeEl.innerHTML = '', 800);
+        }
+
+        // Кулдаун
+        function checkCooldown() {
+            const diff = (Date.now() - lastClickTime) / 1000;
             if (diff < COOLDOWN_SECONDS && lastClickTime > 0) {
                 startCooldown(COOLDOWN_SECONDS - diff);
             } else {
@@ -1064,20 +778,18 @@
                 cooldown = false;
             }
         }
-        
+
         function startCooldown(seconds) {
             cooldown = true;
             circle.classList.add('cooldown');
             circle.classList.remove('ready');
             
             let timeLeft = seconds;
-            
             if (timerInterval) clearInterval(timerInterval);
             
             timerInterval = setInterval(() => {
                 timeLeft -= 0.1;
-                
-                if (timeLeft <= 0.05) {
+                if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     cooldown = false;
                     circle.classList.remove('cooldown');
@@ -1092,83 +804,19 @@
                 }
             }, 100);
         }
-        
-        // Клик
-        async function handleTap() {
-            if (cooldown) return;
-            
-            try {
-                const response = await fetch(`${API_URL}/api/click`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({telegram_id: String(user.id)})
-                });
-                
-                const data = await response.json();
-                
-                if (response.status === 429) {
-                    startCooldown(data.wait);
-                    return;
-                }
-                
-                circle.style.transform = 'translateY(8px) scale(0.95)';
-                setTimeout(() => {
-                    circle.style.transform = '';
-                }, 100);
-                
-                size = Math.max(MIN_SIZE, data.size);
-                
-                sizeEl.style.animation = 'none';
-                sizeEl.offsetHeight;
-                sizeEl.style.animation = 'sizePop 0.4s ease-out';
-                
-                updateSize();
-                showChange(data.change);
-                startCooldown(COOLDOWN_SECONDS);
-                
-            } catch (error) {
-                console.error('Click error:', error);
-            }
-        }
-        
-        function updateSize() {
-            sizeEl.textContent = size;
-        }
-        
-        function showChange(change) {
-            changeEl.innerHTML = '';
-            changeEl.style.animation = 'none';
-            changeEl.offsetHeight;
-            
-            if (change > 0) {
-                changeEl.innerHTML = `<span class="positive">+${change}</span>`;
-            } else if (change < 0) {
-                changeEl.innerHTML = `<span class="negative">${change}</span>`;
-            } else {
-                changeEl.innerHTML = `<span>0</span>`;
-            }
-            
-            changeEl.style.animation = 'floatChange 0.8s ease-out forwards';
-        }
-        
-        // Запуск
+
+        // Старт
         if (!user) {
-            usernameEl.textContent = 'Тестовый режим';
-            avatar.textContent = '👤';
+            usernameEl.textContent = 'Тест';
             loading.style.display = 'none';
             gameContent.style.display = 'block';
             circle.classList.add('ready');
         } else {
             usernameEl.textContent = user.first_name || user.username || 'Игрок';
-            avatar.textContent = (user.first_name ? user.first_name[0] : '👤').toUpperCase();
-            auth();
+            loadUser();
         }
         
         circle.addEventListener('click', handleTap);
-        
-        window.addEventListener('beforeunload', function() {
-            saveToServer();
-        });
     </script>
 </body>
 </html>
