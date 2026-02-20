@@ -21,25 +21,30 @@
             align-items: center;
             margin: 0;
             color: white;
-            transition: background 0.5s ease;
+            transition: background 0.5s ease, box-shadow 0.5s ease;
         }
 
+        /* Фоны с боковым освещением */
         body.bg-default {
             background: linear-gradient(145deg, #1a1e2c 0%, #2a2f42 100%);
+            box-shadow: inset 0 0 50px rgba(255, 215, 0, 0.1);
         }
 
         body.bg-neon {
             background: linear-gradient(145deg, #20002c, #6a1b9a);
+            box-shadow: inset -10px 0 30px #c77dff, inset 10px 0 30px #8e44ad;
         }
 
         body.bg-gold {
             background: linear-gradient(145deg, #7d6608, #b8860b);
+            box-shadow: inset -10px 0 30px #f1c40f, inset 10px 0 30px #b8860b;
         }
 
         body.bg-rainbow {
             background: linear-gradient(145deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
             background-size: 400% 400%;
             animation: rainbow 10s ease infinite;
+            box-shadow: inset -10px 0 50px rgba(255, 255, 255, 0.5), inset 10px 0 50px rgba(255, 255, 255, 0.5);
         }
 
         @keyframes rainbow {
@@ -50,18 +55,22 @@
 
         body.bg-dark {
             background: linear-gradient(145deg, #0a0a0a, #1a1a1a);
+            box-shadow: inset -10px 0 30px #7f8c8d, inset 10px 0 30px #2c3e50;
         }
 
         body.bg-forest {
             background: linear-gradient(145deg, #1b4d1b, #2e7d32);
+            box-shadow: inset -10px 0 30px #2ecc71, inset 10px 0 30px #27ae60;
         }
 
         body.bg-ocean {
             background: linear-gradient(145deg, #01579b, #0288d1);
+            box-shadow: inset -10px 0 30px #3498db, inset 10px 0 30px #2980b9;
         }
 
         body.bg-lava {
             background: linear-gradient(145deg, #bf360c, #d84315);
+            box-shadow: inset -10px 0 30px #e74c3c, inset 10px 0 30px #c0392b;
         }
 
         .game-container {
@@ -74,7 +83,17 @@
             width: 90%;
             max-width: 380px;
             text-align: center;
+            transition: box-shadow 0.5s ease;
         }
+
+        body.bg-default .game-container { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.2); }
+        body.bg-neon .game-container { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px #c77dff; }
+        body.bg-gold .game-container { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px #f1c40f; }
+        body.bg-rainbow .game-container { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 255, 255, 0.8); }
+        body.bg-dark .game-container { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px #7f8c8d; }
+        body.bg-forest .game-container { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px #2ecc71; }
+        body.bg-ocean .game-container { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px #3498db; }
+        body.bg-lava .game-container { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px #e74c3c; }
 
         .user-info {
             display: flex;
@@ -84,6 +103,7 @@
             padding: 8px 12px;
             background: rgba(0, 0, 0, 0.3);
             border-radius: 40px;
+            transition: background 0.5s ease;
         }
 
         .avatar {
@@ -113,6 +133,7 @@
             padding: 5px 10px;
             border-radius: 30px;
             border: 1px solid rgba(147, 112, 219, 0.3);
+            transition: all 0.5s ease;
         }
 
         .star-icon {
@@ -146,25 +167,28 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 15px 0 #b3540b, 0 20px 30px rgba(0, 0, 0, 0.6);
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-            border: 3px solid #ffb347;
+            border: 3px solid;
             position: relative;
         }
 
         .tap-area.default {
             background: radial-gradient(circle at 30% 30%, #ffd966, #e68a2e);
+            border-color: #ffb347;
+            box-shadow: 0 15px 0 #b3540b, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 30px #ffd966;
         }
 
         .tap-area.neon {
             background: radial-gradient(circle at 30% 30%, #c77dff, #8e44ad);
             border-color: #c77dff;
+            box-shadow: 0 15px 0 #6a1b9a, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 30px #c77dff;
         }
 
         .tap-area.gold {
             background: radial-gradient(circle at 30% 30%, #f1c40f, #b8860b);
             border-color: #f1c40f;
+            box-shadow: 0 15px 0 #b8860b, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 30px #f1c40f;
         }
 
         .tap-area.rainbow {
@@ -172,31 +196,36 @@
             background-size: 400% 400%;
             animation: rainbow 10s ease infinite;
             border-color: white;
+            box-shadow: 0 15px 0 #8e44ad, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 30px rgba(255, 255, 255, 0.8);
         }
 
         .tap-area.dark {
             background: radial-gradient(circle at 30% 30%, #7f8c8d, #2c3e50);
             border-color: #7f8c8d;
+            box-shadow: 0 15px 0 #1a1a1a, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 30px #7f8c8d;
         }
 
         .tap-area.forest {
             background: radial-gradient(circle at 30% 30%, #2ecc71, #27ae60);
             border-color: #2ecc71;
+            box-shadow: 0 15px 0 #1b4d1b, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 30px #2ecc71;
         }
 
         .tap-area.ocean {
             background: radial-gradient(circle at 30% 30%, #3498db, #2980b9);
             border-color: #3498db;
+            box-shadow: 0 15px 0 #01579b, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 30px #3498db;
         }
 
         .tap-area.lava {
             background: radial-gradient(circle at 30% 30%, #e74c3c, #c0392b);
             border-color: #e74c3c;
+            box-shadow: 0 15px 0 #bf360c, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 30px #e74c3c;
         }
 
         .tap-area:active {
             transform: translateY(8px) scale(0.95);
-            box-shadow: 0 8px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 8px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6), 0 0 30px currentColor;
             transition: all 0.1s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
@@ -216,13 +245,13 @@
 
         @keyframes smoothPulse {
             0% {
-                box-shadow: 0 15px 0 #b3540b, 0 0 0 0 rgba(255, 215, 0, 0.7);
+                box-shadow: 0 15px 0 #b3540b, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 30px currentColor;
             }
             50% {
-                box-shadow: 0 15px 0 #b3540b, 0 0 30px 15px rgba(255, 215, 0, 0.3);
+                box-shadow: 0 15px 0 #b3540b, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 60px currentColor;
             }
             100% {
-                box-shadow: 0 15px 0 #b3540b, 0 0 0 0 rgba(255, 215, 0, 0.7);
+                box-shadow: 0 15px 0 #b3540b, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 30px currentColor;
             }
         }
 
@@ -480,6 +509,22 @@
 
         .shop-item-info {
             text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .shop-item-icon {
+            font-size: 2.5rem;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .shop-item-text {
+            text-align: left;
         }
 
         .shop-item-title {
@@ -549,7 +594,7 @@
         .inventory-item {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 12px;
-            padding: 10px;
+            padding: 15px;
             text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -564,17 +609,21 @@
             background: rgba(255, 255, 255, 0.15);
         }
 
+        .inventory-item-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
         .inventory-item-title {
             font-weight: 600;
             font-size: 0.9rem;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
         }
 
         .inventory-item-controls {
             display: flex;
             gap: 5px;
             justify-content: center;
-            margin-top: 8px;
         }
 
         .inv-btn {
@@ -592,21 +641,6 @@
         .inv-btn:active {
             transform: translateY(2px);
             border-bottom-width: 0;
-        }
-
-        .inv-btn.trade {
-            background: #ff6b6b;
-            border-bottom-color: #c0392b;
-        }
-
-        .trade-result {
-            margin-top: 15px;
-            padding: 10px;
-            background: rgba(76, 175, 80, 0.2);
-            border-radius: 10px;
-            color: #4caf50;
-            font-size: 0.9rem;
-            display: none;
         }
 
         .sold-out {
@@ -673,8 +707,11 @@
             <!-- Сброс таймера -->
             <div class="shop-item cooldown-reset">
                 <div class="shop-item-info">
-                    <div class="shop-item-title">⏱️ Сброс таймера</div>
-                    <div class="shop-item-desc">Мгновенно сбрасывает 100 секунд</div>
+                    <div class="shop-item-icon">⏱️</div>
+                    <div class="shop-item-text">
+                        <div class="shop-item-title">Сброс таймера</div>
+                        <div class="shop-item-desc">Мгновенно сбрасывает 100 секунд</div>
+                    </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <div class="shop-item-price">
@@ -699,8 +736,6 @@
             <div class="inventory-grid" id="inventoryGrid">
                 <!-- Сюда будет подгружаться инвентарь -->
             </div>
-            
-            <div class="trade-result" id="tradeResult"></div>
         </div>
 
         <!-- Навигационное меню -->
@@ -726,7 +761,7 @@
 
     <script>
         // ==================================
-        // ВЕРСИЯ С ИНВЕНТАРЁМ И ОБМЕНОМ (20 звёзд тест)
+        // ВЕРСИЯ С КАРТИНКАМИ В МАГАЗИНЕ И ИНВЕНТАРЕ
         // ==================================
 
         const API_URL = 'https://zhenya4700.pythonanywhere.com';
@@ -753,7 +788,6 @@
         const currentSkinDisplay = document.getElementById('currentSkinDisplay');
         const inventoryCurrentSkin = document.getElementById('inventoryCurrentSkin');
         const inventoryGrid = document.getElementById('inventoryGrid');
-        const tradeResult = document.getElementById('tradeResult');
         const shopItems = document.getElementById('shopItems');
         
         // Страницы
@@ -782,15 +816,15 @@
         // Стандартный фон всегда доступен
         ownedSkins.add('default');
         
-        // Список всех доступных скинов
+        // Список всех доступных скинов с иконками
         const allSkins = [
-            { id: 'neon', name: 'Неоновый член', desc: 'Фиолетовое неоновое сияние' },
-            { id: 'gold', name: 'Золотой член', desc: 'Роскошный золотой фон' },
-            { id: 'rainbow', name: 'Радужный член', desc: 'Переливающийся радужный фон' },
-            { id: 'dark', name: 'Тёмный член', desc: 'Зловещий тёмный фон' },
-            { id: 'forest', name: 'Лесной член', desc: 'Зелёный лесной фон' },
-            { id: 'ocean', name: 'Океанский член', desc: 'Глубокий синий океан' },
-            { id: 'lava', name: 'Лавовый член', desc: 'Огненный лавовый фон' }
+            { id: 'neon', name: 'Неоновый член', desc: 'Фиолетовое неоновое сияние', icon: '💜' },
+            { id: 'gold', name: 'Золотой член', desc: 'Роскошный золотой фон', icon: '💛' },
+            { id: 'rainbow', name: 'Радужный член', desc: 'Переливающийся радужный фон', icon: '🌈' },
+            { id: 'dark', name: 'Тёмный член', desc: 'Зловещий тёмный фон', icon: '🖤' },
+            { id: 'forest', name: 'Лесной член', desc: 'Зелёный лесной фон', icon: '🌲' },
+            { id: 'ocean', name: 'Океанский член', desc: 'Глубокий синий океан', icon: '🌊' },
+            { id: 'lava', name: 'Лавовый член', desc: 'Огненный лавовый фон', icon: '🌋' }
         ];
         
         // Названия фонов
@@ -805,13 +839,26 @@
             'lava': 'Лавовый'
         };
         
+        // Иконки фонов
+        const backgroundIcons = {
+            'default': '⚪',
+            'neon': '💜',
+            'gold': '💛',
+            'rainbow': '🌈',
+            'dark': '🖤',
+            'forest': '🌲',
+            'ocean': '🌊',
+            'lava': '🌋'
+        };
+        
         // Обновление отображения
         function updateStars() {
             starAmountEl.textContent = '20'; // Всегда 20 для теста
         }
         
         function updateCurrentSkinDisplay() {
-            const text = `Текущий фон: ${backgroundNames[currentBackground]}`;
+            const icon = backgroundIcons[currentBackground] || '⚪';
+            const text = `Текущий фон: ${icon} ${backgroundNames[currentBackground]}`;
             if (currentSkinDisplay) currentSkinDisplay.textContent = text;
             if (inventoryCurrentSkin) inventoryCurrentSkin.textContent = text;
         }
@@ -843,9 +890,12 @@
                 html += `
                     <div class="shop-item">
                         <div class="shop-item-info">
-                            <div class="shop-item-title">${skin.name}</div>
-                            <div class="shop-item-desc">${skin.desc}</div>
-                            ${isOwned ? '<div class="sold-out">✅ Уже куплено</div>' : ''}
+                            <div class="shop-item-icon">${skin.icon}</div>
+                            <div class="shop-item-text">
+                                <div class="shop-item-title">${skin.name}</div>
+                                <div class="shop-item-desc">${skin.desc}</div>
+                                ${isOwned ? '<div class="sold-out">✅ Уже куплено</div>' : ''}
+                            </div>
                         </div>
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <div class="shop-item-price">
@@ -871,7 +921,8 @@
             // Всегда показываем стандартный фон
             html += `
                 <div class="inventory-item default">
-                    <div class="inventory-item-title">Обычный фон</div>
+                    <div class="inventory-item-icon">⚪</div>
+                    <div class="inventory-item-title">Обычный</div>
                     <div class="inventory-item-controls">
                         ${currentBackground !== 'default' ? 
                             `<button class="inv-btn" onclick="applyBackground('default')">Надеть</button>` : 
@@ -886,13 +937,12 @@
                     const isActive = (currentBackground === skin.id);
                     html += `
                         <div class="inventory-item owned">
-                            <div class="inventory-item-title">${skin.name}</div>
+                            <div class="inventory-item-icon">${skin.icon}</div>
+                            <div class="inventory-item-title">${skin.name.replace(' член', '')}</div>
                             <div class="inventory-item-controls">
                                 ${!isActive ? 
                                     `<button class="inv-btn" onclick="applyBackground('${skin.id}')">Надеть</button>` : 
                                     '<span style="color:#4caf50;">✅ Надето</span>'}
-                                ${skin.id === 'rainbow' ? 
-                                    `<button class="inv-btn trade" onclick="tradeRainbow()">Обменять</button>` : ''}
                             </div>
                         </div>
                     `;
@@ -900,47 +950,11 @@
             }
             
             if (ownedSkins.size <= 1) { // Только стандартный фон
-                html = '<div style="text-align: center; color: #8e94ab; padding: 20px;">У тебя пока нет предметов</div>';
+                html += '<div style="grid-column: span 2; text-align: center; color: #8e94ab; padding: 20px;">У тебя пока нет предметов</div>';
             }
             
             inventoryGrid.innerHTML = html;
         }
-        
-        // Обмен радужного члена
-        window.tradeRainbow = function() {
-            if (ownedSkins.has('rainbow')) {
-                // Список возможных фонов для получения (кроме радужного)
-                const possibleRewards = ['neon', 'gold', 'dark', 'forest', 'ocean', 'lava'].filter(s => !ownedSkins.has(s));
-                
-                if (possibleRewards.length === 0) {
-                    tradeResult.style.display = 'block';
-                    tradeResult.textContent = '❌ У тебя уже есть все скины!';
-                    setTimeout(() => {
-                        tradeResult.style.display = 'none';
-                    }, 3000);
-                    return;
-                }
-                
-                const randomReward = possibleRewards[Math.floor(Math.random() * possibleRewards.length)];
-                
-                // Забираем радужный
-                ownedSkins.delete('rainbow');
-                
-                // Даём случайный фон
-                ownedSkins.add(randomReward);
-                
-                // Показываем результат
-                tradeResult.style.display = 'block';
-                tradeResult.textContent = `🎉 Ты получил: ${backgroundNames[randomReward]}!`;
-                setTimeout(() => {
-                    tradeResult.style.display = 'none';
-                }, 3000);
-                
-                saveToServer();
-                updateShop();
-                updateInventoryDisplay();
-            }
-        };
         
         // Переключение страниц
         window.switchPage = function(page) {
