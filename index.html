@@ -65,6 +65,44 @@
             text-align: left;
         }
 
+        .coins {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 215, 0, 0.15);
+            padding: 5px 10px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .coin-icon {
+            font-size: 16px;
+        }
+
+        .coin-amount {
+            font-weight: 600;
+            color: #ffd966;
+        }
+
+        .stars {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(147, 112, 219, 0.15);
+            padding: 5px 10px;
+            border-radius: 30px;
+            border: 1px solid rgba(147, 112, 219, 0.3);
+        }
+
+        .star-icon {
+            font-size: 16px;
+        }
+
+        .star-amount {
+            font-weight: 600;
+            color: #c0a0ff;
+        }
+
         h1 {
             font-size: 2rem;
             margin-bottom: 15px;
@@ -266,10 +304,175 @@
             100% { opacity: 0; transform: translateY(-10px); }
         }
 
-        footer {
+        .nav-menu {
+            display: flex;
+            justify-content: space-around;
             margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: #8e94ab;
+            font-size: 0.9rem;
+            padding: 8px 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            flex: 1;
+            border-radius: 20px;
+        }
+
+        .nav-btn.active {
+            color: #ffd966;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+        }
+
+        .shop-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .shop-item-info {
+            text-align: left;
+        }
+
+        .shop-item-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .shop-item-desc {
             font-size: 0.8rem;
-            color: #6a6f84;
+            color: #8e94ab;
+        }
+
+        .shop-item-price {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255, 215, 0, 0.15);
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+
+        .shop-item-price.stars-price {
+            background: rgba(147, 112, 219, 0.15);
+        }
+
+        .buy-btn {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px solid #2e7d32;
+            transition: all 0.1s ease;
+        }
+
+        .buy-btn:active {
+            transform: translateY(2px);
+            border-bottom-width: 0;
+        }
+
+        .buy-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+
+        .leaderboard-rank {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #ffd966, #e68a2e);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #1a1e2c;
+        }
+
+        .leaderboard-name {
+            flex: 1;
+            text-align: left;
+        }
+
+        .leaderboard-size {
+            font-weight: bold;
+            color: #ffd966;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .donate-item {
+            background: linear-gradient(145deg, rgba(147, 112, 219, 0.2), rgba(147, 112, 219, 0.05));
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .donate-bonus {
+            color: #ffd966;
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+
+        .donate-btn {
+            background: linear-gradient(145deg, #c0a0ff, #8a6fd9);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px solid #5f4a9e;
+            transition: all 0.1s ease;
+        }
+
+        .donate-btn:active {
+            transform: translateY(2px);
+            border-bottom-width: 0;
         }
     </style>
 </head>
@@ -283,28 +486,171 @@
         <div class="user-info">
             <div class="avatar" id="avatar">👤</div>
             <div class="username" id="username">Загрузка...</div>
+            <div class="coins" id="coinsDisplay">
+                <span class="coin-icon">🪙</span>
+                <span class="coin-amount" id="coinAmount">0</span>
+            </div>
+            <div class="stars" id="starsDisplay">
+                <span class="star-icon">⭐</span>
+                <span class="star-amount" id="starAmount">0</span>
+            </div>
         </div>
 
-        <h1>⚡ MEM-метр ⚡</h1>
+        <!-- Главная страница (тапалка) -->
+        <div class="page active" id="homePage">
+            <h1>⚡ MEM-метр ⚡</h1>
 
-        <div class="tap-area" id="tapCircle"></div>
-        
-        <div class="size-display" id="sizeValue">0</div>
-        <div class="size-label">сантиметров</div>
-        <div class="change-indicator" id="changeIndicator"></div>
-        
-        <div class="timer-text" id="timerDisplay">⚡ готов ⚡</div>
-        
-        <div class="error-message" id="errorMessage"></div>
-        
-        <div class="sync-status" id="syncStatus"></div>
+            <div class="tap-area" id="tapCircle"></div>
+            
+            <div class="size-display" id="sizeValue">0</div>
+            <div class="size-label">сантиметров</div>
+            <div class="change-indicator" id="changeIndicator"></div>
+            
+            <div class="timer-text" id="timerDisplay">⚡ готов ⚡</div>
+            
+            <div class="error-message" id="errorMessage"></div>
+            
+            <div class="sync-status" id="syncStatus"></div>
+        </div>
 
-        <footer>тапай раз в секунду</footer>
+        <!-- Лидерборд -->
+        <div class="page" id="leaderboardPage">
+            <h2 style="margin-bottom: 20px;">🏆 Лучшие члены</h2>
+            <div id="leaderboardList"></div>
+            <div style="text-align: center; color: #8e94ab; margin-top: 20px;" id="leaderboardPlaceholder">
+                Загрузка лидеров...
+            </div>
+        </div>
+
+        <!-- Магазин -->
+        <div class="page" id="shopPage">
+            <h2 style="margin-bottom: 20px;">🏪 Магазин</h2>
+            
+            <div style="margin-bottom: 15px; font-size: 0.9rem; color: #8e94ab; text-align: left;">
+                Покупай за монеты 🪙
+            </div>
+            
+            <div class="shop-item">
+                <div class="shop-item-info">
+                    <div class="shop-item-title">+5 к размеру</div>
+                    <div class="shop-item-desc">Мгновенное увеличение</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="shop-item-price">
+                        <span>🪙</span>
+                        <span>50</span>
+                    </div>
+                    <button class="buy-btn" onclick="buyItem('size_boost')">Купить</button>
+                </div>
+            </div>
+            
+            <div class="shop-item">
+                <div class="shop-item-info">
+                    <div class="shop-item-title">Умножитель x2</div>
+                    <div class="shop-item-desc">Следующий клик x2</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="shop-item-price">
+                        <span>🪙</span>
+                        <span>100</span>
+                    </div>
+                    <button class="buy-btn" onclick="buyItem('multiplier')">Купить</button>
+                </div>
+            </div>
+            
+            <div class="shop-item">
+                <div class="shop-item-info">
+                    <div class="shop-item-title">Защита от минуса</div>
+                    <div class="shop-item-desc">5 кликов без отрицательных чисел</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="shop-item-price">
+                        <span>🪙</span>
+                        <span>200</span>
+                    </div>
+                    <button class="buy-btn" onclick="buyItem('protection')">Купить</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Донат -->
+        <div class="page" id="donatePage">
+            <h2 style="margin-bottom: 20px;">✨ Донат</h2>
+            
+            <div style="margin-bottom: 15px; font-size: 0.9rem; color: #8e94ab; text-align: left;">
+                Покупай за звёзды ⭐
+            </div>
+            
+            <div class="donate-item">
+                <div>
+                    <div class="shop-item-title">1000 монет</div>
+                    <div class="shop-item-desc">+1000 🪙</div>
+                    <div class="donate-bonus">+50 бонусом!</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="shop-item-price stars-price">
+                        <span>⭐</span>
+                        <span>10</span>
+                    </div>
+                    <button class="donate-btn" onclick="buyStars('coins_1000')">Купить</button>
+                </div>
+            </div>
+            
+            <div class="donate-item">
+                <div>
+                    <div class="shop-item-title">VIP статус</div>
+                    <div class="shop-item-desc">x2 монеты навсегда</div>
+                    <div class="donate-bonus">+500 монет в подарок</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="shop-item-price stars-price">
+                        <span>⭐</span>
+                        <span>50</span>
+                    </div>
+                    <button class="donate-btn" onclick="buyStars('vip')">Купить</button>
+                </div>
+            </div>
+            
+            <div class="donate-item">
+                <div>
+                    <div class="shop-item-title">Мега-пакет</div>
+                    <div class="shop-item-desc">5000 монет + легендарный скин</div>
+                    <div class="donate-bonus">+1000 бонусных монет!</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="shop-item-price stars-price">
+                        <span>⭐</span>
+                        <span>200</span>
+                    </div>
+                    <button class="donate-btn" onclick="buyStars('mega')">Купить</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Навигационное меню -->
+        <div class="nav-menu">
+            <button class="nav-btn active" id="navHome" onclick="switchPage('home')">
+                <span class="nav-icon">🏠</span>
+                <span>Дом</span>
+            </button>
+            <button class="nav-btn" id="navLeaderboard" onclick="switchPage('leaderboard')">
+                <span class="nav-icon">🏆</span>
+                <span>Топ</span>
+            </button>
+            <button class="nav-btn" id="navShop" onclick="switchPage('shop')">
+                <span class="nav-icon">🏪</span>
+                <span>Магазин</span>
+            </button>
+            <button class="nav-btn" id="navDonate" onclick="switchPage('donate')">
+                <span class="nav-icon">✨</span>
+                <span>Донат</span>
+            </button>
+        </div>
     </div>
 
     <script>
         // ==================================
-        // ВЕРСИЯ С ПЛАВНОЙ АНИМАЦИЕЙ
+        // ВЕРСИЯ С МЕНЮ И МАГАЗИНОМ
         // ==================================
 
         let tg = window.Telegram.WebApp;
@@ -323,13 +669,167 @@
         const errorEl = document.getElementById('errorMessage');
         const syncEl = document.getElementById('syncStatus');
         const circle = document.getElementById('tapCircle');
+        const coinAmountEl = document.getElementById('coinAmount');
+        const starAmountEl = document.getElementById('starAmount');
+        
+        // Страницы
+        const pages = {
+            home: document.getElementById('homePage'),
+            leaderboard: document.getElementById('leaderboardPage'),
+            shop: document.getElementById('shopPage'),
+            donate: document.getElementById('donatePage')
+        };
+        
+        const navBtns = {
+            home: document.getElementById('navHome'),
+            leaderboard: document.getElementById('navLeaderboard'),
+            shop: document.getElementById('navShop'),
+            donate: document.getElementById('navDonate')
+        };
         
         // Игровые переменные
         let size = 0;
+        let coins = 100; // Для теста дадим немного монет
+        let stars = 20; // Для теста дадим немного звёзд
         let lastClickTime = 0;
         let cooldown = false;
         let timerInterval = null;
         let isSyncing = false;
+        
+        // Обновление отображения монет и звёзд
+        function updateCurrencies() {
+            coinAmountEl.textContent = coins;
+            starAmountEl.textContent = stars;
+        }
+        
+        // Переключение страниц
+        window.switchPage = function(page) {
+            // Скрываем все страницы
+            Object.values(pages).forEach(p => p.classList.remove('active'));
+            Object.values(navBtns).forEach(b => b.classList.remove('active'));
+            
+            // Показываем выбранную
+            pages[page].classList.add('active');
+            navBtns[page].classList.add('active');
+            
+            // Если открыли лидерборд, обновляем его
+            if (page === 'leaderboard') {
+                updateLeaderboard();
+            }
+        };
+        
+        // Обновление лидерборда
+        function updateLeaderboard() {
+            const listEl = document.getElementById('leaderboardList');
+            const placeholderEl = document.getElementById('leaderboardPlaceholder');
+            
+            // Показываем заглушку
+            placeholderEl.style.display = 'block';
+            listEl.innerHTML = '';
+            
+            // TODO: Здесь будет запрос к серверу или Cloud Storage для получения топа
+            // Пока покажем тестовые данные
+            setTimeout(() => {
+                placeholderEl.style.display = 'none';
+                
+                const testData = [
+                    { name: user?.first_name || 'Ты', size: size, rank: 1 },
+                    { name: 'Игрок 2', size: 42, rank: 2 },
+                    { name: 'Игрок 3', size: 38, rank: 3 },
+                    { name: 'Игрок 4', size: 25, rank: 4 },
+                    { name: 'Игрок 5', size: 15, rank: 5 }
+                ];
+                
+                testData.sort((a, b) => b.size - a.size);
+                
+                listEl.innerHTML = testData.map((item, index) => `
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-rank">${index + 1}</div>
+                        <div class="leaderboard-name">${item.name} ${item.rank === 1 ? '👑' : ''}</div>
+                        <div class="leaderboard-size">${item.size} см</div>
+                    </div>
+                `).join('');
+            }, 500);
+        }
+        
+        // Покупка предметов за монеты
+        window.buyItem = function(itemId) {
+            switch(itemId) {
+                case 'size_boost':
+                    if (coins >= 50) {
+                        coins -= 50;
+                        size += 5;
+                        updateCurrencies();
+                        updateSize();
+                        showSync('✅ Куплено: +5 см');
+                        saveToCloud();
+                    } else {
+                        showError('Недостаточно монет!');
+                    }
+                    break;
+                case 'multiplier':
+                    if (coins >= 100) {
+                        coins -= 100;
+                        // TODO: добавить эффект умножителя
+                        showSync('✅ Куплен умножитель x2');
+                        saveToCloud();
+                    } else {
+                        showError('Недостаточно монет!');
+                    }
+                    break;
+                case 'protection':
+                    if (coins >= 200) {
+                        coins -= 200;
+                        // TODO: добавить защиту от минуса
+                        showSync('✅ Куплена защита');
+                        saveToCloud();
+                    } else {
+                        showError('Недостаточно монет!');
+                    }
+                    break;
+            }
+        };
+        
+        // Покупка за звёзды
+        window.buyStars = function(packageId) {
+            switch(packageId) {
+                case 'coins_1000':
+                    if (stars >= 10) {
+                        stars -= 10;
+                        coins += 1050; // 1000 + 50 бонус
+                        updateCurrencies();
+                        showSync('✅ Куплено 1050 монет');
+                        saveToCloud();
+                    } else {
+                        showError('Недостаточно звёзд!');
+                    }
+                    break;
+                case 'vip':
+                    if (stars >= 50) {
+                        stars -= 50;
+                        coins += 500;
+                        // TODO: добавить VIP статус
+                        updateCurrencies();
+                        showSync('✅ VIP статус активирован');
+                        saveToCloud();
+                    } else {
+                        showError('Недостаточно звёзд!');
+                    }
+                    break;
+                case 'mega':
+                    if (stars >= 200) {
+                        stars -= 200;
+                        coins += 6000; // 5000 + 1000 бонус
+                        // TODO: добавить скин
+                        updateCurrencies();
+                        showSync('✅ Мега-пакет активирован');
+                        saveToCloud();
+                    } else {
+                        showError('Недостаточно звёзд!');
+                    }
+                    break;
+            }
+        };
         
         function showError(text) {
             errorEl.textContent = text;
@@ -368,19 +868,38 @@
                         size = 0;
                     }
                     
-                    // Загружаем время последнего клика
-                    tg.CloudStorage.getItem('lastClick', function(err2, timeValue) {
-                        if (!err2 && timeValue !== null && timeValue !== undefined) {
-                            lastClickTime = parseInt(timeValue) || 0;
+                    // Загружаем монеты
+                    tg.CloudStorage.getItem('coins', function(err, coinValue) {
+                        if (!err && coinValue !== null && coinValue !== undefined) {
+                            coins = parseInt(coinValue) || 100;
                         } else {
-                            lastClickTime = 0;
+                            coins = 100;
                         }
                         
-                        updateSize();
-                        checkCooldown();
-                        
-                        loading.style.display = 'none';
-                        gameContent.style.display = 'block';
+                        // Загружаем звёзды
+                        tg.CloudStorage.getItem('stars', function(err, starValue) {
+                            if (!err && starValue !== null && starValue !== undefined) {
+                                stars = parseInt(starValue) || 20;
+                            } else {
+                                stars = 20;
+                            }
+                            
+                            // Загружаем время последнего клика
+                            tg.CloudStorage.getItem('lastClick', function(err2, timeValue) {
+                                if (!err2 && timeValue !== null && timeValue !== undefined) {
+                                    lastClickTime = parseInt(timeValue) || 0;
+                                } else {
+                                    lastClickTime = 0;
+                                }
+                                
+                                updateSize();
+                                updateCurrencies();
+                                checkCooldown();
+                                
+                                loading.style.display = 'none';
+                                gameContent.style.display = 'block';
+                            });
+                        });
                     });
                 });
             } catch (e) {
@@ -392,9 +911,12 @@
         // Запасной вариант
         function loadFromLocalStorage() {
             size = localStorage.getItem('memberSize') ? parseInt(localStorage.getItem('memberSize')) : 0;
+            coins = localStorage.getItem('coins') ? parseInt(localStorage.getItem('coins')) : 100;
+            stars = localStorage.getItem('stars') ? parseInt(localStorage.getItem('stars')) : 20;
             lastClickTime = localStorage.getItem('lastClick') ? parseInt(localStorage.getItem('lastClick')) : 0;
             
             updateSize();
+            updateCurrencies();
             checkCooldown();
             
             loading.style.display = 'none';
@@ -405,6 +927,8 @@
         function saveToCloud() {
             if (!user) {
                 localStorage.setItem('memberSize', size.toString());
+                localStorage.setItem('coins', coins.toString());
+                localStorage.setItem('stars', stars.toString());
                 localStorage.setItem('lastClick', lastClickTime.toString());
                 return;
             }
@@ -413,11 +937,19 @@
                 tg.CloudStorage.setItem('memberSize', size.toString(), function(err) {
                     if (err) console.log('Error saving size:', err);
                 });
+                tg.CloudStorage.setItem('coins', coins.toString(), function(err) {
+                    if (err) console.log('Error saving coins:', err);
+                });
+                tg.CloudStorage.setItem('stars', stars.toString(), function(err) {
+                    if (err) console.log('Error saving stars:', err);
+                });
                 tg.CloudStorage.setItem('lastClick', lastClickTime.toString(), function(err) {
                     if (err) console.log('Error saving time:', err);
                 });
             } catch (e) {
                 localStorage.setItem('memberSize', size.toString());
+                localStorage.setItem('coins', coins.toString());
+                localStorage.setItem('stars', stars.toString());
                 localStorage.setItem('lastClick', lastClickTime.toString());
             }
         }
@@ -442,18 +974,38 @@
                             }
                         }
                         
-                        tg.CloudStorage.getItem('lastClick', function(err2, timeValue) {
-                            if (!err2 && timeValue !== null && timeValue !== undefined) {
-                                let cloudTime = parseInt(timeValue) || 0;
-                                
-                                if (cloudTime > lastClickTime) {
-                                    lastClickTime = cloudTime;
+                        tg.CloudStorage.getItem('coins', function(err, coinValue) {
+                            if (!err && coinValue !== null && coinValue !== undefined) {
+                                let cloudCoins = parseInt(coinValue) || 100;
+                                if (cloudCoins !== coins) {
+                                    coins = cloudCoins;
+                                    updateCurrencies();
                                 }
                             }
                             
-                            isSyncing = false;
-                            showSync('✅ синхронизировано');
-                            resolve(true);
+                            tg.CloudStorage.getItem('stars', function(err, starValue) {
+                                if (!err && starValue !== null && starValue !== undefined) {
+                                    let cloudStars = parseInt(starValue) || 20;
+                                    if (cloudStars !== stars) {
+                                        stars = cloudStars;
+                                        updateCurrencies();
+                                    }
+                                }
+                                
+                                tg.CloudStorage.getItem('lastClick', function(err2, timeValue) {
+                                    if (!err2 && timeValue !== null && timeValue !== undefined) {
+                                        let cloudTime = parseInt(timeValue) || 0;
+                                        
+                                        if (cloudTime > lastClickTime) {
+                                            lastClickTime = cloudTime;
+                                        }
+                                    }
+                                    
+                                    isSyncing = false;
+                                    showSync('✅ синхронизировано');
+                                    resolve(true);
+                                });
+                            });
                         });
                     });
                 } catch (e) {
@@ -533,6 +1085,9 @@
             size += change;
             lastClickTime = now;
             
+            // Даём немного монет за клик
+            coins += 1;
+            
             // Сохраняем в облако
             saveToCloud();
             
@@ -543,10 +1098,11 @@
             
             // Обновляем интерфейс
             updateSize();
+            updateCurrencies();
             showChange(change);
             startCooldown(1);
             
-            showSync(`${oldSize} ${change > 0 ? '+' : ''}${change} = ${size}`);
+            showSync(`${oldSize} ${change > 0 ? '+' : ''}${change} = ${size} (+1 🪙)`);
         }
         
         function updateSize() {
