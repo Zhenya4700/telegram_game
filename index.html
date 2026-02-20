@@ -674,6 +674,7 @@
                         <div class="admin-title">Глобальный таймер</div>
                         <div class="admin-grid">
                             <button class="admin-btn wide" id="toggleTimerBtn" onclick="toggleGlobalTimer()">⏯️ Включить таймер</button>
+                            <button class="admin-btn wide" onclick="restartTimer()">🔄 Запустить заново (30 дней)</button>
                             <button class="admin-btn" onclick="setTimerDays(30)">📅 30 дней</button>
                             <button class="admin-btn" onclick="setTimerDays(7)">📅 7 дней</button>
                             <button class="admin-btn" onclick="setTimerDays(1)">📅 1 день</button>
@@ -684,9 +685,17 @@
                     <div class="admin-section">
                         <div class="admin-title">Управление размером</div>
                         <div class="admin-grid">
-                            <button class="admin-btn wide" onclick="clearAllSizes()">🧹 Очистить всех</button>
+                            <button class="admin-btn wide" onclick="clearAllSizes()">🧹 Сбросить ВСЕМ размер до 0</button>
                             <button class="admin-btn wide" onclick="clearUserPrompt()">👤 Очистить пользователя</button>
                             <button class="admin-btn wide" onclick="setMySize()">📏 Изменить свой размер</button>
+                        </div>
+                    </div>
+
+                    <div class="admin-section">
+                        <div class="admin-title">Управление пользователями</div>
+                        <div class="admin-grid">
+                            <button class="admin-btn" onclick="promptBanUser()">🔨 Забанить пользователя</button>
+                            <button class="admin-btn" onclick="promptUnbanUser()">✅ Разбанить пользователя</button>
                         </div>
                     </div>
 
@@ -853,6 +862,12 @@
                         first_name: user.first_name || ''
                     })
                 });
+                
+                if (res.status === 403) {
+                    alert('Вы забанены!');
+                    return;
+                }
+                
                 const data = await res.json();
                 
                 size = data.size;
@@ -1048,7 +1063,8 @@
                             <div class="leaderboard-rank ${i === 0 ? 'leaderboard-rank-1' : i === 1 ? 'leaderboard-rank-2' : i === 2 ? 'leaderboard-rank-3' : ''}">${i+1}</div>
                             <div class="leaderboard-name">${displayName}</div>
                             <div class="leaderboard-size">${item.size} см</div>
-                            <a href="tg://user?id=${item.telegram_id}" class="profile-btn">👤</a>
+                            <button class="profile-btn" onclick="copyUserId('${item.telegram_id}')" title="Копировать ID">📋</button>
+                            <a href="tg://user?id=${item.telegram_id}" class="profile-btn" title="Открыть профиль">👤</a>
                         </div>
                     `;
                 }).join('');
@@ -1056,6 +1072,15 @@
             } catch (e) {
                 listEl.innerHTML = 'Ошибка загрузки';
             }
+        };
+
+        // Копирование ID
+        window.copyUserId = function(userId) {
+            navigator.clipboard.writeText(userId).then(() => {
+                alert('ID скопирован: ' + userId);
+            }).catch(() => {
+                alert('Ошибка копирования');
+            });
         };
 
         // Магазин
@@ -1203,6 +1228,33 @@
             }
         };
 
+        window.restartTimer = async function() {
+            if (!confirm('Запустить таймер заново на 30 дней?')) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/admin/timer/restart`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id)
+                    })
+                });
+                
+                const data = await res.json();
+                if (res.ok) {
+                    globalTimerEndDate = data.end_date;
+                    globalTimerEnabled = true;
+                    updateGlobalTimer();
+                    alert('✅ Таймер перезапущен на 30 дней');
+                } else {
+                    alert('❌ Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+                }
+            } catch (e) {
+                console.error('Restart timer error:', e);
+                alert('❌ Ошибка соединения');
+            }
+        };
+
         window.setTimerDays = async function(days) {
             try {
                 await fetch(`${API_URL}/api/admin/timer/set`, {
@@ -1227,7 +1279,7 @@
         };
 
         window.clearAllSizes = async function() {
-            if (!confirm('Точно очистить размер у всех пользователей?')) return;
+            if (!confirm('Точно очистить размер у ВСЕХ пользователей?')) return;
             
             try {
                 await fetch(`${API_URL}/api/admin/clear_all`, {
@@ -1237,7 +1289,7 @@
                         telegram_id: String(user.id)
                     })
                 });
-                alert('Все размеры очищены');
+                alert('✅ Все размеры очищены');
             } catch (e) {
                 console.error('Clear all error:', e);
             }
@@ -1260,7 +1312,7 @@
                         target_id: targetId
                     })
                 });
-                alert(`Размер пользователя ${targetId} очищен`);
+                alert(`✅ Размер пользователя ${targetId} очищен`);
             } catch (e) {
                 console.error('Clear user error:', e);
             }
@@ -1295,6 +1347,8 @@
                     })
                 });
                 
+                const data = await res.json();
+                
                 if (res.ok) {
                     ownedSkins = ['default'];
                     currentBackground = 'default';
@@ -1302,9 +1356,12 @@
                     renderInventory();
                     renderShop();
                     alert('✅ Инвентарь очищен');
+                } else {
+                    alert('❌ Ошибка: ' + (data.error || 'Неизвестная ошибка'));
                 }
             } catch (e) {
                 console.error('Clear inventory error:', e);
+                alert('❌ Ошибка соединения');
             }
         };
 
@@ -1319,7 +1376,7 @@
                     })
                 });
                 clickCooldown = seconds;
-                alert(`Таймер кликов установлен на ${seconds} секунд`);
+                alert(`✅ Таймер кликов установлен на ${seconds} секунд`);
             } catch (e) {
                 console.error('Set cooldown error:', e);
             }
@@ -1329,6 +1386,69 @@
             const seconds = prompt('Введите количество секунд:');
             if (seconds && !isNaN(seconds)) {
                 setCooldown(parseInt(seconds));
+            }
+        };
+
+        // Бан/разбан
+        window.promptBanUser = function() {
+            const userId = prompt('Введите Telegram ID пользователя для бана:');
+            if (userId) {
+                banUser(userId);
+            }
+        };
+
+        window.promptUnbanUser = function() {
+            const userId = prompt('Введите Telegram ID пользователя для разбана:');
+            if (userId) {
+                unbanUser(userId);
+            }
+        };
+
+        window.banUser = async function(targetId) {
+            if (!confirm(`Забанить пользователя ${targetId}?`)) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/admin/ban_user`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        target_id: targetId
+                    })
+                });
+                
+                if (res.ok) {
+                    alert('✅ Пользователь забанен');
+                } else {
+                    const data = await res.json();
+                    alert('❌ Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+                }
+            } catch (e) {
+                console.error('Ban error:', e);
+                alert('❌ Ошибка соединения');
+            }
+        };
+
+        window.unbanUser = async function(targetId) {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/unban_user`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        target_id: targetId
+                    })
+                });
+                
+                if (res.ok) {
+                    alert('✅ Пользователь разбанен');
+                } else {
+                    const data = await res.json();
+                    alert('❌ Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+                }
+            } catch (e) {
+                console.error('Unban error:', e);
+                alert('❌ Ошибка соединения');
             }
         };
 
