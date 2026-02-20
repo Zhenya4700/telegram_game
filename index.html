@@ -142,7 +142,6 @@
             width: 200px;
             height: 200px;
             margin: 15px auto 20px;
-            background: radial-gradient(circle at 30% 30%, #ffd966, #e68a2e);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -154,6 +153,47 @@
             position: relative;
         }
 
+        .tap-area.default {
+            background: radial-gradient(circle at 30% 30%, #ffd966, #e68a2e);
+        }
+
+        .tap-area.neon {
+            background: radial-gradient(circle at 30% 30%, #c77dff, #8e44ad);
+            border-color: #c77dff;
+        }
+
+        .tap-area.gold {
+            background: radial-gradient(circle at 30% 30%, #f1c40f, #b8860b);
+            border-color: #f1c40f;
+        }
+
+        .tap-area.rainbow {
+            background: linear-gradient(145deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+            background-size: 400% 400%;
+            animation: rainbow 10s ease infinite;
+            border-color: white;
+        }
+
+        .tap-area.dark {
+            background: radial-gradient(circle at 30% 30%, #7f8c8d, #2c3e50);
+            border-color: #7f8c8d;
+        }
+
+        .tap-area.forest {
+            background: radial-gradient(circle at 30% 30%, #2ecc71, #27ae60);
+            border-color: #2ecc71;
+        }
+
+        .tap-area.ocean {
+            background: radial-gradient(circle at 30% 30%, #3498db, #2980b9);
+            border-color: #3498db;
+        }
+
+        .tap-area.lava {
+            background: radial-gradient(circle at 30% 30%, #e74c3c, #c0392b);
+            border-color: #e74c3c;
+        }
+
         .tap-area:active {
             transform: translateY(8px) scale(0.95);
             box-shadow: 0 8px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6);
@@ -163,7 +203,6 @@
         .tap-area.cooldown {
             opacity: 0.5;
             filter: grayscale(80%);
-            background: #cccccc;
             cursor: not-allowed;
             pointer-events: none;
             transform: translateY(5px) scale(0.98);
@@ -482,6 +521,8 @@
         .buy-btn:disabled {
             opacity: 0.3;
             cursor: not-allowed;
+            background: #7f8c8d;
+            border-bottom-color: #4a4a4a;
         }
 
         .current-skin {
@@ -516,6 +557,11 @@
         .inventory-item.owned {
             border-color: #ffd966;
             background: rgba(255, 215, 0, 0.1);
+        }
+
+        .inventory-item.default {
+            border-color: #ffffff;
+            background: rgba(255, 255, 255, 0.15);
         }
 
         .inventory-item-title {
@@ -562,6 +608,12 @@
             font-size: 0.9rem;
             display: none;
         }
+
+        .sold-out {
+            color: #ff6b6b;
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body class="bg-default" id="body">
@@ -576,7 +628,7 @@
             <div class="username" id="username">Загрузка...</div>
             <div class="stars" id="starsDisplay">
                 <span class="star-icon">⭐</span>
-                <span class="star-amount" id="starAmount">0</span>
+                <span class="star-amount" id="starAmount">20</span>
             </div>
         </div>
 
@@ -584,7 +636,7 @@
         <div class="page active" id="homePage">
             <h1>⚡ MEM-метр ⚡</h1>
 
-            <div class="tap-area" id="tapCircle"></div>
+            <div class="tap-area default" id="tapCircle"></div>
             
             <div class="size-display" id="sizeValue">0</div>
             <div class="size-label">сантиметров</div>
@@ -615,7 +667,7 @@
             <div class="current-skin" id="currentSkinDisplay">Текущий фон: Обычный</div>
             
             <div style="margin-bottom: 15px; font-size: 0.9rem; color: #8e94ab; text-align: left;">
-                Покупай фоны за звёзды ⭐ (тест: всё по 1 ⭐)
+                Покупай фоны за звёзды ⭐ (тест: 20 ⭐ не тратятся)
             </div>
             
             <!-- Сброс таймера -->
@@ -627,108 +679,14 @@
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <div class="shop-item-price">
                         <span>⭐</span>
-                        <span>1</span>
+                        <span>0</span>
                     </div>
                     <button class="buy-btn" onclick="resetCooldown()">Сбросить</button>
                 </div>
             </div>
             
-            <div class="shop-item">
-                <div class="shop-item-info">
-                    <div class="shop-item-title">Неоновый член</div>
-                    <div class="shop-item-desc">Фиолетовое неоновое сияние</div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div class="shop-item-price">
-                        <span>⭐</span>
-                        <span>1</span>
-                    </div>
-                    <button class="buy-btn" onclick="buyBackground('neon')">Купить</button>
-                </div>
-            </div>
-            
-            <div class="shop-item">
-                <div class="shop-item-info">
-                    <div class="shop-item-title">Золотой член</div>
-                    <div class="shop-item-desc">Роскошный золотой фон</div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div class="shop-item-price">
-                        <span>⭐</span>
-                        <span>1</span>
-                    </div>
-                    <button class="buy-btn" onclick="buyBackground('gold')">Купить</button>
-                </div>
-            </div>
-            
-            <div class="shop-item">
-                <div class="shop-item-info">
-                    <div class="shop-item-title">Радужный член</div>
-                    <div class="shop-item-desc">Переливающийся радужный фон</div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div class="shop-item-price">
-                        <span>⭐</span>
-                        <span>1</span>
-                    </div>
-                    <button class="buy-btn" onclick="buyBackground('rainbow')">Купить</button>
-                </div>
-            </div>
-            
-            <div class="shop-item">
-                <div class="shop-item-info">
-                    <div class="shop-item-title">Тёмный член</div>
-                    <div class="shop-item-desc">Зловещий тёмный фон</div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div class="shop-item-price">
-                        <span>⭐</span>
-                        <span>1</span>
-                    </div>
-                    <button class="buy-btn" onclick="buyBackground('dark')">Купить</button>
-                </div>
-            </div>
-            
-            <div class="shop-item">
-                <div class="shop-item-info">
-                    <div class="shop-item-title">Лесной член</div>
-                    <div class="shop-item-desc">Зелёный лесной фон</div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div class="shop-item-price">
-                        <span>⭐</span>
-                        <span>1</span>
-                    </div>
-                    <button class="buy-btn" onclick="buyBackground('forest')">Купить</button>
-                </div>
-            </div>
-            
-            <div class="shop-item">
-                <div class="shop-item-info">
-                    <div class="shop-item-title">Океанский член</div>
-                    <div class="shop-item-desc">Глубокий синий океан</div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div class="shop-item-price">
-                        <span>⭐</span>
-                        <span>1</span>
-                    </div>
-                    <button class="buy-btn" onclick="buyBackground('ocean')">Купить</button>
-                </div>
-            </div>
-            
-            <div class="shop-item">
-                <div class="shop-item-info">
-                    <div class="shop-item-title">Лавовый член</div>
-                    <div class="shop-item-desc">Огненный лавовый фон</div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div class="shop-item-price">
-                        <span>⭐</span>
-                        <span>1</span>
-                    </div>
-                    <button class="buy-btn" onclick="buyBackground('lava')">Купить</button>
-                </div>
+            <div id="shopItems">
+                <!-- Сюда будут подгружаться доступные для покупки скины -->
             </div>
         </div>
 
@@ -768,7 +726,7 @@
 
     <script>
         // ==================================
-        // ВЕРСИЯ С ИНВЕНТАРЁМ И ОБМЕНОМ
+        // ВЕРСИЯ С ИНВЕНТАРЁМ И ОБМЕНОМ (20 звёзд тест)
         // ==================================
 
         const API_URL = 'https://zhenya4700.pythonanywhere.com';
@@ -796,6 +754,7 @@
         const inventoryCurrentSkin = document.getElementById('inventoryCurrentSkin');
         const inventoryGrid = document.getElementById('inventoryGrid');
         const tradeResult = document.getElementById('tradeResult');
+        const shopItems = document.getElementById('shopItems');
         
         // Страницы
         const pages = {
@@ -814,20 +773,25 @@
         
         // Игровые переменные
         let size = 0;
-        let stars = 100;
         let lastClickTime = 0;
         let cooldown = false;
         let timerInterval = null;
         let currentBackground = 'default';
-        let inventory = {
-            'neon': 0,
-            'gold': 0,
-            'rainbow': 0,
-            'dark': 0,
-            'forest': 0,
-            'ocean': 0,
-            'lava': 0
-        };
+        let ownedSkins = new Set(); // Set купленных скинов
+        
+        // Стандартный фон всегда доступен
+        ownedSkins.add('default');
+        
+        // Список всех доступных скинов
+        const allSkins = [
+            { id: 'neon', name: 'Неоновый член', desc: 'Фиолетовое неоновое сияние' },
+            { id: 'gold', name: 'Золотой член', desc: 'Роскошный золотой фон' },
+            { id: 'rainbow', name: 'Радужный член', desc: 'Переливающийся радужный фон' },
+            { id: 'dark', name: 'Тёмный член', desc: 'Зловещий тёмный фон' },
+            { id: 'forest', name: 'Лесной член', desc: 'Зелёный лесной фон' },
+            { id: 'ocean', name: 'Океанский член', desc: 'Глубокий синий океан' },
+            { id: 'lava', name: 'Лавовый член', desc: 'Огненный лавовый фон' }
+        ];
         
         // Названия фонов
         const backgroundNames = {
@@ -841,37 +805,61 @@
             'lava': 'Лавовый'
         };
         
-        // Цены фонов (для теста всё по 1)
-        const backgroundPrices = {
-            'neon': 1,
-            'gold': 1,
-            'rainbow': 1,
-            'dark': 1,
-            'forest': 1,
-            'ocean': 1,
-            'lava': 1
-        };
-        
         // Обновление отображения
         function updateStars() {
-            starAmountEl.textContent = stars;
+            starAmountEl.textContent = '20'; // Всегда 20 для теста
         }
         
         function updateCurrentSkinDisplay() {
-            currentSkinDisplay.textContent = `Текущий фон: ${backgroundNames[currentBackground]}`;
-            if (inventoryCurrentSkin) {
-                inventoryCurrentSkin.textContent = `Текущий фон: ${backgroundNames[currentBackground]}`;
+            const text = `Текущий фон: ${backgroundNames[currentBackground]}`;
+            if (currentSkinDisplay) currentSkinDisplay.textContent = text;
+            if (inventoryCurrentSkin) inventoryCurrentSkin.textContent = text;
+        }
+        
+        // Обновление цвета кнопки
+        function updateButtonSkin(skinId) {
+            circle.className = 'tap-area';
+            circle.classList.add(skinId);
+            if (!cooldown) {
+                circle.classList.add('ready');
+            } else {
+                circle.classList.add('cooldown');
             }
         }
         
         // Применить фон
         function applyBackground(bgName) {
-            body.className = '';
-            body.classList.add(`bg-${bgName}`);
             currentBackground = bgName;
+            updateButtonSkin(bgName);
             updateCurrentSkinDisplay();
             saveToServer();
-            updateInventoryDisplay();
+        }
+        
+        // Обновление магазина
+        function updateShop() {
+            let html = '';
+            for (let skin of allSkins) {
+                const isOwned = ownedSkins.has(skin.id);
+                html += `
+                    <div class="shop-item">
+                        <div class="shop-item-info">
+                            <div class="shop-item-title">${skin.name}</div>
+                            <div class="shop-item-desc">${skin.desc}</div>
+                            ${isOwned ? '<div class="sold-out">✅ Уже куплено</div>' : ''}
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="shop-item-price">
+                                <span>⭐</span>
+                                <span>1</span>
+                            </div>
+                            <button class="buy-btn" onclick="buyBackground('${skin.id}')" ${isOwned ? 'disabled' : ''}>
+                                ${isOwned ? 'Куплено' : 'Купить'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            shopItems.innerHTML = html;
         }
         
         // Обновление инвентаря
@@ -879,22 +867,39 @@
             if (!inventoryGrid) return;
             
             let html = '';
-            for (let [bgName, count] of Object.entries(inventory)) {
-                if (count > 0) {
-                    const isActive = (currentBackground === bgName);
+            
+            // Всегда показываем стандартный фон
+            html += `
+                <div class="inventory-item default">
+                    <div class="inventory-item-title">Обычный фон</div>
+                    <div class="inventory-item-controls">
+                        ${currentBackground !== 'default' ? 
+                            `<button class="inv-btn" onclick="applyBackground('default')">Надеть</button>` : 
+                            '<span style="color:#4caf50;">✅ Надето</span>'}
+                    </div>
+                </div>
+            `;
+            
+            // Показываем купленные скины
+            for (let skin of allSkins) {
+                if (ownedSkins.has(skin.id)) {
+                    const isActive = (currentBackground === skin.id);
                     html += `
                         <div class="inventory-item owned">
-                            <div class="inventory-item-title">${backgroundNames[bgName]}</div>
+                            <div class="inventory-item-title">${skin.name}</div>
                             <div class="inventory-item-controls">
-                                ${!isActive ? `<button class="inv-btn" onclick="applyBackground('${bgName}')">Надеть</button>` : '<span style="color:#4caf50;">✅ Надето</span>'}
-                                ${bgName === 'rainbow' ? `<button class="inv-btn trade" onclick="tradeRainbow()">Обменять</button>` : ''}
+                                ${!isActive ? 
+                                    `<button class="inv-btn" onclick="applyBackground('${skin.id}')">Надеть</button>` : 
+                                    '<span style="color:#4caf50;">✅ Надето</span>'}
+                                ${skin.id === 'rainbow' ? 
+                                    `<button class="inv-btn trade" onclick="tradeRainbow()">Обменять</button>` : ''}
                             </div>
                         </div>
                     `;
                 }
             }
             
-            if (html === '') {
+            if (ownedSkins.size <= 1) { // Только стандартный фон
                 html = '<div style="text-align: center; color: #8e94ab; padding: 20px;">У тебя пока нет предметов</div>';
             }
             
@@ -903,16 +908,26 @@
         
         // Обмен радужного члена
         window.tradeRainbow = function() {
-            if (inventory['rainbow'] > 0) {
+            if (ownedSkins.has('rainbow')) {
                 // Список возможных фонов для получения (кроме радужного)
-                const possibleRewards = ['neon', 'gold', 'dark', 'forest', 'ocean', 'lava'];
+                const possibleRewards = ['neon', 'gold', 'dark', 'forest', 'ocean', 'lava'].filter(s => !ownedSkins.has(s));
+                
+                if (possibleRewards.length === 0) {
+                    tradeResult.style.display = 'block';
+                    tradeResult.textContent = '❌ У тебя уже есть все скины!';
+                    setTimeout(() => {
+                        tradeResult.style.display = 'none';
+                    }, 3000);
+                    return;
+                }
+                
                 const randomReward = possibleRewards[Math.floor(Math.random() * possibleRewards.length)];
                 
                 // Забираем радужный
-                inventory['rainbow']--;
+                ownedSkins.delete('rainbow');
                 
                 // Даём случайный фон
-                inventory[randomReward] = (inventory[randomReward] || 0) + 1;
+                ownedSkins.add(randomReward);
                 
                 // Показываем результат
                 tradeResult.style.display = 'block';
@@ -922,6 +937,7 @@
                 }, 3000);
                 
                 saveToServer();
+                updateShop();
                 updateInventoryDisplay();
             }
         };
@@ -938,6 +954,8 @@
                 updateLeaderboard();
             } else if (page === 'inventory') {
                 updateInventoryDisplay();
+            } else if (page === 'shop') {
+                updateShop();
             }
         };
         
@@ -974,35 +992,26 @@
             }
         };
         
-        // Сброс таймера за 1 звезду
+        // Сброс таймера
         window.resetCooldown = function() {
-            if (stars >= 1) {
-                stars -= 1;
-                updateStars();
-                
-                if (timerInterval) {
-                    clearInterval(timerInterval);
-                }
-                cooldown = false;
-                lastClickTime = 0;
-                circle.classList.remove('cooldown');
-                circle.classList.add('ready');
-                timerEl.textContent = '⚡ готов ⚡';
-                timerEl.classList.remove('active');
-                
-                saveToServer();
+            if (timerInterval) {
+                clearInterval(timerInterval);
             }
+            cooldown = false;
+            lastClickTime = 0;
+            circle.classList.remove('cooldown');
+            circle.classList.add('ready');
+            timerEl.textContent = '⚡ готов ⚡';
+            timerEl.classList.remove('active');
         };
         
         // Покупка фона
-        window.buyBackground = function(bgName) {
-            const price = backgroundPrices[bgName];
-            if (stars >= price) {
-                stars -= price;
-                inventory[bgName] = (inventory[bgName] || 0) + 1;
-                updateStars();
-                saveToServer();
+        window.buyBackground = function(skinId) {
+            if (!ownedSkins.has(skinId)) {
+                ownedSkins.add(skinId);
+                updateShop();
                 updateInventoryDisplay();
+                saveToServer();
             }
         };
         
@@ -1022,15 +1031,17 @@
                 const data = await response.json();
                 
                 size = data.size || 0;
-                stars = data.stars || 100;
                 
-                // Загружаем инвентарь
-                if (data.inventory) {
-                    inventory = data.inventory;
+                // Загружаем купленные скины
+                if (data.ownedSkins) {
+                    ownedSkins = new Set(data.ownedSkins);
                 }
+                ownedSkins.add('default'); // Стандартный фон всегда есть
                 
                 if (data.background) {
                     applyBackground(data.background);
+                } else {
+                    applyBackground('default');
                 }
                 
                 if (data.last_click) {
@@ -1039,7 +1050,6 @@
                 
                 updateSize();
                 updateStars();
-                updateCurrentSkinDisplay();
                 checkCooldown();
                 
                 loading.style.display = 'none';
@@ -1063,9 +1073,8 @@
                     body: JSON.stringify({
                         telegram_id: String(user.id),
                         size: size,
-                        stars: stars,
                         background: currentBackground,
-                        inventory: inventory
+                        ownedSkins: Array.from(ownedSkins)
                     })
                 });
             } catch (error) {
