@@ -163,69 +163,21 @@
             width: 200px;
             height: 200px;
             margin: 15px auto 20px;
+            background: radial-gradient(circle at 30% 30%, #ffd966, #e68a2e);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 15px 0 #b3540b, 0 20px 30px rgba(0, 0, 0, 0.6);
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-            border: 3px solid;
+            border: 3px solid #ffb347;
             position: relative;
-        }
-
-        .tap-area.default {
-            background: radial-gradient(circle at 30% 30%, #ffd966, #e68a2e);
-            border-color: #ffb347;
-            box-shadow: 0 15px 0 #b3540b, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 30px #ffd966;
-        }
-
-        .tap-area.neon {
-            background: radial-gradient(circle at 30% 30%, #c77dff, #8e44ad);
-            border-color: #c77dff;
-            box-shadow: 0 15px 0 #6a1b9a, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 30px #c77dff;
-        }
-
-        .tap-area.gold {
-            background: radial-gradient(circle at 30% 30%, #f1c40f, #b8860b);
-            border-color: #f1c40f;
-            box-shadow: 0 15px 0 #b8860b, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 30px #f1c40f;
-        }
-
-        .tap-area.rainbow {
-            background: linear-gradient(145deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
-            background-size: 400% 400%;
-            animation: rainbow 10s ease infinite;
-            border-color: white;
-            box-shadow: 0 15px 0 #8e44ad, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 30px rgba(255, 255, 255, 0.8);
-        }
-
-        .tap-area.dark {
-            background: radial-gradient(circle at 30% 30%, #7f8c8d, #2c3e50);
-            border-color: #7f8c8d;
-            box-shadow: 0 15px 0 #1a1a1a, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 30px #7f8c8d;
-        }
-
-        .tap-area.forest {
-            background: radial-gradient(circle at 30% 30%, #2ecc71, #27ae60);
-            border-color: #2ecc71;
-            box-shadow: 0 15px 0 #1b4d1b, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 30px #2ecc71;
-        }
-
-        .tap-area.ocean {
-            background: radial-gradient(circle at 30% 30%, #3498db, #2980b9);
-            border-color: #3498db;
-            box-shadow: 0 15px 0 #01579b, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 30px #3498db;
-        }
-
-        .tap-area.lava {
-            background: radial-gradient(circle at 30% 30%, #e74c3c, #c0392b);
-            border-color: #e74c3c;
-            box-shadow: 0 15px 0 #bf360c, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 30px #e74c3c;
         }
 
         .tap-area:active {
             transform: translateY(8px) scale(0.95);
-            box-shadow: 0 8px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6), 0 0 30px currentColor;
+            box-shadow: 0 8px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6);
             transition: all 0.1s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
@@ -245,13 +197,13 @@
 
         @keyframes smoothPulse {
             0% {
-                box-shadow: 0 15px 0 #b3540b, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 30px currentColor;
+                box-shadow: 0 15px 0 #b3540b, 0 20px 30px rgba(0, 0, 0, 0.6);
             }
             50% {
-                box-shadow: 0 15px 0 #b3540b, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 60px currentColor;
+                box-shadow: 0 15px 0 #b3540b, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 30px #ffd966;
             }
             100% {
-                box-shadow: 0 15px 0 #b3540b, 0 20px 30px rgba(0, 0, 0, 0.6), 0 0 30px currentColor;
+                box-shadow: 0 15px 0 #b3540b, 0 20px 30px rgba(0, 0, 0, 0.6);
             }
         }
 
@@ -761,7 +713,7 @@
 
     <script>
         // ==================================
-        // ВЕРСИЯ С КАРТИНКАМИ В МАГАЗИНЕ И ИНВЕНТАРЕ
+        // ВЕРСИЯ С СОХРАНЕНИЕМ ИНВЕНТАРЯ В ТАБЛИЦЕ
         // ==================================
 
         const API_URL = 'https://zhenya4700.pythonanywhere.com';
@@ -863,23 +815,13 @@
             if (inventoryCurrentSkin) inventoryCurrentSkin.textContent = text;
         }
         
-        // Обновление цвета кнопки
-        function updateButtonSkin(skinId) {
-            circle.className = 'tap-area';
-            circle.classList.add(skinId);
-            if (!cooldown) {
-                circle.classList.add('ready');
-            } else {
-                circle.classList.add('cooldown');
-            }
-        }
-        
         // Применить фон
         function applyBackground(bgName) {
             currentBackground = bgName;
-            updateButtonSkin(bgName);
+            body.className = '';
+            body.classList.add(`bg-${bgName}`);
             updateCurrentSkinDisplay();
-            saveToServer();
+            saveToServer(); // Сохраняем в таблицу
         }
         
         // Обновление магазина
@@ -1025,7 +967,7 @@
                 ownedSkins.add(skinId);
                 updateShop();
                 updateInventoryDisplay();
-                saveToServer();
+                saveToServer(); // Сохраняем инвентарь в таблицу
             }
         };
         
@@ -1046,12 +988,13 @@
                 
                 size = data.size || 0;
                 
-                // Загружаем купленные скины
+                // Загружаем купленные скины из таблицы
                 if (data.ownedSkins) {
                     ownedSkins = new Set(data.ownedSkins);
                 }
                 ownedSkins.add('default'); // Стандартный фон всегда есть
                 
+                // Загружаем текущий фон из таблицы
                 if (data.background) {
                     applyBackground(data.background);
                 } else {
@@ -1076,7 +1019,7 @@
             }
         }
         
-        // Сохранение на сервер
+        // Сохранение на сервер (в таблицу)
         async function saveToServer() {
             if (!user) return;
             
