@@ -611,7 +611,7 @@
                     <div class="username" id="username">Загрузка...</div>
                     <div class="stars">
                         <span class="star-icon">⭐</span>
-                        <span class="star-amount" id="starAmount">20</span>
+                        <span class="star-amount" id="starAmount">0</span>
                     </div>
                 </div>
             </div>
@@ -641,13 +641,13 @@
                     <h2>🏪 Магазин</h2>
                     <div class="current-skin" id="currentSkinDisplay">Текущий фон: Обычный</div>
                     
-                    <!-- Сброс таймера за звезду -->
+                    <!-- Сброс таймера за 1 звезду -->
                     <div class="shop-item cooldown-reset" onclick="buyCooldownReset()">
                         <div class="shop-item-info">
                             <div class="shop-item-icon">⏱️</div>
                             <div class="shop-item-text">
                                 <div class="shop-item-title">Сброс таймера</div>
-                                <div class="shop-item-desc">Мгновенно сбрасывает ожидание (1 ⭐)</div>
+                                <div class="shop-item-desc">Мгновенно сбрасывает ожидание (⭐1)</div>
                             </div>
                         </div>
                         <div class="shop-item-price">
@@ -798,7 +798,7 @@
         let globalTimerInterval = null;
         let currentBackground = 'default';
         let ownedSkins = ['default'];
-        let stars = 20;
+        let stars = 0;
         let isAdmin = false;
         let isMaster = false;
         let globalTimerEnabled = false;
@@ -888,7 +888,7 @@
                 const data = await res.json();
                 
                 size = data.size;
-                stars = data.stars || 20;
+                stars = data.stars || 0;
                 ownedSkins = data.ownedSkins || ['default'];
                 currentBackground = data.background || 'default';
                 if (data.last_click) lastClickTime = new Date(data.last_click).getTime();
@@ -976,38 +976,6 @@
             }
         }
 
-        // Покупка сброса таймера за 1 звезду
-        window.buyCooldownReset = async function() {
-            if (stars < 1) {
-                alert('Недостаточно звёзд!');
-                return;
-            }
-            
-            try {
-                const res = await fetch(`${API_URL}/api/reset_cooldown`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({telegram_id: String(user.id)})
-                });
-                
-                if (res.ok) {
-                    const data = await res.json();
-                    stars = data.stars;
-                    updateStars();
-                    
-                    if (clickTimerInterval) clearInterval(clickTimerInterval);
-                    cooldown = false;
-                    lastClickTime = 0;
-                    circle.classList.remove('cooldown');
-                    circle.classList.add('ready');
-                    clickTimerEl.textContent = '⚡ готов ⚡';
-                    clickTimerEl.classList.remove('active');
-                }
-            } catch (e) {
-                console.error('Reset error:', e);
-            }
-        };
-
         // Покупка скина за реальные звёзды Telegram
         window.buySkin = async function(skinId) {
             try {
@@ -1023,13 +991,25 @@
                 if (res.status === 402) {
                     // Требуется оплата через Telegram Stars
                     const skin = allSkins.find(s => s.id === skinId);
+                    
                     tg.openInvoice({
                         currency: 'XTR',
-                        prices: [{ label: skin.name, amount: 1 }]
+                        prices: [{ 
+                            label: `${skin.name} фон`, 
+                            amount: 1
+                        }]
                     }, function(status) {
                         if (status === 'paid') {
-                            // Оплата прошла, теперь покупаем
-                            confirmBuySkin(skinId);
+                            fetch(`${API_URL}/api/add_stars`, {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({
+                                    telegram_id: String(user.id),
+                                    amount: 1
+                                })
+                            }).then(() => {
+                                confirmBuySkin(skinId);
+                            });
                         }
                     });
                 } else if (res.ok) {
@@ -1066,6 +1046,80 @@
                 }
             } catch (e) {
                 console.error('Confirm buy error:', e);
+            }
+        };
+
+        // Покупка сброса таймера за звезду
+        window.buyCooldownReset = async function() {
+            try {
+                const res = await fetch(`${API_URL}/api/reset_cooldown`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({telegram_id: String(user.id)})
+                });
+                
+                if (res.status === 402) {
+                    tg.openInvoice({
+                        currency: 'XTR',
+                        prices: [{ 
+                            label: 'Сброс таймера', 
+                            amount: 1
+                        }]
+                    }, function(status) {
+                        if (status === 'paid') {
+                            fetch(`${API_URL}/api/add_stars`, {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({
+                                    telegram_id: String(user.id),
+                                    amount: 1
+                                })
+                            }).then(() => {
+                                confirmCooldownReset();
+                            });
+                        }
+                    });
+                } else if (res.ok) {
+                    const data = await res.json();
+                    stars = data.stars;
+                    updateStars();
+                    
+                    if (clickTimerInterval) clearInterval(clickTimerInterval);
+                    cooldown = false;
+                    lastClickTime = 0;
+                    circle.classList.remove('cooldown');
+                    circle.classList.add('ready');
+                    clickTimerEl.textContent = '⚡ готов ⚡';
+                    clickTimerEl.classList.remove('active');
+                }
+            } catch (e) {
+                console.error('Reset error:', e);
+            }
+        };
+
+        window.confirmCooldownReset = async function() {
+            try {
+                const res = await fetch(`${API_URL}/api/reset_cooldown`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({telegram_id: String(user.id)})
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    stars = data.stars;
+                    updateStars();
+                    
+                    if (clickTimerInterval) clearInterval(clickTimerInterval);
+                    cooldown = false;
+                    lastClickTime = 0;
+                    circle.classList.remove('cooldown');
+                    circle.classList.add('ready');
+                    clickTimerEl.textContent = '⚡ готов ⚡';
+                    clickTimerEl.classList.remove('active');
+                }
+            } catch (e) {
+                console.error('Confirm reset error:', e);
             }
         };
 
@@ -1149,8 +1203,8 @@
                             <span>⭐</span>
                             <span>1</span>
                         </div>
-                        <button class="buy-btn" onclick="buySkin('${skin.id}')" ${ownedSkins.includes(skin.id) || stars < 1 ? 'disabled' : ''}>
-                            Купить
+                        <button class="buy-btn" onclick="buySkin('${skin.id}')" ${ownedSkins.includes(skin.id) ? 'disabled' : ''}>
+                            Купить за ⭐1
                         </button>
                     </div>
                 </div>
