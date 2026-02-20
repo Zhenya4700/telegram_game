@@ -673,7 +673,7 @@
                     <div class="admin-section">
                         <div class="admin-title">Глобальный таймер</div>
                         <div class="admin-grid">
-                            <button class="admin-btn wide" id="toggleTimerBtn">⏯️ Включить таймер</button>
+                            <button class="admin-btn wide" id="toggleTimerBtn" onclick="toggleGlobalTimer()">⏯️ Включить таймер</button>
                             <button class="admin-btn" onclick="setTimerDays(30)">📅 30 дней</button>
                             <button class="admin-btn" onclick="setTimerDays(7)">📅 7 дней</button>
                             <button class="admin-btn" onclick="setTimerDays(1)">📅 1 день</button>
@@ -687,6 +687,13 @@
                             <button class="admin-btn wide" onclick="clearAllSizes()">🧹 Очистить всех</button>
                             <button class="admin-btn wide" onclick="clearUserPrompt()">👤 Очистить пользователя</button>
                             <button class="admin-btn wide" onclick="setMySize()">📏 Изменить свой размер</button>
+                        </div>
+                    </div>
+
+                    <div class="admin-section">
+                        <div class="admin-title">Инвентарь</div>
+                        <div class="admin-grid">
+                            <button class="admin-btn wide" onclick="clearMyInventory()">🗑️ Очистить свой инвентарь</button>
                         </div>
                     </div>
 
@@ -884,6 +891,8 @@
                 
             } catch (e) {
                 console.error('Auth error:', e);
+                loading.style.display = 'none';
+                gameContent.style.display = 'flex';
             }
         }
 
@@ -1027,14 +1036,22 @@
                 const res = await fetch(`${API_URL}/api/leaderboard`);
                 const leaders = await res.json();
                 
-                listEl.innerHTML = leaders.map((item, i) => `
-                    <div class="leaderboard-item ${user && item.telegram_id === String(user.id) ? 'leaderboard-you' : ''}">
-                        <div class="leaderboard-rank ${i === 0 ? 'leaderboard-rank-1' : i === 1 ? 'leaderboard-rank-2' : i === 2 ? 'leaderboard-rank-3' : ''}">${i+1}</div>
-                        <div class="leaderboard-name">${item.name}</div>
-                        <div class="leaderboard-size">${item.size} см</div>
-                        <a href="tg://user?id=${item.telegram_id}" class="profile-btn">👤</a>
-                    </div>
-                `).join('');
+                if (leaders.length === 0) {
+                    listEl.innerHTML = '<div style="text-align: center; color: #8e94ab; padding: 20px;">Пока нет игроков</div>';
+                    return;
+                }
+                
+                listEl.innerHTML = leaders.map((item, i) => {
+                    const displayName = item.first_name || item.username || 'Игрок';
+                    return `
+                        <div class="leaderboard-item ${user && item.telegram_id === String(user.id) ? 'leaderboard-you' : ''}">
+                            <div class="leaderboard-rank ${i === 0 ? 'leaderboard-rank-1' : i === 1 ? 'leaderboard-rank-2' : i === 2 ? 'leaderboard-rank-3' : ''}">${i+1}</div>
+                            <div class="leaderboard-name">${displayName}</div>
+                            <div class="leaderboard-size">${item.size} см</div>
+                            <a href="tg://user?id=${item.telegram_id}" class="profile-btn">👤</a>
+                        </div>
+                    `;
+                }).join('');
                 
             } catch (e) {
                 listEl.innerHTML = 'Ошибка загрузки';
@@ -1174,8 +1191,7 @@
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
-                        telegram_id: String(user.id),
-                        username: user.username
+                        telegram_id: String(user.id)
                     })
                 });
                 const data = await res.json();
@@ -1194,7 +1210,6 @@
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         telegram_id: String(user.id),
-                        username: user.username,
                         days: days
                     })
                 });
@@ -1219,8 +1234,7 @@
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
-                        telegram_id: String(user.id),
-                        username: user.username
+                        telegram_id: String(user.id)
                     })
                 });
                 alert('Все размеры очищены');
@@ -1243,8 +1257,7 @@
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         telegram_id: String(user.id),
-                        username: user.username,
-                        target_telegram_id: targetId
+                        target_id: targetId
                     })
                 });
                 alert(`Размер пользователя ${targetId} очищен`);
@@ -1258,7 +1271,40 @@
             if (newSize && !isNaN(newSize)) {
                 size = parseInt(newSize);
                 updateSize();
-                // Здесь нужно отправить на сервер
+                // Отправляем на сервер
+                fetch(`${API_URL}/api/admin/set_size`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        size: parseInt(newSize)
+                    })
+                });
+            }
+        };
+
+        window.clearMyInventory = async function() {
+            if (!confirm('Точно очистить весь инвентарь? Все скины пропадут!')) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/admin/clear_inventory`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id)
+                    })
+                });
+                
+                if (res.ok) {
+                    ownedSkins = ['default'];
+                    currentBackground = 'default';
+                    applyBackground('default');
+                    renderInventory();
+                    renderShop();
+                    alert('✅ Инвентарь очищен');
+                }
+            } catch (e) {
+                console.error('Clear inventory error:', e);
             }
         };
 
@@ -1269,7 +1315,6 @@
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         telegram_id: String(user.id),
-                        username: user.username,
                         seconds: seconds
                     })
                 });
