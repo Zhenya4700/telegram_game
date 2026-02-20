@@ -666,12 +666,12 @@
                     <div class="inventory-grid" id="inventoryGrid"></div>
                 </div>
 
-                <!-- Админ-панель (видна только админу) -->
+                <!-- Админ-панель (видна только админам) -->
                 <div class="page" id="adminPage">
                     <h2>🔧 Админ-панель</h2>
                     
                     <div class="admin-section">
-                        <div class="admin-title">Глобальный таймер</div>
+                        <div class="admin-title">Глобальный таймер (500 руб)</div>
                         <div class="admin-grid">
                             <button class="admin-btn wide" id="toggleTimerBtn" onclick="toggleGlobalTimer()">⏯️ Включить таймер</button>
                             <button class="admin-btn wide" onclick="restartTimer()">🔄 Запустить заново (30 дней)</button>
@@ -703,6 +703,13 @@
                         <div class="admin-title">Инвентарь</div>
                         <div class="admin-grid">
                             <button class="admin-btn wide" onclick="clearMyInventory()">🗑️ Очистить свой инвентарь</button>
+                        </div>
+                    </div>
+
+                    <div class="admin-section">
+                        <div class="admin-title">Управление временем</div>
+                        <div class="admin-grid">
+                            <button class="admin-btn wide" onclick="resetAllCooldowns()">⏱️ Сбросить время ожидания ВСЕМ</button>
                         </div>
                     </div>
 
@@ -1168,7 +1175,7 @@
             setTimeout(() => changeEl.innerHTML = '', 800);
         }
 
-        // Кулдаун кликов
+        // Кулдаун кликов (с часами)
         function checkCooldown() {
             const diff = (Date.now() - lastClickTime) / 1000;
             if (diff < clickCooldown && lastClickTime > 0) {
@@ -1191,7 +1198,7 @@
             if (clickTimerInterval) clearInterval(clickTimerInterval);
             
             clickTimerInterval = setInterval(() => {
-                timeLeft -= 0.1;
+                timeLeft -= 1;
                 if (timeLeft <= 0) {
                     clearInterval(clickTimerInterval);
                     cooldown = false;
@@ -1200,12 +1207,13 @@
                     clickTimerEl.textContent = '⚡ готов ⚡';
                     clickTimerEl.classList.remove('active');
                 } else {
-                    const mins = Math.floor(timeLeft / 60);
-                    const secs = Math.floor(timeLeft % 60);
-                    clickTimerEl.textContent = `⏳ ${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                    const hours = Math.floor(timeLeft / 3600);
+                    const minutes = Math.floor((timeLeft % 3600) / 60);
+                    const seconds = Math.floor(timeLeft % 60);
+                    clickTimerEl.textContent = `⏳ ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                     clickTimerEl.classList.add('active');
                 }
-            }, 100);
+            }, 1000);
         }
 
         // ========== АДМИН-ФУНКЦИИ ==========
@@ -1386,6 +1394,29 @@
             const seconds = prompt('Введите количество секунд:');
             if (seconds && !isNaN(seconds)) {
                 setCooldown(parseInt(seconds));
+            }
+        };
+
+        window.resetAllCooldowns = async function() {
+            if (!confirm('Сбросить время ожидания у ВСЕХ пользователей?')) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/admin/reset_all_cooldowns`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id)
+                    })
+                });
+                
+                if (res.ok) {
+                    alert('✅ Время ожидания сброшено у всех пользователей');
+                } else {
+                    alert('❌ Ошибка');
+                }
+            } catch (e) {
+                console.error('Reset all cooldowns error:', e);
+                alert('❌ Ошибка соединения');
             }
         };
 
