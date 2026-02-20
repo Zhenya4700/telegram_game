@@ -641,13 +641,13 @@
                     <h2>🏪 Магазин</h2>
                     <div class="current-skin" id="currentSkinDisplay">Текущий фон: Обычный</div>
                     
-                    <!-- Сброс таймера за 1 звезду -->
+                    <!-- Сброс таймера за звезду -->
                     <div class="shop-item cooldown-reset" onclick="buyCooldownReset()">
                         <div class="shop-item-info">
                             <div class="shop-item-icon">⏱️</div>
                             <div class="shop-item-text">
                                 <div class="shop-item-title">Сброс таймера</div>
-                                <div class="shop-item-desc">Мгновенно сбрасывает ожидание</div>
+                                <div class="shop-item-desc">Мгновенно сбрасывает ожидание (1 ⭐)</div>
                             </div>
                         </div>
                         <div class="shop-item-price">
@@ -666,7 +666,7 @@
                     <div class="inventory-grid" id="inventoryGrid"></div>
                 </div>
 
-                <!-- Админ-панель (видна только админам) -->
+                <!-- Админ-панель -->
                 <div class="page" id="adminPage">
                     <h2>🔧 Админ-панель</h2>
                     
@@ -696,6 +696,15 @@
                         <div class="admin-grid">
                             <button class="admin-btn" onclick="promptBanUser()">🔨 Забанить пользователя</button>
                             <button class="admin-btn" onclick="promptUnbanUser()">✅ Разбанить пользователя</button>
+                        </div>
+                    </div>
+
+                    <div class="admin-section">
+                        <div class="admin-title">Управление админами (только для главного админа)</div>
+                        <div class="admin-grid">
+                            <button class="admin-btn" onclick="promptAddAdmin()">➕ Добавить админа</button>
+                            <button class="admin-btn" onclick="promptRemoveAdmin()">➖ Удалить админа</button>
+                            <button class="admin-btn wide" onclick="listAdmins()">📋 Список админов</button>
                         </div>
                     </div>
 
@@ -791,6 +800,7 @@
         let ownedSkins = ['default'];
         let stars = 20;
         let isAdmin = false;
+        let isMaster = false;
         let globalTimerEnabled = false;
         let globalTimerEndDate = null;
         let clickCooldown = 100;
@@ -883,6 +893,7 @@
                 currentBackground = data.background || 'default';
                 if (data.last_click) lastClickTime = new Date(data.last_click).getTime();
                 isAdmin = data.is_admin || false;
+                isMaster = data.is_master || false;
                 globalTimerEnabled = data.global_timer?.enabled || false;
                 globalTimerEndDate = data.global_timer?.end_date;
                 clickCooldown = data.global_timer?.cooldown || 100;
@@ -997,13 +1008,44 @@
             }
         };
 
-        // Покупка скина
+        // Покупка скина за реальные звёзды Telegram
         window.buySkin = async function(skinId) {
-            if (stars < 1) {
-                alert('Недостаточно звёзд!');
-                return;
+            try {
+                const res = await fetch(`${API_URL}/api/buy`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        skin_id: skinId
+                    })
+                });
+                
+                if (res.status === 402) {
+                    // Требуется оплата через Telegram Stars
+                    const skin = allSkins.find(s => s.id === skinId);
+                    tg.openInvoice({
+                        currency: 'XTR',
+                        prices: [{ label: skin.name, amount: 1 }]
+                    }, function(status) {
+                        if (status === 'paid') {
+                            // Оплата прошла, теперь покупаем
+                            confirmBuySkin(skinId);
+                        }
+                    });
+                } else if (res.ok) {
+                    const data = await res.json();
+                    stars = data.stars;
+                    ownedSkins = data.ownedSkins;
+                    updateStars();
+                    renderShop();
+                    renderInventory();
+                }
+            } catch (e) {
+                console.error('Buy error:', e);
             }
-            
+        };
+
+        window.confirmBuySkin = async function(skinId) {
             try {
                 const res = await fetch(`${API_URL}/api/buy`, {
                     method: 'POST',
@@ -1023,7 +1065,7 @@
                     renderInventory();
                 }
             } catch (e) {
-                console.error('Buy error:', e);
+                console.error('Confirm buy error:', e);
             }
         };
 
@@ -1331,7 +1373,6 @@
             if (newSize && !isNaN(newSize)) {
                 size = parseInt(newSize);
                 updateSize();
-                // Отправляем на сервер
                 fetch(`${API_URL}/api/admin/set_size`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -1416,6 +1457,88 @@
                 }
             } catch (e) {
                 console.error('Reset all cooldowns error:', e);
+                alert('❌ Ошибка соединения');
+            }
+        };
+
+        // ========== УПРАВЛЕНИЕ АДМИНАМИ ==========
+
+        window.promptAddAdmin = function() {
+            if (!isMaster) {
+                alert('❌ Только главный админ может добавлять админов!');
+                return;
+            }
+            const userId = prompt('Введите Telegram ID нового админа:');
+            if (userId) {
+                addAdmin(userId);
+            }
+        };
+
+        window.promptRemoveAdmin = function() {
+            if (!isMaster) {
+                alert('❌ Только главный админ может удалять админов!');
+                return;
+            }
+            const userId = prompt('Введите Telegram ID админа для удаления:');
+            if (userId) {
+                removeAdmin(userId);
+            }
+        };
+
+        window.addAdmin = async function(targetId) {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/add_admin`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        target_id: targetId
+                    })
+                });
+                
+                const data = await res.json();
+                if (res.ok) {
+                    alert(`✅ Пользователь ${targetId} теперь админ!`);
+                } else {
+                    alert('❌ Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+                }
+            } catch (e) {
+                console.error('Add admin error:', e);
+                alert('❌ Ошибка соединения');
+            }
+        };
+
+        window.removeAdmin = async function(targetId) {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/remove_admin`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        target_id: targetId
+                    })
+                });
+                
+                const data = await res.json();
+                if (res.ok) {
+                    alert(`✅ Админ ${targetId} удален!`);
+                } else {
+                    alert('❌ Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+                }
+            } catch (e) {
+                console.error('Remove admin error:', e);
+                alert('❌ Ошибка соединения');
+            }
+        };
+
+        window.listAdmins = async function() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/list_admins`);
+                const data = await res.json();
+                
+                alert(`👑 Главный админ: ${data.master_admin}\n\nАдмины:\n${data.admins.join('\n')}`);
+            } catch (e) {
+                console.error('List admins error:', e);
                 alert('❌ Ошибка соединения');
             }
         };
