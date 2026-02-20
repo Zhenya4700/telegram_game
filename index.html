@@ -15,13 +15,53 @@
 
         body {
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(145deg, #1a1e2c 0%, #2a2f42 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             margin: 0;
             color: white;
+            transition: background 0.5s ease;
+        }
+
+        body.bg-default {
+            background: linear-gradient(145deg, #1a1e2c 0%, #2a2f42 100%);
+        }
+
+        body.bg-neon {
+            background: linear-gradient(145deg, #20002c, #6a1b9a);
+        }
+
+        body.bg-gold {
+            background: linear-gradient(145deg, #7d6608, #b8860b);
+        }
+
+        body.bg-rainbow {
+            background: linear-gradient(145deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+            background-size: 400% 400%;
+            animation: rainbow 10s ease infinite;
+        }
+
+        @keyframes rainbow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body.bg-dark {
+            background: linear-gradient(145deg, #0a0a0a, #1a1a1a);
+        }
+
+        body.bg-forest {
+            background: linear-gradient(145deg, #1b4d1b, #2e7d32);
+        }
+
+        body.bg-ocean {
+            background: linear-gradient(145deg, #01579b, #0288d1);
+        }
+
+        body.bg-lava {
+            background: linear-gradient(145deg, #bf360c, #d84315);
         }
 
         .game-container {
@@ -63,25 +103,6 @@
             font-weight: 600;
             flex: 1;
             text-align: left;
-        }
-
-        .coins {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            background: rgba(255, 215, 0, 0.15);
-            padding: 5px 10px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-        }
-
-        .coin-icon {
-            font-size: 16px;
-        }
-
-        .coin-amount {
-            font-weight: 600;
-            color: #ffd966;
         }
 
         .stars {
@@ -140,13 +161,12 @@
         }
 
         .tap-area.cooldown {
-            opacity: 0.6;
-            filter: grayscale(50%);
+            opacity: 0;
             cursor: not-allowed;
             pointer-events: none;
-            transform: translateY(5px) scale(0.98);
-            box-shadow: 0 8px 0 #7a4a1f;
-            animation: none;
+            transform: translateY(5px) scale(0.95);
+            box-shadow: 0 5px 0 #7a4a1f;
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
         }
 
         .tap-area.ready {
@@ -435,13 +455,9 @@
             display: flex;
             align-items: center;
             gap: 5px;
-            background: rgba(255, 215, 0, 0.15);
+            background: rgba(147, 112, 219, 0.15);
             padding: 5px 10px;
             border-radius: 20px;
-        }
-
-        .shop-item-price.stars-price {
-            background: rgba(147, 112, 219, 0.15);
         }
 
         .buy-btn {
@@ -466,41 +482,22 @@
             cursor: not-allowed;
         }
 
-        .donate-item {
-            background: linear-gradient(145deg, rgba(147, 112, 219, 0.2), rgba(147, 112, 219, 0.05));
-            border-radius: 16px;
-            padding: 15px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .donate-bonus {
+        .current-skin {
+            font-size: 0.9rem;
             color: #ffd966;
-            font-size: 0.8rem;
-            margin-top: 4px;
-        }
-
-        .donate-btn {
-            background: linear-gradient(145deg, #c0a0ff, #8a6fd9);
-            color: white;
-            border: none;
-            padding: 8px 15px;
+            margin: 10px 0;
+            padding: 5px;
+            background: rgba(255, 215, 0, 0.1);
             border-radius: 20px;
-            font-weight: 600;
-            cursor: pointer;
-            border-bottom: 2px solid #5f4a9e;
-            transition: all 0.1s ease;
         }
 
-        .donate-btn:active {
-            transform: translateY(2px);
-            border-bottom-width: 0;
+        .cooldown-reset {
+            background: linear-gradient(145deg, #ff6b6b, #ff4757);
+            margin-top: 15px;
         }
     </style>
 </head>
-<body>
+<body class="bg-default" id="body">
     <div class="loading" id="loading">
         <div class="spinner"></div>
         <div>Загрузка игры...</div>
@@ -510,10 +507,6 @@
         <div class="user-info">
             <div class="avatar" id="avatar">👤</div>
             <div class="username" id="username">Загрузка...</div>
-            <div class="coins" id="coinsDisplay">
-                <span class="coin-icon">🪙</span>
-                <span class="coin-amount" id="coinAmount">0</span>
-            </div>
             <div class="stars" id="starsDisplay">
                 <span class="star-icon">⭐</span>
                 <span class="star-amount" id="starAmount">0</span>
@@ -533,8 +526,6 @@
             <div class="timer-text" id="timerDisplay">⚡ готов ⚡</div>
             
             <div class="error-message" id="errorMessage"></div>
-            
-            <!-- sync-status ПОЛНОСТЬЮ УДАЛЁН -->
         </div>
 
         <!-- Лидерборд -->
@@ -552,105 +543,124 @@
 
         <!-- Магазин -->
         <div class="page" id="shopPage">
-            <h2 style="margin-bottom: 20px;">🏪 Магазин</h2>
+            <h2 style="margin-bottom: 20px;">🏪 Магазин членов</h2>
+            
+            <div class="current-skin" id="currentSkinDisplay">Текущий фон: Обычный</div>
             
             <div style="margin-bottom: 15px; font-size: 0.9rem; color: #8e94ab; text-align: left;">
-                Покупай за монеты 🪙
+                Покупай фоны за звёзды ⭐ (тест: всё по 1 ⭐)
             </div>
             
-            <div class="shop-item">
+            <!-- Сброс таймера -->
+            <div class="shop-item cooldown-reset">
                 <div class="shop-item-info">
-                    <div class="shop-item-title">+5 к размеру</div>
-                    <div class="shop-item-desc">Мгновенное увеличение</div>
+                    <div class="shop-item-title">⏱️ Сброс таймера</div>
+                    <div class="shop-item-desc">Мгновенно сбрасывает 100 секунд</div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <div class="shop-item-price">
-                        <span>🪙</span>
-                        <span>50</span>
+                        <span>⭐</span>
+                        <span>1</span>
                     </div>
-                    <button class="buy-btn" onclick="buyItem('size_boost')">Купить</button>
-                </div>
-            </div>
-            
-            <div class="shop-item">
-                <div class="shop-item-info">
-                    <div class="shop-item-title">Умножитель x2</div>
-                    <div class="shop-item-desc">Следующий клик x2</div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div class="shop-item-price">
-                        <span>🪙</span>
-                        <span>100</span>
-                    </div>
-                    <button class="buy-btn" onclick="buyItem('multiplier')">Купить</button>
+                    <button class="buy-btn" onclick="resetCooldown()">Сбросить</button>
                 </div>
             </div>
             
             <div class="shop-item">
                 <div class="shop-item-info">
-                    <div class="shop-item-title">Защита от минуса</div>
-                    <div class="shop-item-desc">5 кликов без отрицательных чисел</div>
+                    <div class="shop-item-title">Неоновый член</div>
+                    <div class="shop-item-desc">Фиолетовое неоновое сияние</div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <div class="shop-item-price">
-                        <span>🪙</span>
-                        <span>200</span>
+                        <span>⭐</span>
+                        <span>1</span>
                     </div>
-                    <button class="buy-btn" onclick="buyItem('protection')">Купить</button>
+                    <button class="buy-btn" onclick="buyBackground('neon')">Купить</button>
                 </div>
             </div>
-        </div>
-
-        <!-- Донат -->
-        <div class="page" id="donatePage">
-            <h2 style="margin-bottom: 20px;">✨ Донат</h2>
             
-            <div style="margin-bottom: 15px; font-size: 0.9rem; color: #8e94ab; text-align: left;">
-                Покупай за звёзды ⭐
-            </div>
-            
-            <div class="donate-item">
-                <div>
-                    <div class="shop-item-title">1000 монет</div>
-                    <div class="shop-item-desc">+1000 🪙</div>
-                    <div class="donate-bonus">+50 бонусом!</div>
+            <div class="shop-item">
+                <div class="shop-item-info">
+                    <div class="shop-item-title">Золотой член</div>
+                    <div class="shop-item-desc">Роскошный золотой фон</div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <div class="shop-item-price stars-price">
+                    <div class="shop-item-price">
                         <span>⭐</span>
-                        <span>10</span>
+                        <span>1</span>
                     </div>
-                    <button class="donate-btn" onclick="buyStars('coins_1000')">Купить</button>
+                    <button class="buy-btn" onclick="buyBackground('gold')">Купить</button>
                 </div>
             </div>
             
-            <div class="donate-item">
-                <div>
-                    <div class="shop-item-title">VIP статус</div>
-                    <div class="shop-item-desc">x2 монеты навсегда</div>
-                    <div class="donate-bonus">+500 монет в подарок</div>
+            <div class="shop-item">
+                <div class="shop-item-info">
+                    <div class="shop-item-title">Радужный член</div>
+                    <div class="shop-item-desc">Переливающийся радужный фон</div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <div class="shop-item-price stars-price">
+                    <div class="shop-item-price">
                         <span>⭐</span>
-                        <span>50</span>
+                        <span>1</span>
                     </div>
-                    <button class="donate-btn" onclick="buyStars('vip')">Купить</button>
+                    <button class="buy-btn" onclick="buyBackground('rainbow')">Купить</button>
                 </div>
             </div>
             
-            <div class="donate-item">
-                <div>
-                    <div class="shop-item-title">Мега-пакет</div>
-                    <div class="shop-item-desc">5000 монет + легендарный скин</div>
-                    <div class="donate-bonus">+1000 бонусных монет!</div>
+            <div class="shop-item">
+                <div class="shop-item-info">
+                    <div class="shop-item-title">Тёмный член</div>
+                    <div class="shop-item-desc">Зловещий тёмный фон</div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <div class="shop-item-price stars-price">
+                    <div class="shop-item-price">
                         <span>⭐</span>
-                        <span>200</span>
+                        <span>1</span>
                     </div>
-                    <button class="donate-btn" onclick="buyStars('mega')">Купить</button>
+                    <button class="buy-btn" onclick="buyBackground('dark')">Купить</button>
+                </div>
+            </div>
+            
+            <div class="shop-item">
+                <div class="shop-item-info">
+                    <div class="shop-item-title">Лесной член</div>
+                    <div class="shop-item-desc">Зелёный лесной фон</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="shop-item-price">
+                        <span>⭐</span>
+                        <span>1</span>
+                    </div>
+                    <button class="buy-btn" onclick="buyBackground('forest')">Купить</button>
+                </div>
+            </div>
+            
+            <div class="shop-item">
+                <div class="shop-item-info">
+                    <div class="shop-item-title">Океанский член</div>
+                    <div class="shop-item-desc">Глубокий синий океан</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="shop-item-price">
+                        <span>⭐</span>
+                        <span>1</span>
+                    </div>
+                    <button class="buy-btn" onclick="buyBackground('ocean')">Купить</button>
+                </div>
+            </div>
+            
+            <div class="shop-item">
+                <div class="shop-item-info">
+                    <div class="shop-item-title">Лавовый член</div>
+                    <div class="shop-item-desc">Огненный лавовый фон</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="shop-item-price">
+                        <span>⭐</span>
+                        <span>1</span>
+                    </div>
+                    <button class="buy-btn" onclick="buyBackground('lava')">Купить</button>
                 </div>
             </div>
         </div>
@@ -669,19 +679,17 @@
                 <span class="nav-icon">🏪</span>
                 <span>Магазин</span>
             </button>
-            <button class="nav-btn" id="navDonate" onclick="switchPage('donate')">
-                <span class="nav-icon">✨</span>
-                <span>Донат</span>
-            </button>
         </div>
     </div>
 
     <script>
         // ==================================
-        // ВЕРСИЯ С НАСТОЯЩИМ ЛИДЕРБОРДОМ (PythonAnywhere)
+        // ВЕРСИЯ С ТАЙМЕРОМ 100 СЕКУНД И СБРОСОМ ЗА 1 ЗВЕЗДУ
         // ==================================
 
         const API_URL = 'https://zhenya4700.pythonanywhere.com';
+        const COOLDOWN_SECONDS = 100; // Таймер 100 секунд
+        const MIN_SIZE = -10; // Минимальный размер
         
         let tg = window.Telegram.WebApp;
         tg.expand();
@@ -689,6 +697,7 @@
         let user = tg.initDataUnsafe?.user;
         
         // Элементы DOM
+        const body = document.getElementById('body');
         const loading = document.getElementById('loading');
         const gameContent = document.getElementById('gameContent');
         const avatar = document.getElementById('avatar');
@@ -698,36 +707,57 @@
         const timerEl = document.getElementById('timerDisplay');
         const errorEl = document.getElementById('errorMessage');
         const circle = document.getElementById('tapCircle');
-        const coinAmountEl = document.getElementById('coinAmount');
         const starAmountEl = document.getElementById('starAmount');
+        const currentSkinDisplay = document.getElementById('currentSkinDisplay');
         
         // Страницы
         const pages = {
             home: document.getElementById('homePage'),
             leaderboard: document.getElementById('leaderboardPage'),
-            shop: document.getElementById('shopPage'),
-            donate: document.getElementById('donatePage')
+            shop: document.getElementById('shopPage')
         };
         
         const navBtns = {
             home: document.getElementById('navHome'),
             leaderboard: document.getElementById('navLeaderboard'),
-            shop: document.getElementById('navShop'),
-            donate: document.getElementById('navDonate')
+            shop: document.getElementById('navShop')
         };
         
         // Игровые переменные
         let size = 0;
-        let coins = 100;
-        let stars = 20;
+        let stars = 100; // Для теста даём 100 звёзд
         let lastClickTime = 0;
         let cooldown = false;
         let timerInterval = null;
+        let currentBackground = 'default';
+        
+        // Названия фонов
+        const backgroundNames = {
+            'default': 'Обычный',
+            'neon': 'Неоновый',
+            'gold': 'Золотой',
+            'rainbow': 'Радужный',
+            'dark': 'Тёмный',
+            'forest': 'Лесной',
+            'ocean': 'Океанский',
+            'lava': 'Лавовый'
+        };
         
         // Обновление отображения
-        function updateCurrencies() {
-            coinAmountEl.textContent = coins;
+        function updateStars() {
             starAmountEl.textContent = stars;
+        }
+        
+        function updateCurrentSkinDisplay() {
+            currentSkinDisplay.textContent = `Текущий фон: ${backgroundNames[currentBackground]}`;
+        }
+        
+        // Применить фон
+        function applyBackground(bgName) {
+            body.className = '';
+            body.classList.add(`bg-${bgName}`);
+            currentBackground = bgName;
+            updateCurrentSkinDisplay();
         }
         
         // Переключение страниц
@@ -776,82 +806,36 @@
             }
         };
         
-        // Покупка предметов
-        window.buyItem = function(itemId) {
-            switch(itemId) {
-                case 'size_boost':
-                    if (coins >= 50) {
-                        coins -= 50;
-                        size += 5;
-                        updateCurrencies();
-                        updateSize();
-                        saveToServer();
-                    } else {
-                        showError('Недостаточно монет!');
-                    }
-                    break;
-                case 'multiplier':
-                    if (coins >= 100) {
-                        coins -= 100;
-                        saveToServer();
-                    } else {
-                        showError('Недостаточно монет!');
-                    }
-                    break;
-                case 'protection':
-                    if (coins >= 200) {
-                        coins -= 200;
-                        saveToServer();
-                    } else {
-                        showError('Недостаточно монет!');
-                    }
-                    break;
+        // Сброс таймера за 1 звезду
+        window.resetCooldown = function() {
+            if (stars >= 1) {
+                stars -= 1;
+                updateStars();
+                
+                // Сбрасываем таймер
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                }
+                cooldown = false;
+                lastClickTime = 0;
+                circle.classList.remove('cooldown');
+                circle.classList.add('ready');
+                timerEl.textContent = '⚡ готов ⚡';
+                timerEl.classList.remove('active');
+                
+                saveToServer();
             }
         };
         
-        // Покупка за звёзды
-        window.buyStars = function(packageId) {
-            switch(packageId) {
-                case 'coins_1000':
-                    if (stars >= 10) {
-                        stars -= 10;
-                        coins += 1050;
-                        updateCurrencies();
-                        saveToServer();
-                    } else {
-                        showError('Недостаточно звёзд!');
-                    }
-                    break;
-                case 'vip':
-                    if (stars >= 50) {
-                        stars -= 50;
-                        coins += 500;
-                        updateCurrencies();
-                        saveToServer();
-                    } else {
-                        showError('Недостаточно звёзд!');
-                    }
-                    break;
-                case 'mega':
-                    if (stars >= 200) {
-                        stars -= 200;
-                        coins += 6000;
-                        updateCurrencies();
-                        saveToServer();
-                    } else {
-                        showError('Недостаточно звёзд!');
-                    }
-                    break;
+        // Покупка фона (тест - всё по 1 звезде)
+        window.buyBackground = function(bgName) {
+            if (stars >= 1) {
+                stars -= 1;
+                updateStars();
+                applyBackground(bgName);
+                saveToServer();
             }
         };
-        
-        function showError(text) {
-            errorEl.textContent = text;
-            errorEl.style.display = 'block';
-            setTimeout(() => {
-                errorEl.style.display = 'none';
-            }, 2000);
-        }
         
         // Авторизация на сервере
         async function auth() {
@@ -869,15 +853,26 @@
                 const data = await response.json();
                 
                 size = data.size || 0;
-                coins = data.coins || 100;
-                stars = data.stars || 20;
+                stars = data.stars || 100; // Для теста даём 100 звёзд
                 
                 if (data.last_click) {
                     lastClickTime = new Date(data.last_click).getTime();
                 }
                 
+                // Загружаем сохранённый фон
+                try {
+                    const bgResponse = await fetch(`${API_URL}/api/state/${user.id}`);
+                    const bgData = await bgResponse.json();
+                    if (bgData.background) {
+                        applyBackground(bgData.background);
+                    }
+                } catch (e) {
+                    console.log('No background saved');
+                }
+                
                 updateSize();
-                updateCurrencies();
+                updateStars();
+                updateCurrentSkinDisplay();
                 checkCooldown();
                 
                 loading.style.display = 'none';
@@ -885,7 +880,6 @@
                 
             } catch (error) {
                 console.error('Auth error:', error);
-                showError('Ошибка авторизации');
                 loading.style.display = 'none';
                 gameContent.style.display = 'block';
             }
@@ -902,8 +896,8 @@
                     body: JSON.stringify({
                         telegram_id: String(user.id),
                         size: size,
-                        coins: coins,
-                        stars: stars
+                        stars: stars,
+                        background: currentBackground
                     })
                 });
             } catch (error) {
@@ -911,13 +905,13 @@
             }
         }
         
-        // Проверка кулдауна
+        // Проверка кулдауна (100 секунд)
         function checkCooldown() {
             const now = Date.now();
             const diff = (now - lastClickTime) / 1000;
             
-            if (diff < 1 && lastClickTime > 0) {
-                startCooldown(1 - diff);
+            if (diff < COOLDOWN_SECONDS && lastClickTime > 0) {
+                startCooldown(COOLDOWN_SECONDS - diff);
             } else {
                 circle.classList.remove('cooldown');
                 circle.classList.add('ready');
@@ -947,7 +941,9 @@
                     timerEl.textContent = '⚡ готов ⚡';
                     timerEl.classList.remove('active');
                 } else {
-                    timerEl.textContent = `⏳ ${timeLeft.toFixed(1)}с`;
+                    const mins = Math.floor(timeLeft / 60);
+                    const secs = Math.floor(timeLeft % 60);
+                    timerEl.textContent = `⏳ ${mins}:${secs < 10 ? '0' : ''}${secs}`;
                     timerEl.classList.add('active');
                 }
             }, 100);
@@ -968,7 +964,6 @@
                 
                 if (response.status === 429) {
                     startCooldown(data.wait);
-                    showError('Слишком быстро!');
                     return;
                 }
                 
@@ -978,21 +973,18 @@
                     circle.style.transform = '';
                 }, 100);
                 
-                size = data.size;
-                coins = data.coins;
+                size = Math.max(MIN_SIZE, data.size); // Не ниже -10
                 
                 sizeEl.style.animation = 'none';
                 sizeEl.offsetHeight;
                 sizeEl.style.animation = 'sizePop 0.4s ease-out';
                 
                 updateSize();
-                updateCurrencies();
                 showChange(data.change);
-                startCooldown(1);
+                startCooldown(COOLDOWN_SECONDS);
                 
             } catch (error) {
                 console.error('Click error:', error);
-                showError('Ошибка соединения');
             }
         }
         
