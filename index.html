@@ -84,13 +84,15 @@
             justify-content: center;
             box-shadow: 0 15px 0 #b3540b, 0 20px 30px rgba(0, 0, 0, 0.6);
             cursor: pointer;
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
             border: 3px solid #ffb347;
+            position: relative;
         }
 
         .tap-area:active {
-            transform: translateY(8px);
+            transform: translateY(8px) scale(0.95);
             box-shadow: 0 8px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6);
+            transition: all 0.1s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .tap-area.cooldown {
@@ -98,19 +100,25 @@
             filter: grayscale(50%);
             cursor: not-allowed;
             pointer-events: none;
-            transform: translateY(5px);
+            transform: translateY(5px) scale(0.98);
             box-shadow: 0 8px 0 #7a4a1f;
             animation: none;
         }
 
         .tap-area.ready {
-            animation: pulse 1.5s infinite;
+            animation: smoothPulse 2s ease-in-out infinite;
         }
 
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 #ffd966, 0 15px 0 #b3540b; }
-            70% { box-shadow: 0 0 0 20px rgba(255, 215, 0, 0), 0 15px 0 #b3540b; }
-            100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0), 0 15px 0 #b3540b; }
+        @keyframes smoothPulse {
+            0% {
+                box-shadow: 0 15px 0 #b3540b, 0 0 0 0 rgba(255, 215, 0, 0.7);
+            }
+            50% {
+                box-shadow: 0 15px 0 #b3540b, 0 0 30px 15px rgba(255, 215, 0, 0.3);
+            }
+            100% {
+                box-shadow: 0 15px 0 #b3540b, 0 0 0 0 rgba(255, 215, 0, 0.7);
+            }
         }
 
         .size-display {
@@ -120,6 +128,20 @@
             text-shadow: 0 3px 0 #b3540b, 0 5px 15px black;
             line-height: 1;
             margin-bottom: 5px;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: inline-block;
+            animation: sizePop 0.4s ease-out;
+        }
+
+        @keyframes sizePop {
+            0% {
+                transform: scale(0.8) translateY(20px);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
         }
 
         .size-label {
@@ -133,10 +155,30 @@
             font-weight: bold;
             min-height: 50px;
             margin: 5px 0;
+            animation: floatChange 0.8s ease-out forwards;
         }
 
-        .positive { color: #4caf50; }
-        .negative { color: #f44336; }
+        @keyframes floatChange {
+            0% {
+                transform: scale(0.5) translateY(20px);
+                opacity: 0;
+            }
+            30% {
+                transform: scale(1.2) translateY(-5px);
+                opacity: 1;
+            }
+            70% {
+                transform: scale(1) translateY(-10px);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(0.8) translateY(-30px);
+                opacity: 0;
+            }
+        }
+
+        .positive { color: #4caf50; text-shadow: 0 0 15px rgba(76, 175, 80, 0.5); }
+        .negative { color: #f44336; text-shadow: 0 0 15px rgba(244, 67, 54, 0.5); }
 
         .timer-text {
             font-size: 1.3rem;
@@ -147,11 +189,21 @@
             color: #aaa;
             border: 1px solid #444;
             margin: 15px 0;
+            font-family: monospace;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
         }
 
         .timer-text.active {
             color: #ffd966;
             border-color: #ffd966;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            animation: timerGlow 1s ease-in-out infinite;
+        }
+
+        @keyframes timerGlow {
+            0%, 100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
+            50% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.6); }
         }
 
         .error-message {
@@ -162,6 +214,15 @@
             margin: 10px 0;
             font-size: 14px;
             display: none;
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-10px); }
+            40% { transform: translateX(10px); }
+            60% { transform: translateX(-5px); }
+            80% { transform: translateX(5px); }
         }
 
         .loading {
@@ -182,7 +243,7 @@
             border: 5px solid #3a3f55;
             border-top-color: #ffd966;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
         }
 
         @keyframes spin {
@@ -194,6 +255,15 @@
             color: #4caf50;
             margin-top: 5px;
             opacity: 0.8;
+            transition: all 0.3s ease;
+            animation: fadeInOut 1s ease;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(10px); }
+            20% { opacity: 0.8; transform: translateY(0); }
+            80% { opacity: 0.8; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-10px); }
         }
 
         footer {
@@ -234,7 +304,7 @@
 
     <script>
         // ==================================
-        // ВЕРСИЯ С ПРОВЕРКОЙ ПЕРЕД КАЖДЫМ КЛИКОМ
+        // ВЕРСИЯ С ПЛАВНОЙ АНИМАЦИЕЙ
         // ==================================
 
         let tg = window.Telegram.WebApp;
@@ -271,9 +341,9 @@
         
         function showSync(text) {
             syncEl.textContent = text;
-            setTimeout(() => {
-                syncEl.textContent = '';
-            }, 1000);
+            syncEl.style.animation = 'none';
+            syncEl.offsetHeight;
+            syncEl.style.animation = 'fadeInOut 1s ease';
         }
         
         // Загрузка из Cloud Storage
@@ -352,7 +422,7 @@
             }
         }
         
-        // ========== НОВАЯ ФУНКЦИЯ: синхронизация перед кликом ==========
+        // Синхронизация перед кликом
         async function syncBeforeClick() {
             if (!user || isSyncing) return false;
             
@@ -361,32 +431,28 @@
             
             return new Promise((resolve) => {
                 try {
-                    // Запрашиваем актуальный размер с облака
                     tg.CloudStorage.getItem('memberSize', function(err, value) {
                         if (!err && value !== null && value !== undefined) {
                             let cloudSize = parseInt(value) || 0;
                             
-                            // Если облачный размер отличается от текущего
                             if (cloudSize !== size) {
                                 showSync(`📱 обновлено: ${size} → ${cloudSize}`);
-                                size = cloudSize;  // Обновляем локальный размер
+                                size = cloudSize;
                                 updateSize();
                             }
                         }
                         
-                        // Также проверяем время последнего клика
                         tg.CloudStorage.getItem('lastClick', function(err2, timeValue) {
                             if (!err2 && timeValue !== null && timeValue !== undefined) {
                                 let cloudTime = parseInt(timeValue) || 0;
                                 
-                                // Если облачное время больше (кто-то кликнул позже)
                                 if (cloudTime > lastClickTime) {
                                     lastClickTime = cloudTime;
                                 }
                             }
                             
                             isSyncing = false;
-                            showSync('А НЕ АХУЕЛА ЛИ ТВОЯ МАТЬ КОГДА ТЕБЯ РОЖАЛА УЁБИЩЕ ЖИРНОЕ Я ЕЁ НА СВОЁМ ЧЛЕНЕ ЖАРИЛ НАХУЙ ЕБАНАТ НАХ');
+                            showSync('✅ синхронизировано');
                             resolve(true);
                         });
                     });
@@ -440,14 +506,12 @@
             }, 100);
         }
         
-        // ========== ОБНОВЛЕННАЯ ФУНКЦИЯ КЛИКА ==========
+        // Клик
         async function handleTap() {
             if (cooldown || isSyncing) return;
             
-            // Сначала синхронизируемся с облаком
             await syncBeforeClick();
             
-            // Проверяем кулдаун еще раз (мог измениться после синхронизации)
             const now = Date.now();
             if (lastClickTime > 0) {
                 const diff = (now - lastClickTime) / 1000;
@@ -457,7 +521,13 @@
                 }
             }
             
-            // Генерируем рандом (от -10 до +10)
+            // Анимация нажатия
+            circle.style.transform = 'translateY(8px) scale(0.95)';
+            setTimeout(() => {
+                circle.style.transform = '';
+            }, 100);
+            
+            // Генерируем рандом
             let change = Math.floor(Math.random() * 21) - 10;
             let oldSize = size;
             size += change;
@@ -466,12 +536,16 @@
             // Сохраняем в облако
             saveToCloud();
             
+            // Анимируем изменение размера
+            sizeEl.style.animation = 'none';
+            sizeEl.offsetHeight;
+            sizeEl.style.animation = 'sizePop 0.4s ease-out';
+            
             // Обновляем интерфейс
             updateSize();
             showChange(change);
             startCooldown(1);
             
-            // Показываем изменение
             showSync(`${oldSize} ${change > 0 ? '+' : ''}${change} = ${size}`);
         }
         
@@ -480,6 +554,10 @@
         }
         
         function showChange(change) {
+            changeEl.innerHTML = '';
+            changeEl.style.animation = 'none';
+            changeEl.offsetHeight;
+            
             if (change > 0) {
                 changeEl.innerHTML = `<span class="positive">+${change}</span>`;
             } else if (change < 0) {
@@ -488,9 +566,7 @@
                 changeEl.innerHTML = `<span>0</span>`;
             }
             
-            setTimeout(() => {
-                changeEl.innerHTML = '';
-            }, 800);
+            changeEl.style.animation = 'floatChange 0.8s ease-out forwards';
         }
         
         // Запуск
@@ -499,7 +575,7 @@
         // События
         circle.addEventListener('click', handleTap);
         
-        // Периодическая синхронизация (каждые 30 секунд)
+        // Периодическая синхронизация
         setInterval(() => {
             if (!cooldown && !isSyncing) {
                 syncBeforeClick();
