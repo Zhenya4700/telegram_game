@@ -111,6 +111,12 @@
             -webkit-text-fill-color: transparent;
         }
 
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #ffd966;
+        }
+
         .tap-area {
             width: 200px;
             height: 200px;
@@ -337,6 +343,86 @@
             font-size: 1.5rem;
         }
 
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+
+        .leaderboard-rank {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #ffd966, #e68a2e);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #1a1e2c;
+        }
+
+        .leaderboard-rank-1 { background: linear-gradient(135deg, #ffd700, #ffa500); }
+        .leaderboard-rank-2 { background: linear-gradient(135deg, #c0c0c0, #a0a0a0); }
+        .leaderboard-rank-3 { background: linear-gradient(135deg, #cd7f32, #b06d2a); }
+
+        .leaderboard-name {
+            flex: 1;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .leaderboard-size {
+            font-weight: bold;
+            color: #ffd966;
+        }
+
+        .leaderboard-you {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .leaderboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .refresh-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .refresh-btn:active {
+            transform: rotate(180deg);
+            background: rgba(255, 215, 0, 0.2);
+        }
+
         .shop-item {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 16px;
@@ -394,52 +480,6 @@
         .buy-btn:disabled {
             opacity: 0.3;
             cursor: not-allowed;
-        }
-
-        .leaderboard-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            margin-bottom: 8px;
-        }
-
-        .leaderboard-rank {
-            width: 30px;
-            height: 30px;
-            background: linear-gradient(135deg, #ffd966, #e68a2e);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: #1a1e2c;
-        }
-
-        .leaderboard-name {
-            flex: 1;
-            text-align: left;
-        }
-
-        .leaderboard-size {
-            font-weight: bold;
-            color: #ffd966;
-        }
-
-        .page {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .page.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .donate-item {
@@ -515,10 +555,14 @@
 
         <!-- Лидерборд -->
         <div class="page" id="leaderboardPage">
-            <h2 style="margin-bottom: 20px;">🏆 Лучшие члены</h2>
-            <div id="leaderboardList"></div>
-            <div style="text-align: center; color: #8e94ab; margin-top: 20px;" id="leaderboardPlaceholder">
-                Загрузка лидеров...
+            <div class="leaderboard-header">
+                <h2>🏆 Топ игроков</h2>
+                <button class="refresh-btn" onclick="updateLeaderboard()">🔄</button>
+            </div>
+            <div id="leaderboardList">
+                <div style="text-align: center; color: #8e94ab; padding: 20px;">
+                    Загрузка лидеров...
+                </div>
             </div>
         </div>
 
@@ -650,9 +694,11 @@
 
     <script>
         // ==================================
-        // ВЕРСИЯ С МЕНЮ И МАГАЗИНОМ
+        // ВЕРСИЯ С НАСТОЯЩИМ ЛИДЕРБОРДОМ (PythonAnywhere)
         // ==================================
 
+        const API_URL = 'https://zhenya4700.pythonanywhere.com'; // ТВОЙ АДРЕС
+        
         let tg = window.Telegram.WebApp;
         tg.expand();
         
@@ -689,14 +735,14 @@
         
         // Игровые переменные
         let size = 0;
-        let coins = 100; // Для теста дадим немного монет
-        let stars = 20; // Для теста дадим немного звёзд
+        let coins = 100;
+        let stars = 20;
         let lastClickTime = 0;
         let cooldown = false;
         let timerInterval = null;
         let isSyncing = false;
         
-        // Обновление отображения монет и звёзд
+        // Обновление отображения
         function updateCurrencies() {
             coinAmountEl.textContent = coins;
             starAmountEl.textContent = stars;
@@ -704,55 +750,51 @@
         
         // Переключение страниц
         window.switchPage = function(page) {
-            // Скрываем все страницы
             Object.values(pages).forEach(p => p.classList.remove('active'));
             Object.values(navBtns).forEach(b => b.classList.remove('active'));
             
-            // Показываем выбранную
             pages[page].classList.add('active');
             navBtns[page].classList.add('active');
             
-            // Если открыли лидерборд, обновляем его
             if (page === 'leaderboard') {
                 updateLeaderboard();
             }
         };
         
-        // Обновление лидерборда
-        function updateLeaderboard() {
+        // Обновление лидерборда с сервера
+        window.updateLeaderboard = async function() {
             const listEl = document.getElementById('leaderboardList');
-            const placeholderEl = document.getElementById('leaderboardPlaceholder');
+            listEl.innerHTML = '<div style="text-align: center; color: #8e94ab; padding: 20px;">Загрузка...</div>';
             
-            // Показываем заглушку
-            placeholderEl.style.display = 'block';
-            listEl.innerHTML = '';
-            
-            // TODO: Здесь будет запрос к серверу или Cloud Storage для получения топа
-            // Пока покажем тестовые данные
-            setTimeout(() => {
-                placeholderEl.style.display = 'none';
+            try {
+                const response = await fetch(`${API_URL}/api/leaderboard`);
+                const leaders = await response.json();
                 
-                const testData = [
-                    { name: user?.first_name || 'Ты', size: size, rank: 1 },
-                    { name: 'Игрок 2', size: 42, rank: 2 },
-                    { name: 'Игрок 3', size: 38, rank: 3 },
-                    { name: 'Игрок 4', size: 25, rank: 4 },
-                    { name: 'Игрок 5', size: 15, rank: 5 }
-                ];
+                if (leaders.length === 0) {
+                    listEl.innerHTML = '<div style="text-align: center; color: #8e94ab; padding: 20px;">Пока нет игроков</div>';
+                    return;
+                }
                 
-                testData.sort((a, b) => b.size - a.size);
+                listEl.innerHTML = leaders.map((item, index) => {
+                    const isYou = user && item.telegram_id === String(user.id);
+                    const rankClass = index === 0 ? 'leaderboard-rank-1' : (index === 1 ? 'leaderboard-rank-2' : (index === 2 ? 'leaderboard-rank-3' : ''));
+                    
+                    return `
+                        <div class="leaderboard-item ${isYou ? 'leaderboard-you' : ''}">
+                            <div class="leaderboard-rank ${rankClass}">${index + 1}</div>
+                            <div class="leaderboard-name">${item.name} ${isYou ? '(ты)' : ''}</div>
+                            <div class="leaderboard-size">${item.size} см</div>
+                        </div>
+                    `;
+                }).join('');
                 
-                listEl.innerHTML = testData.map((item, index) => `
-                    <div class="leaderboard-item">
-                        <div class="leaderboard-rank">${index + 1}</div>
-                        <div class="leaderboard-name">${item.name} ${item.rank === 1 ? '👑' : ''}</div>
-                        <div class="leaderboard-size">${item.size} см</div>
-                    </div>
-                `).join('');
-            }, 500);
-        }
+            } catch (error) {
+                console.error('Leaderboard error:', error);
+                listEl.innerHTML = '<div style="text-align: center; color: #f44336; padding: 20px;">Ошибка загрузки</div>';
+            }
+        };
         
-        // Покупка предметов за монеты
+        // Покупка предметов
         window.buyItem = function(itemId) {
             switch(itemId) {
                 case 'size_boost':
@@ -761,8 +803,8 @@
                         size += 5;
                         updateCurrencies();
                         updateSize();
-                        showSync('✅ Куплено: +5 см');
-                        saveToCloud();
+                        showSync('✅ +5 см');
+                        saveToServer();
                     } else {
                         showError('Недостаточно монет!');
                     }
@@ -770,9 +812,8 @@
                 case 'multiplier':
                     if (coins >= 100) {
                         coins -= 100;
-                        // TODO: добавить эффект умножителя
-                        showSync('✅ Куплен умножитель x2');
-                        saveToCloud();
+                        showSync('✅ Умножитель x2');
+                        saveToServer();
                     } else {
                         showError('Недостаточно монет!');
                     }
@@ -780,9 +821,8 @@
                 case 'protection':
                     if (coins >= 200) {
                         coins -= 200;
-                        // TODO: добавить защиту от минуса
-                        showSync('✅ Куплена защита');
-                        saveToCloud();
+                        showSync('✅ Защита активирована');
+                        saveToServer();
                     } else {
                         showError('Недостаточно монет!');
                     }
@@ -796,10 +836,10 @@
                 case 'coins_1000':
                     if (stars >= 10) {
                         stars -= 10;
-                        coins += 1050; // 1000 + 50 бонус
+                        coins += 1050;
                         updateCurrencies();
-                        showSync('✅ Куплено 1050 монет');
-                        saveToCloud();
+                        showSync('✅ +1050 монет');
+                        saveToServer();
                     } else {
                         showError('Недостаточно звёзд!');
                     }
@@ -808,10 +848,9 @@
                     if (stars >= 50) {
                         stars -= 50;
                         coins += 500;
-                        // TODO: добавить VIP статус
                         updateCurrencies();
-                        showSync('✅ VIP статус активирован');
-                        saveToCloud();
+                        showSync('✅ VIP статус');
+                        saveToServer();
                     } else {
                         showError('Недостаточно звёзд!');
                     }
@@ -819,11 +858,10 @@
                 case 'mega':
                     if (stars >= 200) {
                         stars -= 200;
-                        coins += 6000; // 5000 + 1000 бонус
-                        // TODO: добавить скин
+                        coins += 6000;
                         updateCurrencies();
-                        showSync('✅ Мега-пакет активирован');
-                        saveToCloud();
+                        showSync('✅ Мега-пакет');
+                        saveToServer();
                     } else {
                         showError('Недостаточно звёзд!');
                     }
@@ -846,174 +884,62 @@
             syncEl.style.animation = 'fadeInOut 1s ease';
         }
         
-        // Загрузка из Cloud Storage
-        async function loadFromCloud() {
-            if (!user) {
-                // Демо-режим
-                usernameEl.textContent = 'Тестовый режим';
-                avatar.textContent = '👤';
-                loadFromLocalStorage();
-                return;
-            }
-            
-            usernameEl.textContent = user.first_name || user.username || 'Игрок';
-            avatar.textContent = (user.first_name ? user.first_name[0] : '👤').toUpperCase();
-            
+        // Авторизация на сервере
+        async function auth() {
             try {
-                // Пробуем загрузить размер
-                tg.CloudStorage.getItem('memberSize', function(err, value) {
-                    if (!err && value !== null && value !== undefined) {
-                        size = parseInt(value) || 0;
-                    } else {
-                        size = 0;
-                    }
-                    
-                    // Загружаем монеты
-                    tg.CloudStorage.getItem('coins', function(err, coinValue) {
-                        if (!err && coinValue !== null && coinValue !== undefined) {
-                            coins = parseInt(coinValue) || 100;
-                        } else {
-                            coins = 100;
-                        }
-                        
-                        // Загружаем звёзды
-                        tg.CloudStorage.getItem('stars', function(err, starValue) {
-                            if (!err && starValue !== null && starValue !== undefined) {
-                                stars = parseInt(starValue) || 20;
-                            } else {
-                                stars = 20;
-                            }
-                            
-                            // Загружаем время последнего клика
-                            tg.CloudStorage.getItem('lastClick', function(err2, timeValue) {
-                                if (!err2 && timeValue !== null && timeValue !== undefined) {
-                                    lastClickTime = parseInt(timeValue) || 0;
-                                } else {
-                                    lastClickTime = 0;
-                                }
-                                
-                                updateSize();
-                                updateCurrencies();
-                                checkCooldown();
-                                
-                                loading.style.display = 'none';
-                                gameContent.style.display = 'block';
-                            });
-                        });
-                    });
+                const response = await fetch(`${API_URL}/api/auth`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        username: user.username || '',
+                        first_name: user.first_name || ''
+                    })
                 });
-            } catch (e) {
-                console.log('Cloud Storage error, using localStorage');
-                loadFromLocalStorage();
-            }
-        }
-        
-        // Запасной вариант
-        function loadFromLocalStorage() {
-            size = localStorage.getItem('memberSize') ? parseInt(localStorage.getItem('memberSize')) : 0;
-            coins = localStorage.getItem('coins') ? parseInt(localStorage.getItem('coins')) : 100;
-            stars = localStorage.getItem('stars') ? parseInt(localStorage.getItem('stars')) : 20;
-            lastClickTime = localStorage.getItem('lastClick') ? parseInt(localStorage.getItem('lastClick')) : 0;
-            
-            updateSize();
-            updateCurrencies();
-            checkCooldown();
-            
-            loading.style.display = 'none';
-            gameContent.style.display = 'block';
-        }
-        
-        // Сохранение в Cloud Storage
-        function saveToCloud() {
-            if (!user) {
-                localStorage.setItem('memberSize', size.toString());
-                localStorage.setItem('coins', coins.toString());
-                localStorage.setItem('stars', stars.toString());
-                localStorage.setItem('lastClick', lastClickTime.toString());
-                return;
-            }
-            
-            try {
-                tg.CloudStorage.setItem('memberSize', size.toString(), function(err) {
-                    if (err) console.log('Error saving size:', err);
-                });
-                tg.CloudStorage.setItem('coins', coins.toString(), function(err) {
-                    if (err) console.log('Error saving coins:', err);
-                });
-                tg.CloudStorage.setItem('stars', stars.toString(), function(err) {
-                    if (err) console.log('Error saving stars:', err);
-                });
-                tg.CloudStorage.setItem('lastClick', lastClickTime.toString(), function(err) {
-                    if (err) console.log('Error saving time:', err);
-                });
-            } catch (e) {
-                localStorage.setItem('memberSize', size.toString());
-                localStorage.setItem('coins', coins.toString());
-                localStorage.setItem('stars', stars.toString());
-                localStorage.setItem('lastClick', lastClickTime.toString());
-            }
-        }
-        
-        // Синхронизация перед кликом
-        async function syncBeforeClick() {
-            if (!user || isSyncing) return false;
-            
-            isSyncing = true;
-            showSync('🔄 синхронизация...');
-            
-            return new Promise((resolve) => {
-                try {
-                    tg.CloudStorage.getItem('memberSize', function(err, value) {
-                        if (!err && value !== null && value !== undefined) {
-                            let cloudSize = parseInt(value) || 0;
-                            
-                            if (cloudSize !== size) {
-                                showSync(`📱 обновлено: ${size} → ${cloudSize}`);
-                                size = cloudSize;
-                                updateSize();
-                            }
-                        }
-                        
-                        tg.CloudStorage.getItem('coins', function(err, coinValue) {
-                            if (!err && coinValue !== null && coinValue !== undefined) {
-                                let cloudCoins = parseInt(coinValue) || 100;
-                                if (cloudCoins !== coins) {
-                                    coins = cloudCoins;
-                                    updateCurrencies();
-                                }
-                            }
-                            
-                            tg.CloudStorage.getItem('stars', function(err, starValue) {
-                                if (!err && starValue !== null && starValue !== undefined) {
-                                    let cloudStars = parseInt(starValue) || 20;
-                                    if (cloudStars !== stars) {
-                                        stars = cloudStars;
-                                        updateCurrencies();
-                                    }
-                                }
-                                
-                                tg.CloudStorage.getItem('lastClick', function(err2, timeValue) {
-                                    if (!err2 && timeValue !== null && timeValue !== undefined) {
-                                        let cloudTime = parseInt(timeValue) || 0;
-                                        
-                                        if (cloudTime > lastClickTime) {
-                                            lastClickTime = cloudTime;
-                                        }
-                                    }
-                                    
-                                    isSyncing = false;
-                                    showSync('✅ синхронизировано');
-                                    resolve(true);
-                                });
-                            });
-                        });
-                    });
-                } catch (e) {
-                    console.log('Sync error:', e);
-                    isSyncing = false;
-                    resolve(false);
+                
+                const data = await response.json();
+                
+                size = data.size || 0;
+                coins = data.coins || 100;
+                stars = data.stars || 20;
+                
+                if (data.last_click) {
+                    lastClickTime = new Date(data.last_click).getTime();
                 }
-            });
+                
+                updateSize();
+                updateCurrencies();
+                checkCooldown();
+                
+                loading.style.display = 'none';
+                gameContent.style.display = 'block';
+                
+            } catch (error) {
+                console.error('Auth error:', error);
+                showError('Ошибка авторизации');
+                loading.style.display = 'none';
+                gameContent.style.display = 'block';
+            }
+        }
+        
+        // Сохранение на сервер
+        async function saveToServer() {
+            if (!user) return;
+            
+            try {
+                await fetch(`${API_URL}/api/update`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        size: size,
+                        coins: coins,
+                        stars: stars
+                    })
+                });
+            } catch (error) {
+                console.error('Save error:', error);
+            }
         }
         
         // Проверка кулдауна
@@ -1060,49 +986,47 @@
         
         // Клик
         async function handleTap() {
-            if (cooldown || isSyncing) return;
+            if (cooldown) return;
             
-            await syncBeforeClick();
-            
-            const now = Date.now();
-            if (lastClickTime > 0) {
-                const diff = (now - lastClickTime) / 1000;
-                if (diff < 1) {
-                    startCooldown(1 - diff);
+            try {
+                const response = await fetch(`${API_URL}/api/click`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({telegram_id: String(user.id)})
+                });
+                
+                const data = await response.json();
+                
+                if (response.status === 429) {
+                    startCooldown(data.wait);
+                    showError('Слишком быстро!');
                     return;
                 }
+                
+                // Анимация
+                circle.style.transform = 'translateY(8px) scale(0.95)';
+                setTimeout(() => {
+                    circle.style.transform = '';
+                }, 100);
+                
+                size = data.size;
+                coins = data.coins;
+                
+                sizeEl.style.animation = 'none';
+                sizeEl.offsetHeight;
+                sizeEl.style.animation = 'sizePop 0.4s ease-out';
+                
+                updateSize();
+                updateCurrencies();
+                showChange(data.change);
+                startCooldown(1);
+                
+                showSync(`${data.change > 0 ? '+' : ''}${data.change} = ${size} (+1 🪙)`);
+                
+            } catch (error) {
+                console.error('Click error:', error);
+                showError('Ошибка соединения');
             }
-            
-            // Анимация нажатия
-            circle.style.transform = 'translateY(8px) scale(0.95)';
-            setTimeout(() => {
-                circle.style.transform = '';
-            }, 100);
-            
-            // Генерируем рандом
-            let change = Math.floor(Math.random() * 21) - 10;
-            let oldSize = size;
-            size += change;
-            lastClickTime = now;
-            
-            // Даём немного монет за клик
-            coins += 1;
-            
-            // Сохраняем в облако
-            saveToCloud();
-            
-            // Анимируем изменение размера
-            sizeEl.style.animation = 'none';
-            sizeEl.offsetHeight;
-            sizeEl.style.animation = 'sizePop 0.4s ease-out';
-            
-            // Обновляем интерфейс
-            updateSize();
-            updateCurrencies();
-            showChange(change);
-            startCooldown(1);
-            
-            showSync(`${oldSize} ${change > 0 ? '+' : ''}${change} = ${size} (+1 🪙)`);
         }
         
         function updateSize() {
@@ -1126,21 +1050,23 @@
         }
         
         // Запуск
-        loadFromCloud();
+        if (!user) {
+            usernameEl.textContent = 'Тестовый режим';
+            avatar.textContent = '👤';
+            loading.style.display = 'none';
+            gameContent.style.display = 'block';
+            circle.classList.add('ready');
+        } else {
+            usernameEl.textContent = user.first_name || user.username || 'Игрок';
+            avatar.textContent = (user.first_name ? user.first_name[0] : '👤').toUpperCase();
+            auth();
+        }
         
-        // События
         circle.addEventListener('click', handleTap);
-        
-        // Периодическая синхронизация
-        setInterval(() => {
-            if (!cooldown && !isSyncing) {
-                syncBeforeClick();
-            }
-        }, 30000);
         
         // Сохраняем при закрытии
         window.addEventListener('beforeunload', function() {
-            saveToCloud();
+            saveToServer();
         });
     </script>
 </body>
