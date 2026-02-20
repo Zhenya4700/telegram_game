@@ -6,7 +6,6 @@
     <title>Тапалка члена</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Стили такие же как в прошлой версии */
         * {
             margin: 0;
             padding: 0;
@@ -56,14 +55,48 @@
             text-align: center;
         }
 
+        .timer-banner {
+            background: linear-gradient(145deg, #ffd966, #e68a2e);
+            border-radius: 20px;
+            padding: 12px;
+            margin-bottom: 15px;
+            color: #1a1e2c;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #b3540b;
+        }
+
+        .timer-banner .label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .timer-banner .time {
+            font-size: 1.3rem;
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+
         .user-info {
             display: flex;
             align-items: center;
             gap: 10px;
             margin-bottom: 20px;
-            padding: 8px 12px;
+            padding: 12px;
             background: rgba(0, 0, 0, 0.3);
             border-radius: 40px;
+            flex-wrap: wrap;
+        }
+
+        .rank-badge {
+            background: linear-gradient(135deg, #ffd966, #e68a2e);
+            color: #1a1e2c;
+            padding: 5px 12px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 5px;
         }
 
         .avatar {
@@ -347,6 +380,7 @@
         .cooldown-reset {
             background: linear-gradient(145deg, #ff6b6b, #ff4757);
             margin-top: 15px;
+            cursor: pointer;
         }
 
         .inventory-grid {
@@ -405,12 +439,21 @@
     <div class="loading" id="loading">Загрузка...</div>
 
     <div class="game-container" id="gameContent" style="display: none;">
+        <!-- Таймер 30 дней -->
+        <div class="timer-banner" id="moneyTimer">
+            <div class="label">⏰ До получения 500 рублей:</div>
+            <div class="time" id="moneyTimerDisplay">30д 00:00:00</div>
+        </div>
+
         <div class="user-info">
-            <div class="avatar" id="avatar">👤</div>
-            <div class="username" id="username">Загрузка...</div>
-            <div class="stars">
-                <span class="star-icon">⭐</span>
-                <span class="star-amount" id="starAmount">20</span>
+            <div class="rank-badge" id="rankDisplay">🏆 Место в рейтинге: ...</div>
+            <div style="display: flex; width: 100%; align-items: center; gap: 10px;">
+                <div class="avatar" id="avatar">👤</div>
+                <div class="username" id="username">Загрузка...</div>
+                <div class="stars">
+                    <span class="star-icon">⭐</span>
+                    <span class="star-amount" id="starAmount">20</span>
+                </div>
             </div>
         </div>
 
@@ -437,7 +480,9 @@
         <div class="page" id="shopPage">
             <h2>🏪 Магазин</h2>
             <div class="current-skin" id="currentSkinDisplay">Текущий фон: Обычный</div>
-            <div class="shop-item cooldown-reset" onclick="resetCooldown()">
+            
+            <!-- Сброс таймера за 1 звезду -->
+            <div class="shop-item cooldown-reset" onclick="buyCooldownReset()">
                 <div class="shop-item-info">
                     <div class="shop-item-icon">⏱️</div>
                     <div class="shop-item-text">
@@ -445,7 +490,12 @@
                         <div class="shop-item-desc">Мгновенно сбрасывает 100 секунд</div>
                     </div>
                 </div>
+                <div class="shop-item-price">
+                    <span>⭐</span>
+                    <span>1</span>
+                </div>
             </div>
+            
             <div id="shopItems"></div>
         </div>
 
@@ -486,6 +536,8 @@
         const starAmountEl = document.getElementById('starAmount');
         const currentSkinDisplay = document.getElementById('currentSkinDisplay');
         const inventoryCurrentSkin = document.getElementById('inventoryCurrentSkin');
+        const rankDisplay = document.getElementById('rankDisplay');
+        const moneyTimerDisplay = document.getElementById('moneyTimerDisplay');
         
         // Страницы
         const pages = {
@@ -500,8 +552,14 @@
         let lastClickTime = 0;
         let cooldown = false;
         let timerInterval = null;
+        let moneyTimerInterval = null;
         let currentBackground = 'default';
         let ownedSkins = ['default'];
+        let stars = 20;
+        
+        // Дата окончания 30-дневного таймера (для теста ставим +30 дней от сейчас)
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + 30);
         
         const allSkins = [
             { id: 'neon', name: 'Неоновый', icon: '💜' },
@@ -523,6 +581,24 @@
             'default': '⚪', 'neon': '💜', 'gold': '💛', 'rainbow': '🌈',
             'dark': '🖤', 'forest': '🌲', 'ocean': '🌊', 'lava': '🌋'
         };
+
+        // Обновление 30-дневного таймера
+        function updateMoneyTimer() {
+            const now = new Date();
+            const diff = endDate - now;
+            
+            if (diff <= 0) {
+                moneyTimerDisplay.textContent = '🎉 ПОЛУЧИТЬ 500 ₽';
+                return;
+            }
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            moneyTimerDisplay.textContent = `${days}д ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
 
         // Переключение страниц
         window.switchPage = function(page) {
@@ -551,20 +627,46 @@
                 const data = await res.json();
                 
                 size = data.size;
-                ownedSkins = data.ownedSkins;
+                stars = data.stars || 20;
+                ownedSkins = data.ownedSkins || ['default'];
                 currentBackground = data.background || 'default';
                 if (data.last_click) lastClickTime = new Date(data.last_click).getTime();
                 
                 applyBackground(currentBackground);
                 updateSize();
+                updateStars();
                 checkCooldown();
+                
+                // Загружаем место в рейтинге
+                loadUserRank();
                 
                 loading.style.display = 'none';
                 gameContent.style.display = 'block';
                 
+                // Запускаем таймеры
+                updateMoneyTimer();
+                moneyTimerInterval = setInterval(updateMoneyTimer, 1000);
+                
             } catch (e) {
                 console.error('Auth error:', e);
             }
+        }
+
+        // Загрузка места в рейтинге
+        async function loadUserRank() {
+            try {
+                const res = await fetch(`${API_URL}/api/leaderboard`);
+                const leaders = await res.json();
+                const rank = leaders.findIndex(l => l.telegram_id === String(user.id)) + 1;
+                rankDisplay.textContent = rank > 0 ? `🏆 Место в рейтинге: ${rank}` : '🏆 Место в рейтинге: ...';
+            } catch (e) {
+                console.error('Rank error:', e);
+            }
+        }
+
+        // Обновление звёзд
+        function updateStars() {
+            starAmountEl.textContent = stars;
         }
 
         // Клик
@@ -597,8 +699,37 @@
             }
         }
 
+        // Покупка сброса таймера за 1 звезду
+        window.buyCooldownReset = async function() {
+            if (stars < 1) return;
+            
+            try {
+                await fetch(`${API_URL}/api/reset_cooldown`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({telegram_id: String(user.id)})
+                });
+                
+                stars -= 1;
+                updateStars();
+                
+                if (timerInterval) clearInterval(timerInterval);
+                cooldown = false;
+                lastClickTime = 0;
+                circle.classList.remove('cooldown');
+                circle.classList.add('ready');
+                timerEl.textContent = '⚡ готов ⚡';
+                timerEl.classList.remove('active');
+                
+            } catch (e) {
+                console.error('Reset error:', e);
+            }
+        };
+
         // Покупка скина
         window.buySkin = async function(skinId) {
+            if (stars < 1) return;
+            
             try {
                 const res = await fetch(`${API_URL}/api/buy`, {
                     method: 'POST',
@@ -610,6 +741,8 @@
                 });
                 
                 if (res.ok) {
+                    stars -= 1;
+                    updateStars();
                     const data = await res.json();
                     ownedSkins = data.ownedSkins;
                     renderShop();
@@ -639,28 +772,6 @@
                 }
             } catch (e) {
                 console.error('Equip error:', e);
-            }
-        };
-
-        // Сброс таймера
-        window.resetCooldown = async function() {
-            try {
-                await fetch(`${API_URL}/api/reset_cooldown`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({telegram_id: String(user.id)})
-                });
-                
-                if (timerInterval) clearInterval(timerInterval);
-                cooldown = false;
-                lastClickTime = 0;
-                circle.classList.remove('cooldown');
-                circle.classList.add('ready');
-                timerEl.textContent = '⚡ готов ⚡';
-                timerEl.classList.remove('active');
-                
-            } catch (e) {
-                console.error('Reset error:', e);
             }
         };
 
@@ -698,9 +809,15 @@
                             ${ownedSkins.includes(skin.id) ? '<div class="sold-out">✅ Уже куплено</div>' : ''}
                         </div>
                     </div>
-                    <button class="buy-btn" onclick="buySkin('${skin.id}')" ${ownedSkins.includes(skin.id) ? 'disabled' : ''}>
-                        Купить
-                    </button>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="shop-item-price">
+                            <span>⭐</span>
+                            <span>1</span>
+                        </div>
+                        <button class="buy-btn" onclick="buySkin('${skin.id}')" ${ownedSkins.includes(skin.id) || stars < 1 ? 'disabled' : ''}>
+                            Купить
+                        </button>
+                    </div>
                 </div>
             `).join('');
             
@@ -817,6 +934,12 @@
         }
         
         circle.addEventListener('click', handleTap);
+        
+        // Очистка таймеров при уходе
+        window.addEventListener('beforeunload', function() {
+            if (timerInterval) clearInterval(timerInterval);
+            if (moneyTimerInterval) clearInterval(moneyTimerInterval);
+        });
     </script>
 </body>
 </html>
