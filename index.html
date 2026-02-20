@@ -161,12 +161,14 @@
         }
 
         .tap-area.cooldown {
-            opacity: 0;
+            opacity: 0.5;
+            filter: grayscale(80%);
+            background: #cccccc;
             cursor: not-allowed;
             pointer-events: none;
-            transform: translateY(5px) scale(0.95);
+            transform: translateY(5px) scale(0.98);
             box-shadow: 0 5px 0 #7a4a1f;
-            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         .tap-area.ready {
@@ -495,6 +497,71 @@
             background: linear-gradient(145deg, #ff6b6b, #ff4757);
             margin-top: 15px;
         }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .inventory-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .inventory-item.owned {
+            border-color: #ffd966;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .inventory-item-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .inventory-item-controls {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        .inv-btn {
+            background: #3a3f55;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border-bottom: 2px solid #1e2230;
+            transition: all 0.1s ease;
+        }
+
+        .inv-btn:active {
+            transform: translateY(2px);
+            border-bottom-width: 0;
+        }
+
+        .inv-btn.trade {
+            background: #ff6b6b;
+            border-bottom-color: #c0392b;
+        }
+
+        .trade-result {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(76, 175, 80, 0.2);
+            border-radius: 10px;
+            color: #4caf50;
+            font-size: 0.9rem;
+            display: none;
+        }
     </style>
 </head>
 <body class="bg-default" id="body">
@@ -665,6 +732,19 @@
             </div>
         </div>
 
+        <!-- Инвентарь -->
+        <div class="page" id="inventoryPage">
+            <h2 style="margin-bottom: 20px;">🎒 Инвентарь</h2>
+            
+            <div class="current-skin" id="inventoryCurrentSkin">Текущий фон: Обычный</div>
+            
+            <div class="inventory-grid" id="inventoryGrid">
+                <!-- Сюда будет подгружаться инвентарь -->
+            </div>
+            
+            <div class="trade-result" id="tradeResult"></div>
+        </div>
+
         <!-- Навигационное меню -->
         <div class="nav-menu">
             <button class="nav-btn active" id="navHome" onclick="switchPage('home')">
@@ -679,17 +759,21 @@
                 <span class="nav-icon">🏪</span>
                 <span>Магазин</span>
             </button>
+            <button class="nav-btn" id="navInventory" onclick="switchPage('inventory')">
+                <span class="nav-icon">🎒</span>
+                <span>Инвентарь</span>
+            </button>
         </div>
     </div>
 
     <script>
         // ==================================
-        // ВЕРСИЯ С ТАЙМЕРОМ 100 СЕКУНД И СБРОСОМ ЗА 1 ЗВЕЗДУ
+        // ВЕРСИЯ С ИНВЕНТАРЁМ И ОБМЕНОМ
         // ==================================
 
         const API_URL = 'https://zhenya4700.pythonanywhere.com';
-        const COOLDOWN_SECONDS = 100; // Таймер 100 секунд
-        const MIN_SIZE = -10; // Минимальный размер
+        const COOLDOWN_SECONDS = 100;
+        const MIN_SIZE = -10;
         
         let tg = window.Telegram.WebApp;
         tg.expand();
@@ -709,27 +793,41 @@
         const circle = document.getElementById('tapCircle');
         const starAmountEl = document.getElementById('starAmount');
         const currentSkinDisplay = document.getElementById('currentSkinDisplay');
+        const inventoryCurrentSkin = document.getElementById('inventoryCurrentSkin');
+        const inventoryGrid = document.getElementById('inventoryGrid');
+        const tradeResult = document.getElementById('tradeResult');
         
         // Страницы
         const pages = {
             home: document.getElementById('homePage'),
             leaderboard: document.getElementById('leaderboardPage'),
-            shop: document.getElementById('shopPage')
+            shop: document.getElementById('shopPage'),
+            inventory: document.getElementById('inventoryPage')
         };
         
         const navBtns = {
             home: document.getElementById('navHome'),
             leaderboard: document.getElementById('navLeaderboard'),
-            shop: document.getElementById('navShop')
+            shop: document.getElementById('navShop'),
+            inventory: document.getElementById('navInventory')
         };
         
         // Игровые переменные
         let size = 0;
-        let stars = 100; // Для теста даём 100 звёзд
+        let stars = 100;
         let lastClickTime = 0;
         let cooldown = false;
         let timerInterval = null;
         let currentBackground = 'default';
+        let inventory = {
+            'neon': 0,
+            'gold': 0,
+            'rainbow': 0,
+            'dark': 0,
+            'forest': 0,
+            'ocean': 0,
+            'lava': 0
+        };
         
         // Названия фонов
         const backgroundNames = {
@@ -743,6 +841,17 @@
             'lava': 'Лавовый'
         };
         
+        // Цены фонов (для теста всё по 1)
+        const backgroundPrices = {
+            'neon': 1,
+            'gold': 1,
+            'rainbow': 1,
+            'dark': 1,
+            'forest': 1,
+            'ocean': 1,
+            'lava': 1
+        };
+        
         // Обновление отображения
         function updateStars() {
             starAmountEl.textContent = stars;
@@ -750,6 +859,9 @@
         
         function updateCurrentSkinDisplay() {
             currentSkinDisplay.textContent = `Текущий фон: ${backgroundNames[currentBackground]}`;
+            if (inventoryCurrentSkin) {
+                inventoryCurrentSkin.textContent = `Текущий фон: ${backgroundNames[currentBackground]}`;
+            }
         }
         
         // Применить фон
@@ -758,7 +870,61 @@
             body.classList.add(`bg-${bgName}`);
             currentBackground = bgName;
             updateCurrentSkinDisplay();
+            saveToServer();
+            updateInventoryDisplay();
         }
+        
+        // Обновление инвентаря
+        function updateInventoryDisplay() {
+            if (!inventoryGrid) return;
+            
+            let html = '';
+            for (let [bgName, count] of Object.entries(inventory)) {
+                if (count > 0) {
+                    const isActive = (currentBackground === bgName);
+                    html += `
+                        <div class="inventory-item owned">
+                            <div class="inventory-item-title">${backgroundNames[bgName]}</div>
+                            <div class="inventory-item-controls">
+                                ${!isActive ? `<button class="inv-btn" onclick="applyBackground('${bgName}')">Надеть</button>` : '<span style="color:#4caf50;">✅ Надето</span>'}
+                                ${bgName === 'rainbow' ? `<button class="inv-btn trade" onclick="tradeRainbow()">Обменять</button>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+            if (html === '') {
+                html = '<div style="text-align: center; color: #8e94ab; padding: 20px;">У тебя пока нет предметов</div>';
+            }
+            
+            inventoryGrid.innerHTML = html;
+        }
+        
+        // Обмен радужного члена
+        window.tradeRainbow = function() {
+            if (inventory['rainbow'] > 0) {
+                // Список возможных фонов для получения (кроме радужного)
+                const possibleRewards = ['neon', 'gold', 'dark', 'forest', 'ocean', 'lava'];
+                const randomReward = possibleRewards[Math.floor(Math.random() * possibleRewards.length)];
+                
+                // Забираем радужный
+                inventory['rainbow']--;
+                
+                // Даём случайный фон
+                inventory[randomReward] = (inventory[randomReward] || 0) + 1;
+                
+                // Показываем результат
+                tradeResult.style.display = 'block';
+                tradeResult.textContent = `🎉 Ты получил: ${backgroundNames[randomReward]}!`;
+                setTimeout(() => {
+                    tradeResult.style.display = 'none';
+                }, 3000);
+                
+                saveToServer();
+                updateInventoryDisplay();
+            }
+        };
         
         // Переключение страниц
         window.switchPage = function(page) {
@@ -770,6 +936,8 @@
             
             if (page === 'leaderboard') {
                 updateLeaderboard();
+            } else if (page === 'inventory') {
+                updateInventoryDisplay();
             }
         };
         
@@ -812,7 +980,6 @@
                 stars -= 1;
                 updateStars();
                 
-                // Сбрасываем таймер
                 if (timerInterval) {
                     clearInterval(timerInterval);
                 }
@@ -827,13 +994,15 @@
             }
         };
         
-        // Покупка фона (тест - всё по 1 звезде)
+        // Покупка фона
         window.buyBackground = function(bgName) {
-            if (stars >= 1) {
-                stars -= 1;
+            const price = backgroundPrices[bgName];
+            if (stars >= price) {
+                stars -= price;
+                inventory[bgName] = (inventory[bgName] || 0) + 1;
                 updateStars();
-                applyBackground(bgName);
                 saveToServer();
+                updateInventoryDisplay();
             }
         };
         
@@ -853,21 +1022,19 @@
                 const data = await response.json();
                 
                 size = data.size || 0;
-                stars = data.stars || 100; // Для теста даём 100 звёзд
+                stars = data.stars || 100;
+                
+                // Загружаем инвентарь
+                if (data.inventory) {
+                    inventory = data.inventory;
+                }
+                
+                if (data.background) {
+                    applyBackground(data.background);
+                }
                 
                 if (data.last_click) {
                     lastClickTime = new Date(data.last_click).getTime();
-                }
-                
-                // Загружаем сохранённый фон
-                try {
-                    const bgResponse = await fetch(`${API_URL}/api/state/${user.id}`);
-                    const bgData = await bgResponse.json();
-                    if (bgData.background) {
-                        applyBackground(bgData.background);
-                    }
-                } catch (e) {
-                    console.log('No background saved');
                 }
                 
                 updateSize();
@@ -897,7 +1064,8 @@
                         telegram_id: String(user.id),
                         size: size,
                         stars: stars,
-                        background: currentBackground
+                        background: currentBackground,
+                        inventory: inventory
                     })
                 });
             } catch (error) {
@@ -905,7 +1073,7 @@
             }
         }
         
-        // Проверка кулдауна (100 секунд)
+        // Проверка кулдауна
         function checkCooldown() {
             const now = Date.now();
             const diff = (now - lastClickTime) / 1000;
@@ -967,13 +1135,12 @@
                     return;
                 }
                 
-                // Анимация
                 circle.style.transform = 'translateY(8px) scale(0.95)';
                 setTimeout(() => {
                     circle.style.transform = '';
                 }, 100);
                 
-                size = Math.max(MIN_SIZE, data.size); // Не ниже -10
+                size = Math.max(MIN_SIZE, data.size);
                 
                 sizeEl.style.animation = 'none';
                 sizeEl.offsetHeight;
@@ -1023,7 +1190,6 @@
         
         circle.addEventListener('click', handleTap);
         
-        // Сохраняем при закрытии
         window.addEventListener('beforeunload', function() {
             saveToServer();
         });
