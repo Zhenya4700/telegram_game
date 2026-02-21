@@ -6,6 +6,7 @@
     <title>Тапалка члена</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* Стили остаются без изменений */
         * {
             margin: 0;
             padding: 0;
@@ -610,7 +611,7 @@
                     <div class="avatar" id="avatar">👤</div>
                     <div class="username" id="username">Загрузка...</div>
                     <div class="stars">
-                        <span class="star-icon">⭐</span>
+                        <span class="star-icon">⭐️</span>
                         <span class="star-amount" id="starAmount">0</span>
                     </div>
                 </div>
@@ -647,11 +648,11 @@
                             <div class="shop-item-icon">⏱️</div>
                             <div class="shop-item-text">
                                 <div class="shop-item-title">Сброс таймера</div>
-                                <div class="shop-item-desc">Мгновенно сбрасывает ожидание (⭐1)</div>
+                                <div class="shop-item-desc">Мгновенно сбрасывает ожидание (⭐️1)</div>
                             </div>
                         </div>
                         <div class="shop-item-price">
-                            <span>⭐</span>
+                            <span>⭐️</span>
                             <span>1</span>
                         </div>
                     </div>
@@ -826,18 +827,28 @@
             'dark': '🖤', 'forest': '🌲', 'ocean': '🌊', 'lava': '🌋'
         };
 
-        // Синхронизация времени с сервером
+        // Исправленная функция синхронизации времени
         async function syncTime() {
             try {
                 const res = await fetch(`${API_URL}/api/time`);
                 const data = await res.json();
-                console.log('Server time:', new Date(data.server_time * 1000));
+                // Сохраняем смещение времени с сервером
+                const serverTime = data.server_time * 1000;
+                const clientTime = Date.now();
+                window.timeOffset = serverTime - clientTime;
+                console.log('Time sync - offset:', window.timeOffset, 'ms');
             } catch (e) {
                 console.error('Time sync error:', e);
+                window.timeOffset = 0;
             }
         }
 
-        // Обновление глобального таймера (ИСПРАВЛЕНО)
+        // Функция получения текущего времени с учетом сервера
+        function getCurrentTime() {
+            return Date.now() + (window.timeOffset || 0);
+        }
+
+        // Исправленная функция обновления глобального таймера
         function updateGlobalTimer() {
             if (!globalTimerEnabled || !globalTimerEndDate) {
                 globalTimerEl.classList.add('disabled');
@@ -849,9 +860,20 @@
             globalTimerEl.classList.remove('disabled');
             timerLabel.textContent = '⏰ До получения 500 рублей:';
             
-            const now = Date.now();
-            const end = new Date(globalTimerEndDate).getTime();
-            const diff = end - now;
+            const now = getCurrentTime();
+            // Парсим дату правильно, чтобы избежать проблем с часовыми поясами
+            const endDate = new Date(globalTimerEndDate);
+            // Убеждаемся, что дата в UTC
+            const endTimeUTC = Date.UTC(
+                endDate.getUTCFullYear(),
+                endDate.getUTCMonth(),
+                endDate.getUTCDate(),
+                endDate.getUTCHours(),
+                endDate.getUTCMinutes(),
+                endDate.getUTCSeconds()
+            );
+            
+            const diff = endTimeUTC - now;
             
             if (diff <= 0) {
                 timerDisplay.textContent = '🎉 ПОЛУЧИТЬ 500 ₽';
@@ -872,12 +894,22 @@
             Object.values(pages).forEach(p => p.classList.remove('active'));
             pages[page].classList.add('active');
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            // Находим кнопку по тексту и активируем
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if (btn.innerText.includes(getPageName(page))) {
+                    btn.classList.add('active');
+                }
+            });
             
             if (page === 'leaderboard') loadLeaderboard();
             else if (page === 'inventory') renderInventory();
             else if (page === 'shop') renderShop();
         };
+
+        function getPageName(page) {
+            const names = { home: 'Дом', leaderboard: 'Топ', shop: 'Магазин', inventory: 'Инвентарь', admin: 'Админ' };
+            return names[page] || '';
+        }
 
         // Загрузка с сервера
         async function loadUser() {
@@ -903,7 +935,13 @@
                 stars = data.stars || 0;
                 ownedSkins = data.ownedSkins || ['default'];
                 currentBackground = data.background || 'default';
-                if (data.last_click) lastClickTime = new Date(data.last_click).getTime();
+                if (data.last_click) {
+                    // Правильно парсим дату с сервера
+                    const serverLastClick = new Date(data.last_click);
+                    lastClickTime = serverLastClick.getTime();
+                } else {
+                    lastClickTime = 0;
+                }
                 isAdmin = data.is_admin || false;
                 isMaster = data.is_master || false;
                 globalTimerEnabled = data.global_timer?.enabled || false;
@@ -913,21 +951,27 @@
                 applyBackground(currentBackground);
                 updateSize();
                 updateStars();
-                checkCooldown();
                 
                 // Синхронизируем время
-                syncTime();
+                await syncTime();
+                
+                // Проверяем кулдаун с правильным временем
+                checkCooldown();
                 
                 // Загружаем место в рейтинге
                 loadUserRank();
                 
                 // Добавляем кнопку админа если нужно
                 if (isAdmin) {
-                    const adminBtn = document.createElement('button');
-                    adminBtn.className = 'nav-btn';
-                    adminBtn.innerHTML = '<span class="nav-icon">🔧</span><span>Админ</span>';
-                    adminBtn.onclick = () => switchPage('admin');
-                    navMenu.appendChild(adminBtn);
+                    // Проверяем, есть ли уже кнопка админа
+                    const existingAdminBtn = document.querySelector('.nav-btn[onclick*="admin"]');
+                    if (!existingAdminBtn) {
+                        const adminBtn = document.createElement('button');
+                        adminBtn.className = 'nav-btn';
+                        adminBtn.innerHTML = '<span class="nav-icon">🔧</span><span>Админ</span>';
+                        adminBtn.setAttribute('onclick', "switchPage('admin')");
+                        navMenu.appendChild(adminBtn);
+                    }
                 }
                 
                 loading.style.display = 'none';
@@ -935,6 +979,7 @@
                 
                 // Запускаем глобальный таймер
                 updateGlobalTimer();
+                if (globalTimerInterval) clearInterval(globalTimerInterval);
                 globalTimerInterval = setInterval(updateGlobalTimer, 1000);
                 
             } catch (e) {
@@ -980,7 +1025,9 @@
                 
                 const data = await res.json();
                 size = data.size;
-                lastClickTime = new Date(data.last_click).getTime();
+                // Правильно парсим дату с сервера
+                const serverLastClick = new Date(data.last_click);
+                lastClickTime = serverLastClick.getTime();
                 
                 updateSize();
                 showChange(data.change);
@@ -1214,11 +1261,11 @@
                     </div>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div class="shop-item-price">
-                            <span>⭐</span>
+                            <span>⭐️</span>
                             <span>1</span>
                         </div>
                         <button class="buy-btn" onclick="buySkin('${skin.id}')" ${ownedSkins.includes(skin.id) ? 'disabled' : ''}>
-                            Купить за ⭐1
+                            Купить за ⭐️1
                         </button>
                     </div>
                 </div>
@@ -1285,10 +1332,10 @@
             setTimeout(() => changeEl.innerHTML = '', 800);
         }
 
-        // Проверка кулдауна (ИСПРАВЛЕНО)
+        // Исправленная проверка кулдауна
         function checkCooldown() {
-            const now = Date.now();
-            const lastClick = lastClickTime ? new Date(lastClickTime).getTime() : 0;
+            const now = getCurrentTime();
+            const lastClick = lastClickTime || 0;
             const diff = (now - lastClick) / 1000;
             
             if (diff < clickCooldown && lastClick > 0) {
@@ -1302,18 +1349,18 @@
             }
         }
 
-        // Таймер кликов (ИСПРАВЛЕНО)
+        // Исправленный таймер кликов
         function startCooldown(seconds) {
             cooldown = true;
             circle.classList.add('cooldown');
             circle.classList.remove('ready');
             
-            const endTime = Date.now() + (seconds * 1000);
+            const endTime = getCurrentTime() + (seconds * 1000);
             
             if (clickTimerInterval) clearInterval(clickTimerInterval);
             
             clickTimerInterval = setInterval(() => {
-                const now = Date.now();
+                const now = getCurrentTime();
                 const timeLeft = Math.max(0, Math.floor((endTime - now) / 1000));
                 
                 if (timeLeft <= 0) {
@@ -1382,7 +1429,7 @@
 
         window.setTimerDays = async function(days) {
             try {
-                await fetch(`${API_URL}/api/admin/timer/set`, {
+                const res = await fetch(`${API_URL}/api/admin/timer/set`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
@@ -1390,7 +1437,15 @@
                         days: days
                     })
                 });
-                alert(`Таймер установлен на ${days} дней`);
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    globalTimerEndDate = data.end_date;
+                    updateGlobalTimer();
+                    alert(`✅ Таймер установлен на ${days} дней`);
+                } else {
+                    alert('❌ Ошибка');
+                }
             } catch (e) {
                 console.error('Set timer error:', e);
             }
@@ -1491,7 +1546,7 @@
 
         window.setCooldown = async function(seconds) {
             try {
-                await fetch(`${API_URL}/api/admin/set_cooldown`, {
+                const res = await fetch(`${API_URL}/api/admin/set_cooldown`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
@@ -1499,8 +1554,14 @@
                         seconds: seconds
                     })
                 });
-                clickCooldown = seconds;
-                alert(`✅ Таймер кликов установлен на ${seconds} секунд`);
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    clickCooldown = data.cooldown;
+                    alert(`✅ Таймер кликов установлен на ${seconds} секунд`);
+                } else {
+                    alert('❌ Ошибка');
+                }
             } catch (e) {
                 console.error('Set cooldown error:', e);
             }
