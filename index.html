@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Тест Telegram Stars</title>
+    <title>Telegram Stars</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
@@ -51,7 +51,30 @@
             color: #ffd966;
         }
         
-        button {
+        .amount-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .amount-btn {
+            background: #2c2c2e;
+            border: 1px solid #ffd966;
+            color: #ffd966;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .amount-btn.active {
+            background: #ffd966;
+            color: black;
+        }
+        
+        button.primary {
             background: #ffd966;
             color: black;
             border: none;
@@ -68,6 +91,13 @@
             background: #2c2c2e;
             color: #ffd966;
             border: 1px solid #ffd966;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            margin-bottom: 12px;
+            cursor: pointer;
         }
         
         .log {
@@ -83,16 +113,14 @@
         
         .success { color: #30d158; }
         .error { color: #ff453a; }
+        .info { color: #0a84ff; }
         
-        .info-box {
-            background: rgba(255, 149, 0, 0.2);
-            border: 1px solid #ff9500;
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 16px;
-            color: #ff9500;
-            font-size: 14px;
+        .status {
             text-align: center;
+            margin: 16px 0;
+            padding: 12px;
+            border-radius: 12px;
+            background: rgba(255, 215, 0, 0.1);
         }
     </style>
 </head>
@@ -100,156 +128,212 @@
     <div class="container">
         <h1>⭐️ Telegram Stars</h1>
         
-        <div class="info-box" id="info">
-            🔄 Загружаю информацию...
-        </div>
-        
         <div class="balance">
-            <span>Баланс:</span>
+            <span>Ваш баланс:</span>
             <div class="stars-display">
                 <span>⭐️</span>
                 <span id="balance">0</span>
             </div>
         </div>
         
-        <button id="buyBtn">💰 Купить 1 звезду</button>
-        <button class="secondary" id="spendBtn">🎮 Потратить 1 звезду</button>
-        <button class="secondary" id="checkBtn">🔄 Проверить</button>
-        
-        <div class="log" id="log">
-            <div>👋 Готов к тесту</div>
+        <div class="status" id="status">
+            Загрузка...
         </div>
         
-        <div style="font-size: 12px; color: #666; text-align: center; margin-top: 16px;">
-            Bot: <span id="botName">загрузка...</span>
+        <div class="amount-buttons">
+            <button class="amount-btn active" data-amount="1">1 ⭐️</button>
+            <button class="amount-btn" data-amount="5">5 ⭐️</button>
+            <button class="amount-btn" data-amount="10">10 ⭐️</button>
+        </div>
+        
+        <button class="primary" id="buyBtn">
+            💎 Купить звезды
+        </button>
+        
+        <button class="secondary" id="spendBtn">
+            🎮 Купить скин (1 ⭐️)
+        </button>
+        
+        <button class="secondary" id="refreshBtn">
+            🔄 Обновить баланс
+        </button>
+        
+        <div class="log" id="log">
+            <div>👋 Запуск...</div>
         </div>
     </div>
 
     <script>
+        const API_URL = 'https://zhenya4700.pythonanywhere.com';
         const tg = window.Telegram.WebApp;
         tg.expand();
         
-        // Получаем информацию о боте
-        const initData = tg.initDataUnsafe || {};
-        const botName = initData.bot?.username || 'неизвестно';
-        const user = initData.user;
-        
-        document.getElementById('botName').textContent = '@' + botName;
-        document.getElementById('info').innerHTML = `✅ Бот: @${botName}<br>ID: ${user?.id || 'неизвестно'}`;
-        
+        const user = tg.initDataUnsafe?.user;
         let stars = 0;
+        let selectedAmount = 1;
         
-        function log(msg, type = 'info') {
-            const logDiv = document.getElementById('log');
+        // Элементы
+        const balanceEl = document.getElementById('balance');
+        const statusEl = document.getElementById('status');
+        const logEl = document.getElementById('log');
+        
+        // Логирование
+        function addLog(message, type = 'info') {
             const entry = document.createElement('div');
             entry.className = type;
-            entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
-            logDiv.appendChild(entry);
-            logDiv.scrollTop = logDiv.scrollHeight;
-            console.log(msg);
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logEl.appendChild(entry);
+            logEl.scrollTop = logEl.scrollHeight;
         }
         
-        function updateBalance(amount) {
-            stars = amount;
-            document.getElementById('balance').textContent = stars;
+        // Обновление баланса
+        function updateBalance(newStars) {
+            stars = newStars;
+            balanceEl.textContent = stars;
+            statusEl.innerHTML = `✅ Баланс: ${stars} ⭐️`;
         }
         
-        // ПРАВИЛЬНЫЙ СПОСОБ 1: Используем createInvoiceLink через бэкенд
-        async function buyStarViaBackend() {
-            log('🔄 Запрашиваю ссылку на оплату...');
+        // Загрузка баланса с сервера
+        async function loadBalance() {
+            try {
+                const res = await fetch(`${API_URL}/api/auth`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id)
+                    })
+                });
+                const data = await res.json();
+                updateBalance(data.stars || 0);
+                addLog(`💰 Баланс загружен: ${data.stars || 0} ⭐️`, 'success');
+            } catch (e) {
+                addLog(`❌ Ошибка загрузки: ${e.message}`, 'error');
+            }
+        }
+        
+        // КУПИТЬ ЗВЕЗДЫ (РЕАЛЬНЫЕ!)
+        document.getElementById('buyBtn').onclick = async () => {
+            addLog(`🔄 Создаю инвойс на ${selectedAmount} звезд...`);
             
             try {
-                // Здесь должен быть запрос к вашему бэкенду, который создаст инвойс
-                // Но для теста покажем альтернативный метод
-                log('❌ Нужен бэкенд для создания инвойса', 'error');
-                
-                // Альтернатива - использовать прямой метод (см. ниже)
-                alternativeBuyMethod();
-                
-            } catch (e) {
-                log(`Ошибка: ${e.message}`, 'error');
-            }
-        }
-        
-        // АЛЬТЕРНАТИВНЫЙ МЕТОД: Используем stars@pay (временное решение)
-        function alternativeBuyMethod() {
-            log('🔄 Пробую альтернативный метод...');
-            
-            // Создаем ссылку на платеж через stars платежную систему
-            const invoiceLink = `https://t.me/stars?startapp=transfer&amount=1&text=Тестовая%20покупка`;
-            
-            tg.openTelegramLink(invoiceLink);
-            
-            log('📱 Открыта ссылка на пополнение', 'info');
-            log('💡 После пополнения нажмите "Проверить"');
-        }
-        
-        // ПРАВИЛЬНЫЙ МЕТОД: Через бэкенд (рекомендуется)
-        async function correctBuyMethod() {
-            log('🔄 Отправляю запрос на сервер...');
-            
-            // Эмулируем ответ от сервера
-            // В реальности тут должен быть fetch к вашему API
-            setTimeout(() => {
-                // Сервер должен вернуть что-то вроде:
-                const invoiceUrl = "https://t.me/$invoice_token"; // Пример
-                
-                log('✅ Получен инвойс от сервера', 'success');
-                
-                // Открываем инвойс
-                tg.openInvoice(invoiceUrl, (status) => {
-                    log(`📦 Статус оплаты: ${status}`);
-                    
-                    if (status === 'paid') {
-                        updateBalance(stars + 1);
-                        log('✅ Звезда получена!', 'success');
-                        tg.showAlert('Спасибо! Звезда добавлена ⭐️');
-                    }
+                // 1. Запрашиваем ссылку на инвойс у сервера
+                const res = await fetch(`${API_URL}/api/create_invoice`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        amount: selectedAmount
+                    })
                 });
                 
-            }, 1000);
-        }
-        
-        // ВРЕМЕННОЕ РЕШЕНИЕ: Показываем как должно работать
-        document.getElementById('buyBtn').onclick = () => {
-            log('ℹ️ Для реальной оплаты нужно:', 'info');
-            log('1. Создать инвойс через бота (метод createInvoiceLink)', 'info');
-            log('2. Получить ссылку вида https://t.me/$токен', 'info');
-            log('3. Открыть её через tg.openInvoice()', 'info');
-            
-            // Показываем демо-ссылку
-            tg.showPopup({
-                title: 'Демо-режим',
-                message: 'В реальном приложении здесь откроется окно оплаты Telegram Stars',
-                buttons: [{type: 'ok'}]
-            });
-            
-            // Имитируем успешную оплату для теста
-            setTimeout(() => {
-                if (confirm('Имитировать успешную оплату?')) {
-                    updateBalance(stars + 1);
-                    log('✅ ДЕМО: Звезда добавлена!', 'success');
+                const data = await res.json();
+                
+                if (data.success && data.invoice_link) {
+                    addLog(`✅ Инвойс получен, открываю оплату...`);
+                    
+                    // 2. Открываем окно оплаты Telegram
+                    tg.openInvoice(data.invoice_link, async (status) => {
+                        addLog(`📦 Статус оплаты: ${status}`);
+                        
+                        if (status === 'paid') {
+                            // 3. Подтверждаем оплату на сервере
+                            addLog(`⏳ Подтверждаю оплату...`);
+                            
+                            const confirmRes = await fetch(`${API_URL}/api/confirm_payment`, {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({
+                                    telegram_id: String(user.id),
+                                    amount: selectedAmount
+                                })
+                            });
+                            
+                            const confirmData = await confirmRes.json();
+                            
+                            if (confirmData.success) {
+                                updateBalance(confirmData.stars);
+                                addLog(`✅ Оплачено! Баланс: ${confirmData.stars} ⭐️`, 'success');
+                                tg.showPopup({
+                                    title: 'Успешно!',
+                                    message: `Куплено ${selectedAmount} звезд ⭐️`,
+                                    buttons: [{type: 'ok'}]
+                                });
+                            }
+                        } else if (status === 'cancelled') {
+                            addLog(`❌ Оплата отменена`, 'error');
+                        } else if (status === 'failed') {
+                            addLog(`❌ Ошибка оплаты`, 'error');
+                        }
+                    });
+                    
+                } else {
+                    addLog(`❌ Ошибка: ${data.error}`, 'error');
                 }
-            }, 500);
+                
+            } catch (e) {
+                addLog(`❌ Ошибка: ${e.message}`, 'error');
+                console.error(e);
+            }
         };
         
-        // ПОТРАТИТЬ ЗВЕЗДУ
-        document.getElementById('spendBtn').onclick = () => {
+        // ПОТРАТИТЬ ЗВЕЗДУ (купить скин)
+        document.getElementById('spendBtn').onclick = async () => {
             if (stars < 1) {
-                log('❌ Нет звезд! Сначала купите', 'error');
+                addLog(`❌ Недостаточно звезд!`, 'error');
+                tg.showPopup({
+                    title: 'Ошибка',
+                    message: 'Сначала купите звезды!',
+                    buttons: [{type: 'ok'}]
+                });
                 return;
             }
-            updateBalance(stars - 1);
-            log('✅ Звезда потрачена!', 'success');
+            
+            addLog(`🔄 Покупаю скин за 1 звезду...`);
+            
+            try {
+                const res = await fetch(`${API_URL}/api/buy`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        skin_id: 'gold'  // Пример скина
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    updateBalance(data.stars);
+                    addLog(`✅ Скин куплен! Осталось: ${data.stars} ⭐️`, 'success');
+                } else {
+                    addLog(`❌ Ошибка: ${data.error}`, 'error');
+                }
+                
+            } catch (e) {
+                addLog(`❌ Ошибка: ${e.message}`, 'error');
+            }
         };
         
-        // ПРОВЕРИТЬ
-        document.getElementById('checkBtn').onclick = () => {
-            log(`💰 Баланс: ${stars} ⭐️`);
-        };
+        // Обновить баланс
+        document.getElementById('refreshBtn').onclick = loadBalance;
         
-        log('👋 Тест запущен');
-        log('ℹ️ Это ДЕМО-режим без реальных платежей');
+        // Выбор количества звезд
+        document.querySelectorAll('.amount-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedAmount = parseInt(btn.dataset.amount);
+                addLog(`✅ Выбрано: ${selectedAmount} ⭐️`);
+            };
+        });
+        
+        // Старт
+        if (!user) {
+            statusEl.innerHTML = '❌ Ошибка: не удалось получить пользователя';
+        } else {
+            statusEl.innerHTML = `👋 Привет, ${user.first_name}! Загружаю баланс...`;
+            loadBalance();
+        }
         
     </script>
 </body>
