@@ -2,1764 +2,260 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Тапалка члена</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест Telegram Stars</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Стили остаются без изменений */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            user-select: none;
-        }
-
         body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-            min-height: 100vh;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            margin: 0;
-            color: white;
-            transition: background 0.5s ease;
-            padding: 8px;
-        }
-
-        body.bg-default { background: linear-gradient(145deg, #1a1e2c 0%, #2a2f42 100%); }
-        body.bg-neon { background: linear-gradient(145deg, #20002c, #6a1b9a); }
-        body.bg-gold { background: linear-gradient(145deg, #7d6608, #b8860b); }
-        body.bg-rainbow {
-            background: linear-gradient(145deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
-            background-size: 400% 400%;
-            animation: rainbow 10s ease infinite;
-        }
-        body.bg-dark { background: linear-gradient(145deg, #0a0a0a, #1a1a1a); }
-        body.bg-forest { background: linear-gradient(145deg, #1b4d1b, #2e7d32); }
-        body.bg-ocean { background: linear-gradient(145deg, #01579b, #0288d1); }
-        body.bg-lava { background: linear-gradient(145deg, #bf360c, #d84315); }
-
-        @keyframes rainbow {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .app-wrapper {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            width: 100%;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-
-        .game-container {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 32px 32px 0 0;
-            padding: 20px 16px;
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-bottom: none;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .timer-banner {
-            background: linear-gradient(145deg, #ffd966, #e68a2e);
-            border-radius: 20px;
-            padding: 10px;
-            margin-bottom: 12px;
-            color: #1a1e2c;
-            font-weight: bold;
-            box-shadow: 0 4px 0 #b3540b;
-            flex-shrink: 0;
-            text-align: center;
-        }
-
-        .timer-banner .label {
-            font-size: 0.8rem;
-            opacity: 0.9;
-        }
-
-        .timer-banner .time {
-            font-size: 1.2rem;
-            font-family: monospace;
-            letter-spacing: 1px;
-        }
-
-        .timer-banner.disabled {
-            background: linear-gradient(145deg, #95a5a6, #7f8c8d);
-            box-shadow: 0 4px 0 #4a4a4a;
-        }
-
-        .user-info {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 16px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 30px;
-            padding: 12px;
-            flex-shrink: 0;
-        }
-
-        .rank-badge {
-            background: linear-gradient(135deg, #ffd966, #e68a2e);
-            color: #1a1e2c;
-            padding: 6px 12px;
-            border-radius: 30px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        .user-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #ff99cc, #b3d9ff);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 20px;
-            color: #1a1e2c;
-            flex-shrink: 0;
-        }
-
-        .username {
-            font-weight: 600;
-            flex: 1;
-            text-align: left;
-            font-size: 0.95rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .stars {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            background: rgba(147, 112, 219, 0.15);
-            padding: 5px 10px;
-            border-radius: 30px;
-            border: 1px solid rgba(147, 112, 219, 0.3);
-            flex-shrink: 0;
-        }
-
-        .star-icon { font-size: 14px; }
-        .star-amount { font-weight: 600; color: #c0a0ff; font-size: 0.9rem; }
-
-        .content-area {
-            flex: 1;
-            overflow-y: auto;
-            padding: 4px 0;
-            margin-bottom: 8px;
-            -webkit-overflow-scrolling: touch;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .page {
-            display: none;
-            flex: 1;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-        }
-
-        .page.active {
-            display: flex;
-        }
-
-        h1 {
-            font-size: 1.8rem;
-            margin: 10px 0;
-            background: linear-gradient(135deg, #ff99cc, #b3d9ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-align: center;
-        }
-
-        h2 {
-            font-size: 1.3rem;
-            margin-bottom: 12px;
-            color: #ffd966;
-            text-align: center;
-            width: 100%;
-        }
-
-        .tap-area {
-            width: 180px;
-            height: 180px;
-            margin: 15px auto;
-            background: radial-gradient(circle at 30% 30%, #ffd966, #e68a2e);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 12px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6);
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-            border: 3px solid #ffb347;
-        }
-
-        .tap-area:active {
-            transform: translateY(6px) scale(0.95);
-            box-shadow: 0 6px 0 #b3540b, 0 12px 20px rgba(0, 0, 0, 0.6);
-        }
-
-        .tap-area.cooldown {
-            opacity: 0.5;
-            filter: grayscale(80%);
-            cursor: not-allowed;
-            pointer-events: none;
-            transform: translateY(4px) scale(0.98);
-            box-shadow: 0 4px 0 #7a4a1f;
-        }
-
-        .tap-area.ready {
-            animation: smoothPulse 2s ease-in-out infinite;
-        }
-
-        @keyframes smoothPulse {
-            0% { box-shadow: 0 12px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6); }
-            50% { box-shadow: 0 12px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6), 0 0 25px #ffd966; }
-            100% { box-shadow: 0 12px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6); }
-        }
-
-        .size-display {
-            font-size: 3.5rem;
-            font-weight: 900;
-            color: #ffe484;
-            text-shadow: 0 3px 0 #b3540b, 0 5px 12px black;
-            line-height: 1;
-            margin: 5px 0;
-            text-align: center;
-        }
-
-        .size-label {
-            font-size: 1.3rem;
-            color: #f5c6a0;
-            margin-bottom: 5px;
-            text-align: center;
-        }
-
-        .change-indicator {
-            font-size: 1.8rem;
-            font-weight: bold;
-            min-height: 40px;
-            margin: 5px 0;
-            text-align: center;
-        }
-
-        .positive { color: #4caf50; }
-        .negative { color: #f44336; }
-
-        .timer-text {
-            font-size: 1.2rem;
-            background: rgba(0, 0, 0, 0.4);
-            padding: 6px 16px;
-            border-radius: 40px;
-            display: inline-block;
-            color: #aaa;
-            border: 1px solid #444;
-            margin: 10px auto;
-            font-family: monospace;
-            letter-spacing: 1px;
-        }
-
-        .timer-text.active {
-            color: #ffd966;
-            border-color: #ffd966;
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
-        }
-
-        .nav-menu {
-            display: flex;
-            justify-content: space-around;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
-            border-radius: 30px;
-            padding: 8px 4px;
-            margin-top: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            flex-shrink: 0;
-        }
-
-        .nav-btn {
-            background: transparent;
-            border: none;
-            color: #8e94ab;
-            font-size: 0.8rem;
-            padding: 6px 0;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-            flex: 1;
-            border-radius: 20px;
-            transition: all 0.2s ease;
-        }
-
-        .nav-btn.active {
-            color: #ffd966;
-            background: rgba(255, 215, 0, 0.15);
-        }
-
-        .nav-icon { font-size: 1.3rem; }
-
-        .leaderboard-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 10px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            margin-bottom: 6px;
-            width: 100%;
-        }
-
-        .leaderboard-rank {
-            width: 28px;
-            height: 28px;
-            background: linear-gradient(135deg, #ffd966, #e68a2e);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: #1a1e2c;
-            font-size: 0.9rem;
-            flex-shrink: 0;
-        }
-
-        .leaderboard-rank-1 { background: linear-gradient(135deg, #ffd700, #ffa500); }
-        .leaderboard-rank-2 { background: linear-gradient(135deg, #c0c0c0, #a0a0a0); }
-        .leaderboard-rank-3 { background: linear-gradient(135deg, #cd7f32, #b06d2a); }
-
-        .leaderboard-name {
-            flex: 1;
-            text-align: left;
-            font-weight: 500;
-            font-size: 0.9rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .leaderboard-size {
-            font-weight: bold;
-            color: #ffd966;
-            font-size: 0.9rem;
-            margin-right: 5px;
-        }
-
-        .profile-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: white;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            font-size: 1rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            text-decoration: none;
-        }
-
-        .profile-btn:hover {
-            background: rgba(255, 215, 0, 0.3);
-        }
-
-        .leaderboard-you {
-            background: rgba(255, 215, 0, 0.1);
-            border: 1px solid rgba(255, 215, 0, 0.3);
-        }
-
-        .leaderboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            width: 100%;
-        }
-
-        .refresh-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: white;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            font-size: 1.1rem;
-            cursor: pointer;
-        }
-
-        .shop-item {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 14px;
-            padding: 12px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-        }
-
-        .shop-item-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .shop-item-icon { font-size: 2rem; width: 40px; height: 40px; }
-        .shop-item-text { text-align: left; }
-        .shop-item-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 2px; }
-        .shop-item-desc { font-size: 0.75rem; color: #8e94ab; }
-
-        .shop-item-price {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            background: rgba(147, 112, 219, 0.15);
-            padding: 4px 8px;
-            border-radius: 16px;
-            font-size: 0.85rem;
-        }
-
-        .buy-btn {
-            background: #4caf50;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 18px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-            border-bottom: 2px solid #2e7d32;
-        }
-
-        .buy-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-            background: #7f8c8d;
-        }
-
-        .current-skin {
-            font-size: 0.85rem;
-            color: #ffd966;
-            margin: 8px 0;
-            padding: 5px;
-            background: rgba(255, 215, 0, 0.1);
-            border-radius: 16px;
-            text-align: center;
-            width: 100%;
-        }
-
-        .cooldown-reset {
-            background: linear-gradient(145deg, #ff6b6b, #ff4757);
-            margin-top: 10px;
-            cursor: pointer;
-        }
-
-        .inventory-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            margin: 10px 0;
-            width: 100%;
-        }
-
-        .inventory-item {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 12px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .inventory-item.owned { border-color: #ffd966; background: rgba(255, 215, 0, 0.1); }
-        .inventory-item.default { border-color: #ffffff; background: rgba(255, 255, 255, 0.15); }
-
-        .inventory-item-icon { font-size: 2.2rem; margin-bottom: 6px; }
-        .inventory-item-title { font-weight: 600; font-size: 0.8rem; margin-bottom: 8px; }
-
-        .inventory-item-controls {
-            display: flex;
-            gap: 4px;
-            justify-content: center;
-            min-height: 32px;
-            align-items: center;
-        }
-
-        .inv-btn {
-            background: #3a3f55;
-            color: white;
-            border: none;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            cursor: pointer;
-            border-bottom: 2px solid #1e2230;
-        }
-
-        .equipped-badge {
-            color: #4caf50;
-            font-size: 0.75rem;
-            font-weight: 600;
-            background: rgba(76, 175, 80, 0.2);
-            padding: 3px 6px;
-            border-radius: 10px;
-        }
-
-        .sold-out { color: #ff6b6b; font-size: 0.75rem; margin-top: 4px; }
-
-        /* Админ-панель */
-        .admin-section {
-            width: 100%;
-            margin-top: 15px;
-            padding: 10px;
-            background: rgba(255, 0, 0, 0.1);
-            border: 1px solid rgba(255, 0, 0, 0.3);
-            border-radius: 16px;
-        }
-
-        .admin-title {
-            color: #ff6b6b;
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        .admin-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-        }
-
-        .admin-btn {
-            background: rgba(255, 107, 107, 0.2);
-            border: 1px solid #ff6b6b;
-            color: white;
-            padding: 8px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            text-align: center;
-        }
-
-        .admin-btn.wide {
-            grid-column: span 2;
-        }
-
-        .admin-input {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid #ff6b6b;
-            color: white;
-            padding: 8px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            width: 100%;
-            margin-bottom: 8px;
-        }
-
-        .loading {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
+            font-family: system-ui, -apple-system, sans-serif;
             background: #1a1e2c;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 16px;
+        }
+        
+        .container {
+            max-width: 400px;
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border-radius: 24px;
+            padding: 24px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #ffd966;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+        
+        .balance {
+            background: rgba(0,0,0,0.3);
+            border-radius: 40px;
+            padding: 12px 20px;
+            margin-bottom: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
-            font-size: 1.2rem;
+            gap: 8px;
+            border: 1px solid rgba(255,215,0,0.3);
+        }
+        
+        .star {
+            font-size: 24px;
+        }
+        
+        .amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd966;
+        }
+        
+        .test-btn {
+            background: linear-gradient(145deg, #ffd966, #e68a2e);
+            color: #1a1e2c;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 40px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            border-bottom: 4px solid #b3540b;
+            width: 100%;
+            margin-bottom: 16px;
+            transition: transform 0.1s;
+        }
+        
+        .test-btn:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+        
+        .message {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4caf50;
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 20px;
+            color: #4caf50;
+            display: none;
+        }
+        
+        .error {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid #f44336;
+            color: #f44336;
+        }
+        
+        .status {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #8e94ab;
         }
     </style>
 </head>
-<body class="bg-default" id="body">
-    <div class="loading" id="loading">Загрузка...</div>
-
-    <div class="app-wrapper" id="gameContent" style="display: none;">
-        <div class="game-container">
-            <!-- Глобальный таймер -->
-            <div class="timer-banner" id="globalTimer">
-                <div class="label" id="timerLabel">⏰ До получения 500 рублей:</div>
-                <div class="time" id="timerDisplay">30д 00:00:00</div>
-            </div>
-
-            <div class="user-info">
-                <div class="rank-badge" id="rankDisplay">🏆 Место в рейтинге: ...</div>
-                <div class="user-row">
-                    <div class="avatar" id="avatar">👤</div>
-                    <div class="username" id="username">Загрузка...</div>
-                    <div class="stars">
-                        <span class="star-icon">⭐️</span>
-                        <span class="star-amount" id="starAmount">0</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="content-area">
-                <!-- Главная -->
-                <div class="page active" id="homePage">
-                    <h1>⚡ MEM-метр ⚡</h1>
-                    <div class="tap-area default" id="tapCircle"></div>
-                    <div class="size-display" id="sizeValue">0</div>
-                    <div class="size-label">сантиметров</div>
-                    <div class="change-indicator" id="changeIndicator"></div>
-                    <div class="timer-text" id="clickTimer">⚡ готов ⚡</div>
-                </div>
-
-                <!-- Лидерборд -->
-                <div class="page" id="leaderboardPage">
-                    <div class="leaderboard-header">
-                        <h2>🏆 Топ игроков</h2>
-                        <button class="refresh-btn" onclick="loadLeaderboard()">🔄</button>
-                    </div>
-                    <div id="leaderboardList">Загрузка...</div>
-                </div>
-
-                <!-- Магазин -->
-                <div class="page" id="shopPage">
-                    <h2>🏪 Магазин</h2>
-                    <div class="current-skin" id="currentSkinDisplay">Текущий фон: Обычный</div>
-                    
-                    <!-- Сброс таймера за 1 звезду -->
-                    <div class="shop-item cooldown-reset" onclick="buyCooldownReset()">
-                        <div class="shop-item-info">
-                            <div class="shop-item-icon">⏱️</div>
-                            <div class="shop-item-text">
-                                <div class="shop-item-title">Сброс таймера</div>
-                                <div class="shop-item-desc">Мгновенно сбрасывает ожидание (⭐️1)</div>
-                            </div>
-                        </div>
-                        <div class="shop-item-price">
-                            <span>⭐️</span>
-                            <span>1</span>
-                        </div>
-                    </div>
-                    
-                    <div id="shopItems"></div>
-                </div>
-
-                <!-- Инвентарь -->
-                <div class="page" id="inventoryPage">
-                    <h2>🎒 Инвентарь</h2>
-                    <div class="current-skin" id="inventoryCurrentSkin">Текущий фон: Обычный</div>
-                    <div class="inventory-grid" id="inventoryGrid"></div>
-                </div>
-
-                <!-- Админ-панель -->
-                <div class="page" id="adminPage">
-                    <h2>🔧 Админ-панель</h2>
-                    
-                    <div class="admin-section">
-                        <div class="admin-title">Глобальный таймер (500 руб)</div>
-                        <div class="admin-grid">
-                            <button class="admin-btn wide" id="toggleTimerBtn" onclick="toggleGlobalTimer()">⏯️ Включить таймер</button>
-                            <button class="admin-btn wide" onclick="restartTimer()">🔄 Запустить заново (30 дней)</button>
-                            <button class="admin-btn" onclick="setTimerDays(30)">📅 30 дней</button>
-                            <button class="admin-btn" onclick="setTimerDays(7)">📅 7 дней</button>
-                            <button class="admin-btn" onclick="setTimerDays(1)">📅 1 день</button>
-                            <button class="admin-btn wide" onclick="promptSetDays()">✏️ Своё число</button>
-                        </div>
-                    </div>
-
-                    <div class="admin-section">
-                        <div class="admin-title">Управление размером</div>
-                        <div class="admin-grid">
-                            <button class="admin-btn wide" onclick="clearAllSizes()">🧹 Сбросить ВСЕМ размер до 0</button>
-                            <button class="admin-btn wide" onclick="clearUserPrompt()">👤 Очистить пользователя</button>
-                            <button class="admin-btn wide" onclick="setMySize()">📏 Изменить свой размер</button>
-                        </div>
-                    </div>
-
-                    <div class="admin-section">
-                        <div class="admin-title">Управление пользователями</div>
-                        <div class="admin-grid">
-                            <button class="admin-btn" onclick="promptBanUser()">🔨 Забанить пользователя</button>
-                            <button class="admin-btn" onclick="promptUnbanUser()">✅ Разбанить пользователя</button>
-                        </div>
-                    </div>
-
-                    <div class="admin-section">
-                        <div class="admin-title">Управление админами (только для главного админа)</div>
-                        <div class="admin-grid">
-                            <button class="admin-btn" onclick="promptAddAdmin()">➕ Добавить админа</button>
-                            <button class="admin-btn" onclick="promptRemoveAdmin()">➖ Удалить админа</button>
-                            <button class="admin-btn wide" onclick="listAdmins()">📋 Список админов</button>
-                        </div>
-                    </div>
-
-                    <div class="admin-section">
-                        <div class="admin-title">Инвентарь</div>
-                        <div class="admin-grid">
-                            <button class="admin-btn wide" onclick="clearMyInventory()">🗑️ Очистить свой инвентарь</button>
-                        </div>
-                    </div>
-
-                    <div class="admin-section">
-                        <div class="admin-title">Управление временем</div>
-                        <div class="admin-grid">
-                            <button class="admin-btn wide" onclick="resetAllCooldowns()">⏱️ Сбросить время ожидания ВСЕМ</button>
-                        </div>
-                    </div>
-
-                    <div class="admin-section">
-                        <div class="admin-title">Настройки кликов</div>
-                        <div class="admin-grid">
-                            <button class="admin-btn" onclick="setCooldown(60)">⏱️ 60 сек</button>
-                            <button class="admin-btn" onclick="setCooldown(100)">⏱️ 100 сек</button>
-                            <button class="admin-btn" onclick="setCooldown(300)">⏱️ 300 сек</button>
-                            <button class="admin-btn wide" onclick="promptSetCooldown()">✏️ Своё число</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<body>
+    <div class="container">
+        <h1>⭐️ Тест Telegram Stars</h1>
+        
+        <!-- Баланс звезд -->
+        <div class="balance">
+            <span class="star">⭐️</span>
+            <span class="amount" id="starBalance">0</span>
+            <span style="color: #8e94ab;">звезд</span>
         </div>
-
-        <!-- Навигация ВСЕГДА ВНИЗУ -->
-        <div class="nav-menu" id="navMenu">
-            <button class="nav-btn active" onclick="switchPage('home')">
-                <span class="nav-icon">🏠</span>
-                <span>Дом</span>
-            </button>
-            <button class="nav-btn" onclick="switchPage('leaderboard')">
-                <span class="nav-icon">🏆</span>
-                <span>Топ</span>
-            </button>
-            <button class="nav-btn" onclick="switchPage('shop')">
-                <span class="nav-icon">🏪</span>
-                <span>Магазин</span>
-            </button>
-            <button class="nav-btn" onclick="switchPage('inventory')">
-                <span class="nav-icon">🎒</span>
-                <span>Инвентарь</span>
-            </button>
+        
+        <!-- Тестовая кнопка -->
+        <button class="test-btn" id="testButton">
+            🚀 Запросить 1 звезду
+        </button>
+        
+        <!-- Сообщение об успехе -->
+        <div class="message" id="successMessage">
+            ✅ Ура! Звезда потрачена! Спасибо за тест!
+        </div>
+        
+        <!-- Статус -->
+        <div class="status" id="status">
+            Нажми кнопку, чтобы запросить звезду
+        </div>
+        
+        <!-- Информация -->
+        <div style="margin-top: 20px; font-size: 12px; color: #666;">
+            Это тест Telegram Stars. Звезды списываются реально! ⭐️
         </div>
     </div>
 
     <script>
-        const API_URL = 'https://zhenya4700.pythonanywhere.com';
-        
-        let tg = window.Telegram.WebApp;
+        // Получаем WebApp
+        const tg = window.Telegram.WebApp;
         tg.expand();
-        let user = tg.initDataUnsafe?.user;
         
         // Элементы
-        const body = document.getElementById('body');
-        const loading = document.getElementById('loading');
-        const gameContent = document.getElementById('gameContent');
-        const usernameEl = document.getElementById('username');
-        const sizeEl = document.getElementById('sizeValue');
-        const changeEl = document.getElementById('changeIndicator');
-        const clickTimerEl = document.getElementById('clickTimer');
-        const circle = document.getElementById('tapCircle');
-        const starAmountEl = document.getElementById('starAmount');
-        const currentSkinDisplay = document.getElementById('currentSkinDisplay');
-        const inventoryCurrentSkin = document.getElementById('inventoryCurrentSkin');
-        const rankDisplay = document.getElementById('rankDisplay');
-        const globalTimerEl = document.getElementById('globalTimer');
-        const timerDisplay = document.getElementById('timerDisplay');
-        const timerLabel = document.getElementById('timerLabel');
-        const navMenu = document.getElementById('navMenu');
+        const testButton = document.getElementById('testButton');
+        const starBalance = document.getElementById('starBalance');
+        const successMessage = document.getElementById('successMessage');
+        const statusEl = document.getElementById('status');
         
-        // Страницы
-        const pages = {
-            home: document.getElementById('homePage'),
-            leaderboard: document.getElementById('leaderboardPage'),
-            shop: document.getElementById('shopPage'),
-            inventory: document.getElementById('inventoryPage'),
-            admin: document.getElementById('adminPage')
-        };
-        
-        // Состояние
-        let size = 0;
-        let lastClickTime = 0;
-        let cooldown = false;
-        let clickTimerInterval = null;
-        let globalTimerInterval = null;
-        let currentBackground = 'default';
-        let ownedSkins = ['default'];
+        // Начальный баланс (будет загружен)
         let stars = 0;
-        let isAdmin = false;
-        let isMaster = false;
-        let globalTimerEnabled = false;
-        let globalTimerEndDate = null;
-        let clickCooldown = 100;
         
-        const allSkins = [
-            { id: 'neon', name: 'Неоновый', icon: '💜' },
-            { id: 'gold', name: 'Золотой', icon: '💛' },
-            { id: 'rainbow', name: 'Радужный', icon: '🌈' },
-            { id: 'dark', name: 'Тёмный', icon: '🖤' },
-            { id: 'forest', name: 'Лесной', icon: '🌲' },
-            { id: 'ocean', name: 'Океанский', icon: '🌊' },
-            { id: 'lava', name: 'Лавовый', icon: '🌋' }
-        ];
-        
-        const backgroundNames = {
-            'default': 'Обычный', 'neon': 'Неоновый', 'gold': 'Золотой',
-            'rainbow': 'Радужный', 'dark': 'Тёмный', 'forest': 'Лесной',
-            'ocean': 'Океанский', 'lava': 'Лавовый'
-        };
-        
-        const backgroundIcons = {
-            'default': '⚪', 'neon': '💜', 'gold': '💛', 'rainbow': '🌈',
-            'dark': '🖤', 'forest': '🌲', 'ocean': '🌊', 'lava': '🌋'
-        };
-
-        // Исправленная функция синхронизации времени
-        async function syncTime() {
+        // Загружаем баланс при старте
+        async function loadBalance() {
             try {
-                const res = await fetch(`${API_URL}/api/time`);
-                const data = await res.json();
-                // Сохраняем смещение времени с сервером
-                const serverTime = data.server_time * 1000;
-                const clientTime = Date.now();
-                window.timeOffset = serverTime - clientTime;
-                console.log('Time sync - offset:', window.timeOffset, 'ms');
+                // Тут должен быть ваш API запрос
+                // Для теста просто показываем 5 звезд
+                stars = 5;
+                starBalance.textContent = stars;
             } catch (e) {
-                console.error('Time sync error:', e);
-                window.timeOffset = 0;
+                console.error('Ошибка загрузки баланса:', e);
             }
         }
-
-        // Функция получения текущего времени с учетом сервера
-        function getCurrentTime() {
-            return Date.now() + (window.timeOffset || 0);
+        
+        // Обновить отображение баланса
+        function updateBalance(newStars) {
+            stars = newStars;
+            starBalance.textContent = stars;
         }
-
-        // Исправленная функция обновления глобального таймера
-        function updateGlobalTimer() {
-            if (!globalTimerEnabled || !globalTimerEndDate) {
-                globalTimerEl.classList.add('disabled');
-                timerDisplay.textContent = '⏸️ Таймер остановлен';
-                timerLabel.textContent = '⏰ Глобальный таймер:';
-                return;
-            }
+        
+        // Тестовая функция - запрос 1 звезды
+        async function requestOneStar() {
+            statusEl.textContent = '⏳ Открываю окно оплаты...';
             
-            globalTimerEl.classList.remove('disabled');
-            timerLabel.textContent = '⏰ До получения 500 рублей:';
-            
-            const now = getCurrentTime();
-            // Парсим дату правильно, чтобы избежать проблем с часовыми поясами
-            const endDate = new Date(globalTimerEndDate);
-            // Убеждаемся, что дата в UTC
-            const endTimeUTC = Date.UTC(
-                endDate.getUTCFullYear(),
-                endDate.getUTCMonth(),
-                endDate.getUTCDate(),
-                endDate.getUTCHours(),
-                endDate.getUTCMinutes(),
-                endDate.getUTCSeconds()
-            );
-            
-            const diff = endTimeUTC - now;
-            
-            if (diff <= 0) {
-                timerDisplay.textContent = '🎉 ПОЛУЧИТЬ 500 ₽';
-                return;
-            }
-            
-            const totalSeconds = Math.floor(diff / 1000);
-            const days = Math.floor(totalSeconds / 86400);
-            const hours = Math.floor((totalSeconds % 86400) / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = totalSeconds % 60;
-            
-            timerDisplay.textContent = `${days}д ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        }
-
-        // Переключение страниц
-        window.switchPage = function(page) {
-            Object.values(pages).forEach(p => p.classList.remove('active'));
-            pages[page].classList.add('active');
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            // Находим кнопку по тексту и активируем
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                if (btn.innerText.includes(getPageName(page))) {
-                    btn.classList.add('active');
+            // Создаем инвойс на 1 звезду
+            // currency: 'XTR' - это код Telegram Stars
+            // amount: 1 - цена в звездах
+            tg.openInvoice({
+                currency: 'XTR',
+                prices: [{ 
+                    label: 'Тестовая покупка', 
+                    amount: 1  // 1 звезда
+                }]
+            }, function(status) {
+                // Этот коллбэк вызывается после закрытия окна оплаты
+                console.log('Статус оплаты:', status);
+                
+                if (status === 'paid') {
+                    // Оплата прошла успешно!
+                    statusEl.textContent = '✅ Оплата прошла! Добавляю звезду...';
+                    
+                    // Имитируем добавление звезды (тут должен быть ваш API)
+                    setTimeout(() => {
+                        // Увеличиваем баланс на 1
+                        updateBalance(stars + 1);
+                        
+                        // Показываем сообщение
+                        successMessage.style.display = 'block';
+                        statusEl.textContent = '✅ Тест пройден! Звезда добавлена!';
+                        
+                        // Через 3 секунды скрываем сообщение
+                        setTimeout(() => {
+                            successMessage.style.display = 'none';
+                        }, 3000);
+                    }, 500);
+                    
+                } else if (status === 'cancelled') {
+                    // Пользователь отменил оплату
+                    statusEl.textContent = '❌ Оплата отменена';
+                    
+                } else if (status === 'failed') {
+                    // Ошибка оплаты
+                    statusEl.textContent = '❌ Ошибка оплаты';
                 }
             });
-            
-            if (page === 'leaderboard') loadLeaderboard();
-            else if (page === 'inventory') renderInventory();
-            else if (page === 'shop') renderShop();
-        };
-
-        function getPageName(page) {
-            const names = { home: 'Дом', leaderboard: 'Топ', shop: 'Магазин', inventory: 'Инвентарь', admin: 'Админ' };
-            return names[page] || '';
-        }
-
-        // Загрузка с сервера
-        async function loadUser() {
-            try {
-                const res = await fetch(`${API_URL}/api/auth`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id),
-                        username: user.username || '',
-                        first_name: user.first_name || ''
-                    })
-                });
-                
-                if (res.status === 403) {
-                    alert('Вы забанены!');
-                    return;
-                }
-                
-                const data = await res.json();
-                
-                size = data.size;
-                stars = data.stars || 0;
-                ownedSkins = data.ownedSkins || ['default'];
-                currentBackground = data.background || 'default';
-                if (data.last_click) {
-                    // Правильно парсим дату с сервера
-                    const serverLastClick = new Date(data.last_click);
-                    lastClickTime = serverLastClick.getTime();
-                } else {
-                    lastClickTime = 0;
-                }
-                isAdmin = data.is_admin || false;
-                isMaster = data.is_master || false;
-                globalTimerEnabled = data.global_timer?.enabled || false;
-                globalTimerEndDate = data.global_timer?.end_date;
-                clickCooldown = data.global_timer?.cooldown || 100;
-                
-                applyBackground(currentBackground);
-                updateSize();
-                updateStars();
-                
-                // Синхронизируем время
-                await syncTime();
-                
-                // Проверяем кулдаун с правильным временем
-                checkCooldown();
-                
-                // Загружаем место в рейтинге
-                loadUserRank();
-                
-                // Добавляем кнопку админа если нужно
-                if (isAdmin) {
-                    // Проверяем, есть ли уже кнопка админа
-                    const existingAdminBtn = document.querySelector('.nav-btn[onclick*="admin"]');
-                    if (!existingAdminBtn) {
-                        const adminBtn = document.createElement('button');
-                        adminBtn.className = 'nav-btn';
-                        adminBtn.innerHTML = '<span class="nav-icon">🔧</span><span>Админ</span>';
-                        adminBtn.setAttribute('onclick', "switchPage('admin')");
-                        navMenu.appendChild(adminBtn);
-                    }
-                }
-                
-                loading.style.display = 'none';
-                gameContent.style.display = 'flex';
-                
-                // Запускаем глобальный таймер
-                updateGlobalTimer();
-                if (globalTimerInterval) clearInterval(globalTimerInterval);
-                globalTimerInterval = setInterval(updateGlobalTimer, 1000);
-                
-            } catch (e) {
-                console.error('Auth error:', e);
-                loading.style.display = 'none';
-                gameContent.style.display = 'flex';
-            }
-        }
-
-        // Загрузка места в рейтинге
-        async function loadUserRank() {
-            try {
-                const res = await fetch(`${API_URL}/api/leaderboard`);
-                const leaders = await res.json();
-                const rank = leaders.findIndex(l => l.telegram_id === String(user.id)) + 1;
-                rankDisplay.textContent = rank > 0 ? `🏆 Место в рейтинге: ${rank}` : '🏆 Место в рейтинге: ...';
-            } catch (e) {
-                console.error('Rank error:', e);
-            }
-        }
-
-        // Обновление звёзд
-        function updateStars() {
-            starAmountEl.textContent = stars;
-        }
-
-        // Клик
-        async function handleTap() {
-            if (cooldown) return;
-            
-            try {
-                const res = await fetch(`${API_URL}/api/click`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({telegram_id: String(user.id)})
-                });
-                
-                if (res.status === 429) {
-                    const data = await res.json();
-                    startCooldown(data.wait);
-                    return;
-                }
-                
-                const data = await res.json();
-                size = data.size;
-                // Правильно парсим дату с сервера
-                const serverLastClick = new Date(data.last_click);
-                lastClickTime = serverLastClick.getTime();
-                
-                updateSize();
-                showChange(data.change);
-                startCooldown(clickCooldown);
-                
-            } catch (e) {
-                console.error('Click error:', e);
-            }
-        }
-
-        // Покупка скина за реальные звёзды Telegram
-        window.buySkin = async function(skinId) {
-            try {
-                const res = await fetch(`${API_URL}/api/buy`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id),
-                        skin_id: skinId
-                    })
-                });
-                
-                if (res.status === 402) {
-                    const skin = allSkins.find(s => s.id === skinId);
-                    
-                    tg.openInvoice({
-                        currency: 'XTR',
-                        prices: [{ 
-                            label: `${skin.name} фон`, 
-                            amount: 1
-                        }]
-                    }, function(status) {
-                        if (status === 'paid') {
-                            fetch(`${API_URL}/api/add_stars`, {
-                                method: 'POST',
-                                headers: {'Content-Type': 'application/json'},
-                                body: JSON.stringify({
-                                    telegram_id: String(user.id),
-                                    amount: 1
-                                })
-                            }).then(() => {
-                                confirmBuySkin(skinId);
-                            });
-                        }
-                    });
-                } else if (res.ok) {
-                    const data = await res.json();
-                    stars = data.stars;
-                    ownedSkins = data.ownedSkins;
-                    updateStars();
-                    renderShop();
-                    renderInventory();
-                }
-            } catch (e) {
-                console.error('Buy error:', e);
-            }
-        };
-
-        window.confirmBuySkin = async function(skinId) {
-            try {
-                const res = await fetch(`${API_URL}/api/buy`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id),
-                        skin_id: skinId
-                    })
-                });
-                
-                if (res.ok) {
-                    const data = await res.json();
-                    stars = data.stars;
-                    ownedSkins = data.ownedSkins;
-                    updateStars();
-                    renderShop();
-                    renderInventory();
-                }
-            } catch (e) {
-                console.error('Confirm buy error:', e);
-            }
-        };
-
-        // Покупка сброса таймера за звезду
-        window.buyCooldownReset = async function() {
-            try {
-                const res = await fetch(`${API_URL}/api/reset_cooldown`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({telegram_id: String(user.id)})
-                });
-                
-                if (res.status === 402) {
-                    tg.openInvoice({
-                        currency: 'XTR',
-                        prices: [{ 
-                            label: 'Сброс таймера', 
-                            amount: 1
-                        }]
-                    }, function(status) {
-                        if (status === 'paid') {
-                            fetch(`${API_URL}/api/add_stars`, {
-                                method: 'POST',
-                                headers: {'Content-Type': 'application/json'},
-                                body: JSON.stringify({
-                                    telegram_id: String(user.id),
-                                    amount: 1
-                                })
-                            }).then(() => {
-                                confirmCooldownReset();
-                            });
-                        }
-                    });
-                } else if (res.ok) {
-                    const data = await res.json();
-                    stars = data.stars;
-                    updateStars();
-                    
-                    if (clickTimerInterval) clearInterval(clickTimerInterval);
-                    cooldown = false;
-                    lastClickTime = 0;
-                    circle.classList.remove('cooldown');
-                    circle.classList.add('ready');
-                    clickTimerEl.textContent = '⚡ готов ⚡';
-                    clickTimerEl.classList.remove('active');
-                }
-            } catch (e) {
-                console.error('Reset error:', e);
-            }
-        };
-
-        window.confirmCooldownReset = async function() {
-            try {
-                const res = await fetch(`${API_URL}/api/reset_cooldown`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({telegram_id: String(user.id)})
-                });
-                
-                if (res.ok) {
-                    const data = await res.json();
-                    stars = data.stars;
-                    updateStars();
-                    
-                    if (clickTimerInterval) clearInterval(clickTimerInterval);
-                    cooldown = false;
-                    lastClickTime = 0;
-                    circle.classList.remove('cooldown');
-                    circle.classList.add('ready');
-                    clickTimerEl.textContent = '⚡ готов ⚡';
-                    clickTimerEl.classList.remove('active');
-                }
-            } catch (e) {
-                console.error('Confirm reset error:', e);
-            }
-        };
-
-        // Надеть скин
-        window.equipSkin = async function(skinId) {
-            try {
-                const res = await fetch(`${API_URL}/api/equip`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id),
-                        skin_id: skinId
-                    })
-                });
-                
-                if (res.ok) {
-                    currentBackground = skinId;
-                    applyBackground(skinId);
-                    renderInventory();
-                }
-            } catch (e) {
-                console.error('Equip error:', e);
-            }
-        };
-
-        // Лидерборд
-        window.loadLeaderboard = async function() {
-            const listEl = document.getElementById('leaderboardList');
-            listEl.innerHTML = 'Загрузка...';
-            
-            try {
-                const res = await fetch(`${API_URL}/api/leaderboard`);
-                const leaders = await res.json();
-                
-                if (leaders.length === 0) {
-                    listEl.innerHTML = '<div style="text-align: center; color: #8e94ab; padding: 20px;">Пока нет игроков</div>';
-                    return;
-                }
-                
-                listEl.innerHTML = leaders.map((item, i) => {
-                    const displayName = item.first_name || item.username || 'Игрок';
-                    return `
-                        <div class="leaderboard-item ${user && item.telegram_id === String(user.id) ? 'leaderboard-you' : ''}">
-                            <div class="leaderboard-rank ${i === 0 ? 'leaderboard-rank-1' : i === 1 ? 'leaderboard-rank-2' : i === 2 ? 'leaderboard-rank-3' : ''}">${i+1}</div>
-                            <div class="leaderboard-name">${displayName}</div>
-                            <div class="leaderboard-size">${item.size} см</div>
-                            <button class="profile-btn" onclick="copyUserId('${item.telegram_id}')" title="Копировать ID">📋</button>
-                            <a href="tg://user?id=${item.telegram_id}" class="profile-btn" title="Открыть профиль">👤</a>
-                        </div>
-                    `;
-                }).join('');
-                
-            } catch (e) {
-                listEl.innerHTML = 'Ошибка загрузки';
-            }
-        };
-
-        // Копирование ID
-        window.copyUserId = function(userId) {
-            navigator.clipboard.writeText(userId).then(() => {
-                alert('ID скопирован: ' + userId);
-            }).catch(() => {
-                alert('Ошибка копирования');
-            });
-        };
-
-        // Магазин
-        function renderShop() {
-            const html = allSkins.map(skin => `
-                <div class="shop-item">
-                    <div class="shop-item-info">
-                        <div class="shop-item-icon">${skin.icon}</div>
-                        <div class="shop-item-text">
-                            <div class="shop-item-title">${skin.name} член</div>
-                            <div class="shop-item-desc">Уникальный фон для профиля</div>
-                            ${ownedSkins.includes(skin.id) ? '<div class="sold-out">✅ Уже куплено</div>' : ''}
-                        </div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div class="shop-item-price">
-                            <span>⭐️</span>
-                            <span>1</span>
-                        </div>
-                        <button class="buy-btn" onclick="buySkin('${skin.id}')" ${ownedSkins.includes(skin.id) ? 'disabled' : ''}>
-                            Купить за ⭐️1
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-            
-            document.getElementById('shopItems').innerHTML = html;
-        }
-
-        // Инвентарь
-        function renderInventory() {
-            let html = `
-                <div class="inventory-item default">
-                    <div class="inventory-item-icon">⚪</div>
-                    <div class="inventory-item-title">Обычный</div>
-                    <div class="inventory-item-controls">
-                        ${currentBackground !== 'default' ? 
-                            `<button class="inv-btn" onclick="equipSkin('default')">Надеть</button>` : 
-                            '<span class="equipped-badge">✅ Надето</span>'}
-                    </div>
-                </div>
-            `;
-            
-            for (let skin of allSkins) {
-                if (ownedSkins.includes(skin.id)) {
-                    html += `
-                        <div class="inventory-item owned">
-                            <div class="inventory-item-icon">${skin.icon}</div>
-                            <div class="inventory-item-title">${skin.name}</div>
-                            <div class="inventory-item-controls">
-                                ${currentBackground !== skin.id ? 
-                                    `<button class="inv-btn" onclick="equipSkin('${skin.id}')">Надеть</button>` : 
-                                    '<span class="equipped-badge">✅ Надето</span>'}
-                            </div>
-                        </div>
-                    `;
-                }
-            }
-            
-            document.getElementById('inventoryGrid').innerHTML = html;
-        }
-
-        // Применить фон
-        function applyBackground(bg) {
-            body.className = '';
-            body.classList.add(`bg-${bg}`);
-            
-            const icon = backgroundIcons[bg] || '⚪';
-            const name = backgroundNames[bg] || 'Обычный';
-            const text = `Текущий фон: ${icon} ${name}`;
-            
-            if (currentSkinDisplay) currentSkinDisplay.textContent = text;
-            if (inventoryCurrentSkin) inventoryCurrentSkin.textContent = text;
-        }
-
-        // Обновление размера
-        function updateSize() {
-            sizeEl.textContent = size;
-        }
-
-        // Показать изменение
-        function showChange(change) {
-            changeEl.innerHTML = change > 0 ? `<span class="positive">+${change}</span>` :
-                                 change < 0 ? `<span class="negative">${change}</span>` : '0';
-            setTimeout(() => changeEl.innerHTML = '', 800);
-        }
-
-        // Исправленная проверка кулдауна
-        function checkCooldown() {
-            const now = getCurrentTime();
-            const lastClick = lastClickTime || 0;
-            const diff = (now - lastClick) / 1000;
-            
-            if (diff < clickCooldown && lastClick > 0) {
-                startCooldown(clickCooldown - diff);
-            } else {
-                circle.classList.remove('cooldown');
-                circle.classList.add('ready');
-                clickTimerEl.textContent = '⚡ готов ⚡';
-                clickTimerEl.classList.remove('active');
-                cooldown = false;
-            }
-        }
-
-        // Исправленный таймер кликов
-        function startCooldown(seconds) {
-            cooldown = true;
-            circle.classList.add('cooldown');
-            circle.classList.remove('ready');
-            
-            const endTime = getCurrentTime() + (seconds * 1000);
-            
-            if (clickTimerInterval) clearInterval(clickTimerInterval);
-            
-            clickTimerInterval = setInterval(() => {
-                const now = getCurrentTime();
-                const timeLeft = Math.max(0, Math.floor((endTime - now) / 1000));
-                
-                if (timeLeft <= 0) {
-                    clearInterval(clickTimerInterval);
-                    cooldown = false;
-                    circle.classList.remove('cooldown');
-                    circle.classList.add('ready');
-                    clickTimerEl.textContent = '⚡ готов ⚡';
-                    clickTimerEl.classList.remove('active');
-                } else {
-                    const hours = Math.floor(timeLeft / 3600);
-                    const minutes = Math.floor((timeLeft % 3600) / 60);
-                    const seconds = timeLeft % 60;
-                    clickTimerEl.textContent = `⏳ ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                    clickTimerEl.classList.add('active');
-                }
-            }, 1000);
-        }
-
-        // ========== АДМИН-ФУНКЦИИ ==========
-
-        window.toggleGlobalTimer = async function() {
-            try {
-                const res = await fetch(`${API_URL}/api/admin/timer/toggle`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id)
-                    })
-                });
-                const data = await res.json();
-                globalTimerEnabled = data.enabled;
-                updateGlobalTimer();
-                document.getElementById('toggleTimerBtn').textContent = globalTimerEnabled ? '⏸️ Выключить таймер' : '▶️ Включить таймер';
-            } catch (e) {
-                console.error('Toggle error:', e);
-            }
-        };
-
-        window.restartTimer = async function() {
-            if (!confirm('Запустить таймер заново на 30 дней?')) return;
-            
-            try {
-                const res = await fetch(`${API_URL}/api/admin/timer/restart`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id)
-                    })
-                });
-                
-                const data = await res.json();
-                if (res.ok) {
-                    globalTimerEndDate = data.end_date;
-                    globalTimerEnabled = true;
-                    updateGlobalTimer();
-                    alert('✅ Таймер перезапущен на 30 дней');
-                } else {
-                    alert('❌ Ошибка: ' + (data.error || 'Неизвестная ошибка'));
-                }
-            } catch (e) {
-                console.error('Restart timer error:', e);
-                alert('❌ Ошибка соединения');
-            }
-        };
-
-        window.setTimerDays = async function(days) {
-            try {
-                const res = await fetch(`${API_URL}/api/admin/timer/set`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id),
-                        days: days
-                    })
-                });
-                
-                if (res.ok) {
-                    const data = await res.json();
-                    globalTimerEndDate = data.end_date;
-                    updateGlobalTimer();
-                    alert(`✅ Таймер установлен на ${days} дней`);
-                } else {
-                    alert('❌ Ошибка');
-                }
-            } catch (e) {
-                console.error('Set timer error:', e);
-            }
-        };
-
-        window.promptSetDays = function() {
-            const days = prompt('Введите количество дней:');
-            if (days && !isNaN(days)) {
-                setTimerDays(parseInt(days));
-            }
-        };
-
-        window.clearAllSizes = async function() {
-            if (!confirm('Точно очистить размер у ВСЕХ пользователей?')) return;
-            
-            try {
-                await fetch(`${API_URL}/api/admin/clear_all`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id)
-                    })
-                });
-                alert('✅ Все размеры очищены');
-            } catch (e) {
-                console.error('Clear all error:', e);
-            }
-        };
-
-        window.clearUserPrompt = function() {
-            const userId = prompt('Введите Telegram ID пользователя:');
-            if (userId) {
-                clearUserSize(userId);
-            }
-        };
-
-        window.clearUserSize = async function(targetId) {
-            try {
-                await fetch(`${API_URL}/api/admin/clear_user`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id),
-                        target_id: targetId
-                    })
-                });
-                alert(`✅ Размер пользователя ${targetId} очищен`);
-            } catch (e) {
-                console.error('Clear user error:', e);
-            }
-        };
-
-        window.setMySize = function() {
-            const newSize = prompt('Введите новый размер:');
-            if (newSize && !isNaN(newSize)) {
-                size = parseInt(newSize);
-                updateSize();
-                fetch(`${API_URL}/api/admin/set_size`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id),
-                        size: parseInt(newSize)
-                    })
-                });
-            }
-        };
-
-        window.clearMyInventory = async function() {
-            if (!confirm('Точно очистить весь инвентарь? Все скины пропадут!')) return;
-            
-            try {
-                const res = await fetch(`${API_URL}/api/admin/clear_inventory`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id)
-                    })
-                });
-                
-                const data = await res.json();
-                
-                if (res.ok) {
-                    ownedSkins = ['default'];
-                    currentBackground = 'default';
-                    applyBackground('default');
-                    renderInventory();
-                    renderShop();
-                    alert('✅ Инвентарь очищен');
-                } else {
-                    alert('❌ Ошибка: ' + (data.error || 'Неизвестная ошибка'));
-                }
-            } catch (e) {
-                console.error('Clear inventory error:', e);
-                alert('❌ Ошибка соединения');
-            }
-        };
-
-        window.setCooldown = async function(seconds) {
-            try {
-                const res = await fetch(`${API_URL}/api/admin/set_cooldown`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id),
-                        seconds: seconds
-                    })
-                });
-                
-                if (res.ok) {
-                    const data = await res.json();
-                    clickCooldown = data.cooldown;
-                    alert(`✅ Таймер кликов установлен на ${seconds} секунд`);
-                } else {
-                    alert('❌ Ошибка');
-                }
-            } catch (e) {
-                console.error('Set cooldown error:', e);
-            }
-        };
-
-        window.promptSetCooldown = function() {
-            const seconds = prompt('Введите количество секунд:');
-            if (seconds && !isNaN(seconds)) {
-                setCooldown(parseInt(seconds));
-            }
-        };
-
-        window.resetAllCooldowns = async function() {
-            if (!confirm('Сбросить время ожидания у ВСЕХ пользователей?')) return;
-            
-            try {
-                const res = await fetch(`${API_URL}/api/admin/reset_all_cooldowns`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id)
-                    })
-                });
-                
-                if (res.ok) {
-                    alert('✅ Время ожидания сброшено у всех пользователей');
-                } else {
-                    alert('❌ Ошибка');
-                }
-            } catch (e) {
-                console.error('Reset all cooldowns error:', e);
-                alert('❌ Ошибка соединения');
-            }
-        };
-
-        // ========== УПРАВЛЕНИЕ АДМИНАМИ ==========
-
-        window.promptAddAdmin = function() {
-            if (!isMaster) {
-                alert('❌ Только главный админ может добавлять админов!');
-                return;
-            }
-            const userId = prompt('Введите Telegram ID нового админа:');
-            if (userId) {
-                addAdmin(userId);
-            }
-        };
-
-        window.promptRemoveAdmin = function() {
-            if (!isMaster) {
-                alert('❌ Только главный админ может удалять админов!');
-                return;
-            }
-            const userId = prompt('Введите Telegram ID админа для удаления:');
-            if (userId) {
-                removeAdmin(userId);
-            }
-        };
-
-        window.addAdmin = async function(targetId) {
-            try {
-                const res = await fetch(`${API_URL}/api/admin/add_admin`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id),
-                        target_id: targetId
-                    })
-                });
-                
-                const data = await res.json();
-                if (res.ok) {
-                    alert(`✅ Пользователь ${targetId} теперь админ!`);
-                } else {
-                    alert('❌ Ошибка: ' + (data.error || 'Неизвестная ошибка'));
-                }
-            } catch (e) {
-                console.error('Add admin error:', e);
-                alert('❌ Ошибка соединения');
-            }
-        };
-
-        window.removeAdmin = async function(targetId) {
-            try {
-                const res = await fetch(`${API_URL}/api/admin/remove_admin`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id),
-                        target_id: targetId
-                    })
-                });
-                
-                const data = await res.json();
-                if (res.ok) {
-                    alert(`✅ Админ ${targetId} удален!`);
-                } else {
-                    alert('❌ Ошибка: ' + (data.error || 'Неизвестная ошибка'));
-                }
-            } catch (e) {
-                console.error('Remove admin error:', e);
-                alert('❌ Ошибка соединения');
-            }
-        };
-
-        window.listAdmins = async function() {
-            try {
-                const res = await fetch(`${API_URL}/api/admin/list_admins`);
-                const data = await res.json();
-                
-                alert(`👑 Главный админ: ${data.master_admin}\n\nАдмины:\n${data.admins.join('\n')}`);
-            } catch (e) {
-                console.error('List admins error:', e);
-                alert('❌ Ошибка соединения');
-            }
-        };
-
-        // Бан/разбан
-        window.promptBanUser = function() {
-            const userId = prompt('Введите Telegram ID пользователя для бана:');
-            if (userId) {
-                banUser(userId);
-            }
-        };
-
-        window.promptUnbanUser = function() {
-            const userId = prompt('Введите Telegram ID пользователя для разбана:');
-            if (userId) {
-                unbanUser(userId);
-            }
-        };
-
-        window.banUser = async function(targetId) {
-            if (!confirm(`Забанить пользователя ${targetId}?`)) return;
-            
-            try {
-                const res = await fetch(`${API_URL}/api/admin/ban_user`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id),
-                        target_id: targetId
-                    })
-                });
-                
-                if (res.ok) {
-                    alert('✅ Пользователь забанен');
-                } else {
-                    const data = await res.json();
-                    alert('❌ Ошибка: ' + (data.error || 'Неизвестная ошибка'));
-                }
-            } catch (e) {
-                console.error('Ban error:', e);
-                alert('❌ Ошибка соединения');
-            }
-        };
-
-        window.unbanUser = async function(targetId) {
-            try {
-                const res = await fetch(`${API_URL}/api/admin/unban_user`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id),
-                        target_id: targetId
-                    })
-                });
-                
-                if (res.ok) {
-                    alert('✅ Пользователь разбанен');
-                } else {
-                    const data = await res.json();
-                    alert('❌ Ошибка: ' + (data.error || 'Неизвестная ошибка'));
-                }
-            } catch (e) {
-                console.error('Unban error:', e);
-                alert('❌ Ошибка соединения');
-            }
-        };
-
-        // Старт
-        if (!user) {
-            usernameEl.textContent = 'Тест';
-            loading.style.display = 'none';
-            gameContent.style.display = 'flex';
-            circle.classList.add('ready');
-        } else {
-            usernameEl.textContent = user.first_name || user.username || 'Игрок';
-            loadUser();
         }
         
-        circle.addEventListener('click', handleTap);
+        // Тестовая функция - потратить 1 звезду
+        async function spendOneStar() {
+            if (stars < 1) {
+                statusEl.textContent = '❌ Недостаточно звезд! Купите сначала.';
+                return;
+            }
+            
+            statusEl.textContent = '⏳ Списываю звезду...';
+            
+            // Имитируем запрос к серверу
+            setTimeout(() => {
+                // Уменьшаем баланс
+                updateBalance(stars - 1);
+                
+                // Показываем сообщение
+                successMessage.textContent = '✅ Звезда потрачена! Спасибо за покупку!';
+                successMessage.style.display = 'block';
+                statusEl.textContent = '✅ Готово! Осталось звезд: ' + (stars - 1);
+                
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                }, 3000);
+            }, 500);
+        }
         
-        // Очистка таймеров при уходе
-        window.addEventListener('beforeunload', function() {
-            if (clickTimerInterval) clearInterval(clickTimerInterval);
-            if (globalTimerInterval) clearInterval(globalTimerInterval);
+        // Обработчик кнопки
+        testButton.addEventListener('click', () => {
+            // Для теста: сначала запрашиваем звезду, потом даем кнопку на трату
+            if (confirm('Запросить 1 звезду у Telegram?')) {
+                requestOneStar();
+            }
         });
+        
+        // Добавим вторую тестовую кнопку
+        const spendBtn = document.createElement('button');
+        spendBtn.className = 'test-btn';
+        spendBtn.style.background = 'linear-gradient(145deg, #ff6b6b, #ff4757)';
+        spendBtn.textContent = '💰 Потратить 1 звезду';
+        spendBtn.addEventListener('click', spendOneStar);
+        testButton.parentNode.insertBefore(spendBtn, testButton.nextSibling);
+        
+        // Загружаем баланс при старте
+        loadBalance();
+        
+        // Показываем информацию о пользователе
+        console.log('Telegram User:', tg.initDataUnsafe?.user);
+        
     </script>
 </body>
 </html>
