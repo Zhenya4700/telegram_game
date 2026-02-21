@@ -83,11 +83,26 @@
         
         .success { color: #30d158; }
         .error { color: #ff453a; }
+        
+        .info-box {
+            background: rgba(255, 149, 0, 0.2);
+            border: 1px solid #ff9500;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 16px;
+            color: #ff9500;
+            font-size: 14px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>⭐️ Telegram Stars</h1>
+        
+        <div class="info-box" id="info">
+            🔄 Загружаю информацию...
+        </div>
         
         <div class="balance">
             <span>Баланс:</span>
@@ -104,11 +119,23 @@
         <div class="log" id="log">
             <div>👋 Готов к тесту</div>
         </div>
+        
+        <div style="font-size: 12px; color: #666; text-align: center; margin-top: 16px;">
+            Bot: <span id="botName">загрузка...</span>
+        </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
+        
+        // Получаем информацию о боте
+        const initData = tg.initDataUnsafe || {};
+        const botName = initData.bot?.username || 'неизвестно';
+        const user = initData.user;
+        
+        document.getElementById('botName').textContent = '@' + botName;
+        document.getElementById('info').innerHTML = `✅ Бот: @${botName}<br>ID: ${user?.id || 'неизвестно'}`;
         
         let stars = 0;
         
@@ -119,6 +146,7 @@
             entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
             logDiv.appendChild(entry);
             logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(msg);
         }
         
         function updateBalance(amount) {
@@ -126,37 +154,89 @@
             document.getElementById('balance').textContent = stars;
         }
         
-        // КУПИТЬ ЗВЕЗДУ - УПРОЩЕННЫЙ ВАРИАНТ
-        document.getElementById('buyBtn').onclick = () => {
-            log('🔄 Открываю оплату...');
+        // ПРАВИЛЬНЫЙ СПОСОБ 1: Используем createInvoiceLink через бэкенд
+        async function buyStarViaBackend() {
+            log('🔄 Запрашиваю ссылку на оплату...');
             
             try {
-                tg.openInvoice({
-                    currency: 'XTR',
-                    prices: [{ 
-                        label: 'Тестовая звезда', 
-                        amount: 1 
-                    }]
-                }, (status) => {
-                    log(`Статус: ${status}`);
+                // Здесь должен быть запрос к вашему бэкенду, который создаст инвойс
+                // Но для теста покажем альтернативный метод
+                log('❌ Нужен бэкенд для создания инвойса', 'error');
+                
+                // Альтернатива - использовать прямой метод (см. ниже)
+                alternativeBuyMethod();
+                
+            } catch (e) {
+                log(`Ошибка: ${e.message}`, 'error');
+            }
+        }
+        
+        // АЛЬТЕРНАТИВНЫЙ МЕТОД: Используем stars@pay (временное решение)
+        function alternativeBuyMethod() {
+            log('🔄 Пробую альтернативный метод...');
+            
+            // Создаем ссылку на платеж через stars платежную систему
+            const invoiceLink = `https://t.me/stars?startapp=transfer&amount=1&text=Тестовая%20покупка`;
+            
+            tg.openTelegramLink(invoiceLink);
+            
+            log('📱 Открыта ссылка на пополнение', 'info');
+            log('💡 После пополнения нажмите "Проверить"');
+        }
+        
+        // ПРАВИЛЬНЫЙ МЕТОД: Через бэкенд (рекомендуется)
+        async function correctBuyMethod() {
+            log('🔄 Отправляю запрос на сервер...');
+            
+            // Эмулируем ответ от сервера
+            // В реальности тут должен быть fetch к вашему API
+            setTimeout(() => {
+                // Сервер должен вернуть что-то вроде:
+                const invoiceUrl = "https://t.me/$invoice_token"; // Пример
+                
+                log('✅ Получен инвойс от сервера', 'success');
+                
+                // Открываем инвойс
+                tg.openInvoice(invoiceUrl, (status) => {
+                    log(`📦 Статус оплаты: ${status}`);
                     
                     if (status === 'paid') {
                         updateBalance(stars + 1);
                         log('✅ Звезда получена!', 'success');
                         tg.showAlert('Спасибо! Звезда добавлена ⭐️');
-                    } else if (status === 'cancelled') {
-                        log('❌ Отмена', 'error');
                     }
                 });
-            } catch (e) {
-                log(`Ошибка: ${e.message}`, 'error');
-            }
+                
+            }, 1000);
+        }
+        
+        // ВРЕМЕННОЕ РЕШЕНИЕ: Показываем как должно работать
+        document.getElementById('buyBtn').onclick = () => {
+            log('ℹ️ Для реальной оплаты нужно:', 'info');
+            log('1. Создать инвойс через бота (метод createInvoiceLink)', 'info');
+            log('2. Получить ссылку вида https://t.me/$токен', 'info');
+            log('3. Открыть её через tg.openInvoice()', 'info');
+            
+            // Показываем демо-ссылку
+            tg.showPopup({
+                title: 'Демо-режим',
+                message: 'В реальном приложении здесь откроется окно оплаты Telegram Stars',
+                buttons: [{type: 'ok'}]
+            });
+            
+            // Имитируем успешную оплату для теста
+            setTimeout(() => {
+                if (confirm('Имитировать успешную оплату?')) {
+                    updateBalance(stars + 1);
+                    log('✅ ДЕМО: Звезда добавлена!', 'success');
+                }
+            }, 500);
         };
         
         // ПОТРАТИТЬ ЗВЕЗДУ
         document.getElementById('spendBtn').onclick = () => {
             if (stars < 1) {
-                log('❌ Нет звезд!', 'error');
+                log('❌ Нет звезд! Сначала купите', 'error');
                 return;
             }
             updateBalance(stars - 1);
@@ -165,10 +245,11 @@
         
         // ПРОВЕРИТЬ
         document.getElementById('checkBtn').onclick = () => {
-            log(`Баланс: ${stars} ⭐️`);
+            log(`💰 Баланс: ${stars} ⭐️`);
         };
         
         log('👋 Тест запущен');
+        log('ℹ️ Это ДЕМО-режим без реальных платежей');
         
     </script>
 </body>
