@@ -207,7 +207,6 @@
             entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
             logEl.appendChild(entry);
             logEl.scrollTop = logEl.scrollHeight;
-            console.log(message);
         }
         
         // Обновление баланса
@@ -235,7 +234,7 @@
             }
         }
         
-        // КУПИТЬ ЗВЕЗДЫ (ИСПРАВЛЕННАЯ ВЕРСИЯ)
+        // КУПИТЬ ЗВЕЗДЫ
         buyBtn.onclick = async () => {
             if (isProcessing) {
                 addLog(`⏳ Уже идет процесс оплаты...`, 'info');
@@ -262,16 +261,16 @@
                 const data = await res.json();
                 
                 if (data.success && data.invoice_link) {
-                    addLog(`✅ Инвойс получен: ${data.invoice_link.substring(0, 30)}...`);
+                    addLog(`✅ Инвойс получен, открываю оплату...`);
                     
                     // 2. Открываем окно оплаты Telegram
                     tg.openInvoice(data.invoice_link, async (paymentStatus) => {
                         addLog(`📦 Статус оплаты: ${paymentStatus}`);
                         
                         if (paymentStatus === 'paid') {
-                            // 3. Оплата прошла успешно - подтверждаем на сервере
-                            addLog(`⏳ Подтверждаю оплату на сервере...`);
+                            addLog(`⏳ Оплата прошла, подтверждаю на сервере...`);
                             
+                            // 3. Подтверждаем оплату на сервере
                             try {
                                 const confirmRes = await fetch(`${API_URL}/api/confirm_payment`, {
                                     method: 'POST',
@@ -286,7 +285,7 @@
                                 
                                 if (confirmData.success) {
                                     updateBalance(confirmData.stars);
-                                    addLog(`✅ Оплата подтверждена! Новый баланс: ${confirmData.stars} ⭐️`, 'success');
+                                    addLog(`✅ Оплата подтверждена! Баланс: ${confirmData.stars} ⭐️`, 'success');
                                     
                                     tg.showPopup({
                                         title: 'Успешно!',
@@ -294,19 +293,18 @@
                                         buttons: [{type: 'ok'}]
                                     });
                                 } else {
-                                    addLog(`❌ Ошибка подтверждения: ${confirmData.error}`, 'error');
+                                    addLog(`❌ Ошибка подтверждения`, 'error');
                                 }
                             } catch (e) {
                                 addLog(`❌ Ошибка при подтверждении: ${e.message}`, 'error');
                             }
                             
                         } else if (paymentStatus === 'cancelled') {
-                            addLog(`❌ Оплата отменена пользователем`, 'error');
+                            addLog(`❌ Оплата отменена`, 'error');
                         } else if (paymentStatus === 'failed') {
                             addLog(`❌ Ошибка оплаты`, 'error');
                         }
                         
-                        // Возвращаем кнопку в исходное состояние
                         isProcessing = false;
                         buyBtn.disabled = false;
                         buyBtn.innerHTML = '💎 Купить звезды';
@@ -321,14 +319,13 @@
                 
             } catch (e) {
                 addLog(`❌ Ошибка: ${e.message}`, 'error');
-                console.error(e);
                 isProcessing = false;
                 buyBtn.disabled = false;
                 buyBtn.innerHTML = '💎 Купить звезды';
             }
         };
         
-        // ПОТРАТИТЬ ЗВЕЗДУ (купить скин)
+        // ПОТРАТИТЬ ЗВЕЗДУ
         document.getElementById('spendBtn').onclick = async () => {
             if (stars < 1) {
                 addLog(`❌ Недостаточно звезд!`, 'error');
