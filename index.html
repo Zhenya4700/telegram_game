@@ -147,6 +147,20 @@
             text-overflow: ellipsis;
         }
 
+        .stars {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 215, 0, 0.15);
+            padding: 5px 10px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .star-icon { font-size: 14px; }
+        .star-amount { font-weight: 600; color: #ffd966; font-size: 0.9rem; }
+
         .content-area {
             flex: 1;
             overflow-y: auto;
@@ -334,6 +348,54 @@
             background: #7f8c8d;
         }
 
+        .buy-skin-btn.not-enough {
+            background: #ff6b6b;
+        }
+
+        .cooldown-reset-card {
+            background: linear-gradient(145deg, #ff6b6b, #ff4757);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .cooldown-reset-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .cooldown-reset-icon {
+            font-size: 2rem;
+        }
+
+        .cooldown-reset-text {
+            text-align: left;
+        }
+
+        .cooldown-reset-title {
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .cooldown-reset-desc {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .cooldown-reset-price {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: bold;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
         .current-skin {
             font-size: 0.9rem;
             color: #ffd966;
@@ -426,7 +488,10 @@
                 <div class="user-row">
                     <div class="avatar" id="avatar">👤</div>
                     <div class="username" id="username">Загрузка...</div>
-                    <!-- Звезды удалены! -->
+                    <div class="stars" id="starsBtn">
+                        <span class="star-icon">⭐️</span>
+                        <span class="star-amount" id="starAmount">0</span>
+                    </div>
                 </div>
             </div>
 
@@ -455,7 +520,19 @@
                     <h2>🏪 Магазин</h2>
                     <div class="current-skin" id="currentSkinDisplay">Текущий фон: Обычный</div>
                     
-                    <h3 style="color: #ffd966; margin: 10px 0;">🔥 Скины за звезды</h3>
+                    <!-- Сброс таймера за 35 звезд -->
+                    <div class="cooldown-reset-card" id="cooldownResetBtn">
+                        <div class="cooldown-reset-info">
+                            <div class="cooldown-reset-icon">⏱️</div>
+                            <div class="cooldown-reset-text">
+                                <div class="cooldown-reset-title">Сброс таймера</div>
+                                <div class="cooldown-reset-desc">Мгновенный сброс ожидания</div>
+                            </div>
+                        </div>
+                        <div class="cooldown-reset-price">⭐️ 35</div>
+                    </div>
+                    
+                    <h3 style="color: #ffd966; margin: 10px 0;">🔥 Скины за размер</h3>
                     <div class="skins-grid" id="skinsGrid"></div>
                 </div>
 
@@ -508,6 +585,7 @@
         const changeEl = document.getElementById('changeIndicator');
         const clickTimerEl = document.getElementById('clickTimer');
         const circle = document.getElementById('tapCircle');
+        const starAmountEl = document.getElementById('starAmount');
         const currentSkinDisplay = document.getElementById('currentSkinDisplay');
         const inventoryCurrentSkin = document.getElementById('inventoryCurrentSkin');
         const rankDisplay = document.getElementById('rankDisplay');
@@ -533,6 +611,7 @@
         let globalTimerInterval = null;
         let currentBackground = 'default';
         let ownedSkins = ['default'];
+        let stars = 0;
         let isAdmin = false;
         let isMaster = false;
         let globalTimerEnabled = false;
@@ -540,29 +619,29 @@
         let clickCooldown = 100;
         let timeOffset = 0;
         
-        // ВСЕ СКИНЫ (21 штука)
+        // ВСЕ СКИНЫ (21 штука с ценами от 20 до 200 см)
         const allSkins = [
-            { id: 'neon', name: 'Неоновый', icon: '💜' },
-            { id: 'gold', name: 'Золотой', icon: '💛' },
-            { id: 'rainbow', name: 'Радужный', icon: '🌈' },
-            { id: 'dark', name: 'Тёмный', icon: '🖤' },
-            { id: 'forest', name: 'Лесной', icon: '🌲' },
-            { id: 'ocean', name: 'Океанский', icon: '🌊' },
-            { id: 'lava', name: 'Лавовый', icon: '🌋' },
-            { id: 'space', name: 'Космический', icon: '🚀' },
-            { id: 'cyber', name: 'Киберпанк', icon: '🤖' },
-            { id: 'blood', name: 'Кровавый', icon: '🩸' },
-            { id: 'royal', name: 'Королевский', icon: '👑' },
-            { id: 'punk', name: 'Панк', icon: '🤘' },
-            { id: 'desert', name: 'Пустынный', icon: '🏜️' },
-            { id: 'swamp', name: 'Болотный', icon: '🐊' },
-            { id: 'heaven', name: 'Райский', icon: '😇' },
-            { id: 'hell', name: 'Адский', icon: '👿' },
-            { id: 'matrix', name: 'Матрица', icon: '💊' },
-            { id: 'candy', name: 'Конфетный', icon: '🍬' },
-            { id: 'night', name: 'Ночной', icon: '🌙' },
-            { id: 'sunset', name: 'Закат', icon: '🌅' },
-            { id: 'arctic', name: 'Арктика', icon: '❄️' }
+            { id: 'neon', name: 'Неоновый', icon: '💜', price: 20 },
+            { id: 'gold', name: 'Золотой', icon: '💛', price: 30 },
+            { id: 'rainbow', name: 'Радужный', icon: '🌈', price: 40 },
+            { id: 'dark', name: 'Тёмный', icon: '🖤', price: 25 },
+            { id: 'forest', name: 'Лесной', icon: '🌲', price: 35 },
+            { id: 'ocean', name: 'Океанский', icon: '🌊', price: 45 },
+            { id: 'lava', name: 'Лавовый', icon: '🌋', price: 50 },
+            { id: 'space', name: 'Космический', icon: '🚀', price: 60 },
+            { id: 'cyber', name: 'Киберпанк', icon: '🤖', price: 55 },
+            { id: 'blood', name: 'Кровавый', icon: '🩸', price: 65 },
+            { id: 'royal', name: 'Королевский', icon: '👑', price: 70 },
+            { id: 'punk', name: 'Панк', icon: '🤘', price: 45 },
+            { id: 'desert', name: 'Пустынный', icon: '🏜️', price: 40 },
+            { id: 'swamp', name: 'Болотный', icon: '🐊', price: 50 },
+            { id: 'heaven', name: 'Райский', icon: '😇', price: 80 },
+            { id: 'hell', name: 'Адский', icon: '👿', price: 85 },
+            { id: 'matrix', name: 'Матрица', icon: '💊', price: 55 },
+            { id: 'candy', name: 'Конфетный', icon: '🍬', price: 30 },
+            { id: 'night', name: 'Ночной', icon: '🌙', price: 35 },
+            { id: 'sunset', name: 'Закат', icon: '🌅', price: 45 },
+            { id: 'arctic', name: 'Арктика', icon: '❄️', price: 50 }
         ];
         
         const backgroundNames = {
@@ -678,6 +757,7 @@
                 const data = await res.json();
                 
                 size = data.size;
+                stars = data.stars || 0;
                 ownedSkins = data.ownedSkins || ['default'];
                 currentBackground = data.background || 'default';
                 if (data.last_click) {
@@ -693,6 +773,7 @@
                 
                 applyBackground(currentBackground);
                 updateSize();
+                updateStars();
                 
                 await syncTime();
                 checkCooldown();
@@ -805,6 +886,10 @@
             }
         }
 
+        function updateStars() {
+            starAmountEl.textContent = stars;
+        }
+
         async function handleTap() {
             if (cooldown) return;
             
@@ -834,9 +919,18 @@
             }
         }
 
-        // ПОКУПКА СКИНА ЗА ЗВЕЗДЫ TELEGRAM
-        window.buySkin = async function(skinId, skinName, skinIcon) {
-            console.log('Покупка скина:', skinId, skinName);
+        // ПОКУПКА СКИНА ЗА РАЗМЕР (РАЗМЕР ТРАТИТСЯ)
+        window.buySkin = async function(skinId, requiredPrice) {
+            console.log('Покупка скина:', skinId, 'цена:', requiredPrice, 'текущий размер:', size);
+            
+            if (size < requiredPrice) {
+                tg.showPopup({
+                    title: '❌ Недостаточно размера',
+                    message: `Нужно ${requiredPrice} см, а у вас ${size} см`,
+                    buttons: [{type: 'ok'}]
+                });
+                return;
+            }
             
             const btn = event?.target;
             const originalText = btn?.textContent;
@@ -846,55 +940,41 @@
             }
             
             try {
-                // 1. Создаем инвойс
-                const res = await fetch(`${API_URL}/api/create_skin_invoice`, {
+                const res = await fetch(`${API_URL}/api/buy_skin`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         telegram_id: String(user.id),
                         skin_id: skinId,
-                        skin_name: skinName
+                        required_size: requiredPrice
                     })
                 });
                 
                 const data = await res.json();
+                console.log('Ответ сервера:', res.status, data);
                 
-                if (data.success && data.invoice_link) {
-                    // 2. Открываем оплату Telegram Stars
-                    tg.openInvoice(data.invoice_link, async (paymentStatus) => {
-                        console.log('Статус оплаты:', paymentStatus);
-                        
-                        if (paymentStatus === 'paid') {
-                            // 3. Подтверждаем покупку
-                            const confirmRes = await fetch(`${API_URL}/api/confirm_skin_purchase`, {
-                                method: 'POST',
-                                headers: {'Content-Type': 'application/json'},
-                                body: JSON.stringify({
-                                    telegram_id: String(user.id),
-                                    skin_id: skinId
-                                })
-                            });
-                            
-                            const confirmData = await confirmRes.json();
-                            
-                            if (confirmData.success) {
-                                ownedSkins = confirmData.ownedSkins;
-                                
-                                tg.showPopup({
-                                    title: '✅ Покупка успешна!',
-                                    message: `Скин "${skinName}" добавлен в инвентарь`,
-                                    buttons: [{type: 'ok'}]
-                                });
-                                
-                                renderShop();
-                                renderInventory();
-                            }
-                        }
+                if (res.ok) {
+                    ownedSkins = data.ownedSkins;
+                    size = data.size; // Обновляем размер (он уменьшился)
+                    updateSize();
+                    
+                    tg.showPopup({
+                        title: '✅ Покупка успешна!',
+                        message: `Скин куплен! Потрачено ${requiredPrice} см`,
+                        buttons: [{type: 'ok'}]
+                    });
+                    renderShop();
+                    renderInventory();
+                } else if (res.status === 402) {
+                    tg.showPopup({
+                        title: '❌ Недостаточно размера',
+                        message: `Нужно ${data.required} см, а у вас ${data.current || size} см`,
+                        buttons: [{type: 'ok'}]
                     });
                 } else {
                     tg.showPopup({
                         title: '❌ Ошибка',
-                        message: data.error || 'Не удалось создать инвойс',
+                        message: data.error || 'Неизвестная ошибка',
                         buttons: [{type: 'ok'}]
                     });
                 }
@@ -911,6 +991,50 @@
                     btn.textContent = originalText;
                     btn.disabled = false;
                 }
+            }
+        };
+
+        // СБРОС ТАЙМЕРА ЗА 35 ЗВЕЗД
+        window.buyCooldownReset = async function() {
+            if (stars < 35) {
+                tg.showPopup({
+                    title: '⭐️ Недостаточно звезд',
+                    message: `Нужно 35 звезд, а у вас ${stars}`,
+                    buttons: [{type: 'ok'}]
+                });
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API_URL}/api/reset_cooldown`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({telegram_id: String(user.id)})
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    stars = data.stars;
+                    updateStars();
+                    
+                    if (clickTimerInterval) clearInterval(clickTimerInterval);
+                    cooldown = false;
+                    lastClickTime = 0;
+                    circle.classList.remove('cooldown');
+                    circle.classList.add('ready');
+                    clickTimerEl.textContent = '⚡ готов ⚡';
+                    clickTimerEl.classList.remove('active');
+                    
+                    tg.showPopup({
+                        title: '✅ Таймер сброшен!',
+                        message: 'Потрачено 35 звезд',
+                        buttons: [{type: 'ok'}]
+                    });
+                }
+                
+            } catch (e) {
+                console.error('Reset cooldown error:', e);
             }
         };
 
@@ -980,17 +1104,19 @@
             
             skinsGrid.innerHTML = allSkins.map(skin => {
                 const isOwned = ownedSkins.includes(skin.id);
+                const canBuy = size >= skin.price;
                 
                 return `
                     <div class="skin-card ${isOwned ? 'owned' : ''}">
                         <div class="skin-icon">${skin.icon}</div>
                         <div class="skin-name">${skin.name}</div>
-                        <div class="skin-price">⭐️ 1 звезда</div>
+                        <div class="skin-price">нужно <span>${skin.price} см</span></div>
                         ${isOwned ? 
                             '<div style="color: #4caf50; font-size: 0.8rem;">✅ Уже есть</div>' : 
-                            `<button class="buy-skin-btn" 
-                                    onclick="buySkin('${skin.id}', '${skin.name}', '${skin.icon}')">
-                                Купить за ⭐️
+                            `<button class="buy-skin-btn ${!canBuy ? 'not-enough' : ''}" 
+                                    onclick="buySkin('${skin.id}', ${skin.price})"
+                                    ${!canBuy ? 'disabled' : ''}>
+                                ${canBuy ? 'Купить' : `Нужно ${skin.price} см`}
                             </button>`
                         }
                     </div>
@@ -1438,6 +1564,16 @@
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
 
         circle.addEventListener('click', handleTap);
+        
+        document.getElementById('cooldownResetBtn').addEventListener('click', buyCooldownReset);
+        
+        document.getElementById('starsBtn').addEventListener('click', () => {
+            tg.showPopup({
+                title: '⭐️ Telegram Stars',
+                message: `У вас ${stars} звезд\n\n35 звезд = сброс таймера`,
+                buttons: [{type: 'ok'}]
+            });
+        });
 
         if (!user) {
             usernameEl.textContent = 'Тест';
