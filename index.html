@@ -826,7 +826,18 @@
             'dark': '🖤', 'forest': '🌲', 'ocean': '🌊', 'lava': '🌋'
         };
 
-        // Обновление глобального таймера
+        // Синхронизация времени с сервером
+        async function syncTime() {
+            try {
+                const res = await fetch(`${API_URL}/api/time`);
+                const data = await res.json();
+                console.log('Server time:', new Date(data.server_time * 1000));
+            } catch (e) {
+                console.error('Time sync error:', e);
+            }
+        }
+
+        // Обновление глобального таймера (ИСПРАВЛЕНО)
         function updateGlobalTimer() {
             if (!globalTimerEnabled || !globalTimerEndDate) {
                 globalTimerEl.classList.add('disabled');
@@ -838,8 +849,8 @@
             globalTimerEl.classList.remove('disabled');
             timerLabel.textContent = '⏰ До получения 500 рублей:';
             
-            const now = new Date();
-            const end = new Date(globalTimerEndDate);
+            const now = Date.now();
+            const end = new Date(globalTimerEndDate).getTime();
             const diff = end - now;
             
             if (diff <= 0) {
@@ -847,10 +858,11 @@
                 return;
             }
             
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            const totalSeconds = Math.floor(diff / 1000);
+            const days = Math.floor(totalSeconds / 86400);
+            const hours = Math.floor((totalSeconds % 86400) / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
             
             timerDisplay.textContent = `${days}д ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
@@ -902,6 +914,9 @@
                 updateSize();
                 updateStars();
                 checkCooldown();
+                
+                // Синхронизируем время
+                syncTime();
                 
                 // Загружаем место в рейтинге
                 loadUserRank();
@@ -989,7 +1004,6 @@
                 });
                 
                 if (res.status === 402) {
-                    // Требуется оплата через Telegram Stars
                     const skin = allSkins.find(s => s.id === skinId);
                     
                     tg.openInvoice({
@@ -1271,10 +1285,13 @@
             setTimeout(() => changeEl.innerHTML = '', 800);
         }
 
-        // Кулдаун кликов (с часами)
+        // Проверка кулдауна (ИСПРАВЛЕНО)
         function checkCooldown() {
-            const diff = (Date.now() - lastClickTime) / 1000;
-            if (diff < clickCooldown && lastClickTime > 0) {
+            const now = Date.now();
+            const lastClick = lastClickTime ? new Date(lastClickTime).getTime() : 0;
+            const diff = (now - lastClick) / 1000;
+            
+            if (diff < clickCooldown && lastClick > 0) {
                 startCooldown(clickCooldown - diff);
             } else {
                 circle.classList.remove('cooldown');
@@ -1285,16 +1302,20 @@
             }
         }
 
+        // Таймер кликов (ИСПРАВЛЕНО)
         function startCooldown(seconds) {
             cooldown = true;
             circle.classList.add('cooldown');
             circle.classList.remove('ready');
             
-            let timeLeft = seconds;
+            const endTime = Date.now() + (seconds * 1000);
+            
             if (clickTimerInterval) clearInterval(clickTimerInterval);
             
             clickTimerInterval = setInterval(() => {
-                timeLeft -= 1;
+                const now = Date.now();
+                const timeLeft = Math.max(0, Math.floor((endTime - now) / 1000));
+                
                 if (timeLeft <= 0) {
                     clearInterval(clickTimerInterval);
                     cooldown = false;
@@ -1305,7 +1326,7 @@
                 } else {
                     const hours = Math.floor(timeLeft / 3600);
                     const minutes = Math.floor((timeLeft % 3600) / 60);
-                    const seconds = Math.floor(timeLeft % 60);
+                    const seconds = timeLeft % 60;
                     clickTimerEl.textContent = `⏳ ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                     clickTimerEl.classList.add('active');
                 }
