@@ -147,8 +147,6 @@
             text-overflow: ellipsis;
         }
 
-        /* ЗВЕЗДЫ УДАЛЕНЫ - больше нет блока stars */
-
         .content-area {
             flex: 1;
             overflow-y: auto;
@@ -236,8 +234,30 @@
             flex: 1;
             border-radius: 20px;
             transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
         }
-        .nav-btn.active { color: #ffd966; background: rgba(255, 215, 0, 0.15); }
+        
+        /* Гравировка ракеты на кнопке рефералов */
+        .nav-btn[onclick*="referral"]::after {
+            content: "🚀";
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            font-size: 12px;
+            transform: rotate(15deg);
+            opacity: 0.5;
+            filter: drop-shadow(0 0 2px gold);
+        }
+        
+        /* Обводка для активной кнопки */
+        .nav-btn.active {
+            color: #ffd966;
+            background: rgba(255, 215, 0, 0.15);
+            border: 1px solid #ffd966;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
         .nav-icon { font-size: 1.3rem; }
 
         .leaderboard-item {
@@ -424,6 +444,71 @@
         .inv-btn { background: #3a3f55; color: white; border: none; padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; cursor: pointer; border-bottom: 2px solid #1e2230; }
         .equipped-badge { color: #4caf50; font-size: 0.75rem; font-weight: 600; background: rgba(76, 175, 80, 0.2); padding: 3px 6px; border-radius: 10px; }
 
+        /* Реферальная страница */
+        .referral-section {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .referral-code-box {
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
+            width: 100%;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+        
+        .referral-stats {
+            background: rgba(76, 175, 80, 0.1);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
+            width: 100%;
+            border: 1px solid #4caf50;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .referral-input {
+            flex: 1;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 30px;
+            padding: 12px 16px;
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .referral-input:focus {
+            outline: none;
+            border-color: #ffd966;
+        }
+        
+        .info-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        
+        .info-box ul {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+            padding-left: 20px;
+        }
+        
+        .promo-result {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
         /* Админ-панель */
         .admin-section {
             width: 100%;
@@ -482,7 +567,6 @@
                 <div class="user-row">
                     <div class="avatar" id="avatar">👤</div>
                     <div class="username" id="username">Загрузка...</div>
-                    <!-- ЗВЕЗДЫ ПОЛНОСТЬЮ УДАЛЕНЫ -->
                 </div>
             </div>
 
@@ -511,7 +595,7 @@
                     <h2>🏪 Магазин</h2>
                     <div class="current-skin" id="currentSkinDisplay">Текущий фон: Обычный</div>
                     
-                    <!-- Сброс таймера за 35 звезд (ПРЯМАЯ ПОКУПКА) -->
+                    <!-- Сброс таймера за 35 звезд -->
                     <div class="cooldown-reset-card" id="cooldownResetBtn">
                         <div class="cooldown-reset-info">
                             <div class="cooldown-reset-icon">⏱️</div>
@@ -532,6 +616,60 @@
                     <h2>🎒 Инвентарь</h2>
                     <div class="current-skin" id="inventoryCurrentSkin">Текущий фон: Обычный</div>
                     <div class="inventory-grid" id="inventoryGrid"></div>
+                </div>
+
+                <!-- Реферальная страница -->
+                <div class="page" id="referralPage">
+                    <h2>🤝 Реферальная система</h2>
+                    
+                    <div class="referral-code-box">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <div style="font-size: 2rem;">🔑</div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 0.8rem; opacity: 0.8;">Ваш реферальный код</div>
+                                <div style="font-size: 1.8rem; font-weight: bold; color: #ffd966; letter-spacing: 2px;" id="referralCode">ЗАГРУЗКА</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="inv-btn" style="flex: 1;" onclick="copyReferralCode()">📋 Копировать код</button>
+                            <button class="inv-btn" style="flex: 1;" onclick="shareReferralCode()">📤 Поделиться</button>
+                        </div>
+                    </div>
+                    
+                    <div class="referral-stats">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="font-size: 2rem;">👥</div>
+                            <div>
+                                <div style="font-size: 0.8rem; opacity: 0.8;">Приглашено друзей</div>
+                                <div style="font-size: 2rem; font-weight: bold; color: #4caf50;" id="referralsCount">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3 style="color: #ffd966; margin: 15px 0 10px; text-align: left; width: 100%;">🔓 Ввести код друга</h3>
+                    
+                    <div class="input-group">
+                        <input type="text" id="referralInput" class="referral-input" placeholder="Введите код" maxlength="20">
+                        <button class="buy-skin-btn" style="width: auto; padding: 12px 24px;" onclick="useReferralCode()">Активировать</button>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h4 style="color: #ffd966; margin-bottom: 8px;">📋 Правила:</h4>
+                        <ul>
+                            <li>Пригласи друга - получи +5 см</li>
+                            <li>Можно ввести только 1 код друга</li>
+                            <li>Код вводится один раз</li>
+                        </ul>
+                    </div>
+                    
+                    <h3 style="color: #ffd966; margin: 15px 0 10px; text-align: left; width: 100%;">🎁 Промокоды</h3>
+                    
+                    <div class="input-group">
+                        <input type="text" id="promoInput" class="referral-input" placeholder="Введите промокод" maxlength="50">
+                        <button class="buy-skin-btn" style="width: auto; padding: 12px 24px;" onclick="usePromoCode()">Активировать</button>
+                    </div>
+                    
+                    <div id="promoResult" class="promo-result"></div>
                 </div>
 
                 <!-- Админ-панель -->
@@ -556,6 +694,10 @@
             <button class="nav-btn" onclick="switchPage('inventory')">
                 <span class="nav-icon">🎒</span>
                 <span>Инвентарь</span>
+            </button>
+            <button class="nav-btn" onclick="switchPage('referral')">
+                <span class="nav-icon">🤝</span>
+                <span>Рефералы</span>
             </button>
         </div>
     </div>
@@ -591,6 +733,7 @@
             leaderboard: document.getElementById('leaderboardPage'),
             shop: document.getElementById('shopPage'),
             inventory: document.getElementById('inventoryPage'),
+            referral: document.getElementById('referralPage'),
             admin: document.getElementById('adminPage')
         };
         
@@ -608,6 +751,8 @@
         let globalTimerEndDate = null;
         let clickCooldown = 100;
         let timeOffset = 0;
+        let referralCode = '';
+        let referralsCount = 0;
         
         // ВСЕ СКИНЫ (21 штука с ценами от 20 до 200 см)
         const allSkins = [
@@ -631,7 +776,8 @@
             { id: 'candy', name: 'Конфетный', icon: '🍬', price: 30 },
             { id: 'night', name: 'Ночной', icon: '🌙', price: 35 },
             { id: 'sunset', name: 'Закат', icon: '🌅', price: 45 },
-            { id: 'arctic', name: 'Арктика', icon: '❄️', price: 50 }
+            { id: 'arctic', name: 'Арктика', icon: '❄️', price: 50 },
+            { id: 'promo_rocket', name: 'Ракета', icon: '🚀', price: 0, isPromo: true }
         ];
         
         const backgroundNames = {
@@ -642,7 +788,7 @@
             'punk': 'Панк', 'desert': 'Пустынный', 'swamp': 'Болотный',
             'heaven': 'Райский', 'hell': 'Адский', 'matrix': 'Матрица',
             'candy': 'Конфетный', 'night': 'Ночной', 'sunset': 'Закат',
-            'arctic': 'Арктика'
+            'arctic': 'Арктика', 'promo_rocket': 'Ракета'
         };
         
         const backgroundIcons = {
@@ -651,7 +797,7 @@
             'space': '🚀', 'cyber': '🤖', 'blood': '🩸', 'royal': '👑',
             'punk': '🤘', 'desert': '🏜️', 'swamp': '🐊', 'heaven': '😇',
             'hell': '👿', 'matrix': '💊', 'candy': '🍬', 'night': '🌙',
-            'sunset': '🌅', 'arctic': '❄️'
+            'sunset': '🌅', 'arctic': '❄️', 'promo_rocket': '🚀'
         };
 
         // ========== ФУНКЦИИ ==========
@@ -715,7 +861,7 @@
             pages[page].classList.add('active');
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
             
-            const pageNames = { home: 'Дом', leaderboard: 'Топ', shop: 'Магазин', inventory: 'Инвентарь' };
+            const pageNames = { home: 'Дом', leaderboard: 'Топ', shop: 'Магазин', inventory: 'Инвентарь', referral: 'Рефералы' };
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 if (btn.innerText.includes(pageNames[page])) {
                     btn.classList.add('active');
@@ -760,8 +906,19 @@
                 globalTimerEndDate = data.global_timer?.end_date;
                 clickCooldown = data.global_timer?.cooldown || 100;
                 
+                // Реферальные данные
+                referralCode = data.referral_code || 'ОШИБКА';
+                referralsCount = data.referrals_count || 0;
+                
                 applyBackground(currentBackground);
                 updateSize();
+                
+                // Обновляем реферальные элементы
+                const referralCodeEl = document.getElementById('referralCode');
+                if (referralCodeEl) referralCodeEl.textContent = referralCode;
+                
+                const referralsCountEl = document.getElementById('referralsCount');
+                if (referralsCountEl) referralsCountEl.textContent = referralsCount;
                 
                 await syncTime();
                 checkCooldown();
@@ -817,6 +974,14 @@
                         <button class="admin-btn wide" onclick="clearAllSizes()">🧹 Сбросить ВСЕМ размер до 0</button>
                         <button class="admin-btn wide" onclick="clearUserPrompt()">👤 Очистить пользователя</button>
                         <button class="admin-btn wide" onclick="setMySize()">📏 Изменить свой размер</button>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <div class="admin-title">Управление промокодами</div>
+                    <div class="admin-grid">
+                        <button class="admin-btn wide" onclick="showCreatePromoForm()">➕ Создать промокод</button>
+                        <button class="admin-btn wide" onclick="listPromocodes()">📋 Список промокодов</button>
                     </div>
                 </div>
 
@@ -903,7 +1068,7 @@
             }
         }
 
-        // ПОКУПКА СКИНА ЗА РАЗМЕР (РАЗМЕР ТРАТИТСЯ)
+        // ПОКУПКА СКИНА ЗА РАЗМЕР
         window.buySkin = async function(skinId, requiredPrice) {
             console.log('Покупка скина:', skinId, 'цена:', requiredPrice, 'текущий размер:', size);
             
@@ -939,7 +1104,7 @@
                 
                 if (res.ok) {
                     ownedSkins = data.ownedSkins;
-                    size = data.size; // Обновляем размер (он уменьшился)
+                    size = data.size;
                     updateSize();
                     
                     tg.showPopup({
@@ -978,16 +1143,14 @@
             }
         };
 
-        // СБРОС ТАЙМЕРА ЗА 35 ЗВЕЗД (ПРЯМАЯ ПОКУПКА)
+        // СБРОС ТАЙМЕРА ЗА 35 ЗВЕЗД
         window.buyCooldownReset = async function() {
-            // Блокируем кнопку на время обработки
             cooldownResetBtn.style.opacity = '0.7';
             cooldownResetBtn.style.pointerEvents = 'none';
             const originalHtml = cooldownResetBtn.innerHTML;
             cooldownResetBtn.innerHTML = '⏳ Обработка...';
             
             try {
-                // 1. Создаем инвойс на 35 звезд
                 const res = await fetch(`${API_URL}/api/create_reset_invoice`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -999,19 +1162,16 @@
                 const data = await res.json();
                 
                 if (data.success && data.invoice_link) {
-                    // 2. Открываем оплату Telegram Stars (ПРЯМО СЕЙЧАС)
                     tg.openInvoice(data.invoice_link, (paymentStatus) => {
                         console.log('Статус оплаты:', paymentStatus);
                         
                         if (paymentStatus === 'paid') {
-                            // Оплата прошла успешно - вебхук сам сбросит таймер
                             tg.showPopup({
                                 title: '✅ Таймер сброшен!',
                                 message: 'Ожидание сброшено за 35 звезд',
                                 buttons: [{type: 'ok'}]
                             });
                             
-                            // Обновляем состояние на клиенте
                             if (clickTimerInterval) clearInterval(clickTimerInterval);
                             cooldown = false;
                             lastClickTime = 0;
@@ -1028,7 +1188,6 @@
                             });
                         }
                         
-                        // Возвращаем кнопку в исходное состояние
                         cooldownResetBtn.style.opacity = '1';
                         cooldownResetBtn.style.pointerEvents = 'auto';
                         cooldownResetBtn.innerHTML = originalHtml;
@@ -1040,7 +1199,6 @@
                         buttons: [{type: 'ok'}]
                     });
                     
-                    // Возвращаем кнопку в исходное состояние
                     cooldownResetBtn.style.opacity = '1';
                     cooldownResetBtn.style.pointerEvents = 'auto';
                     cooldownResetBtn.innerHTML = originalHtml;
@@ -1054,10 +1212,218 @@
                     buttons: [{type: 'ok'}]
                 });
                 
-                // Возвращаем кнопку в исходное состояние
                 cooldownResetBtn.style.opacity = '1';
                 cooldownResetBtn.style.pointerEvents = 'auto';
                 cooldownResetBtn.innerHTML = originalHtml;
+            }
+        };
+
+        // РЕФЕРАЛЬНЫЕ ФУНКЦИИ
+        window.copyReferralCode = function() {
+            const code = document.getElementById('referralCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                tg.showPopup({
+                    title: '✅ Скопировано',
+                    message: 'Код скопирован в буфер обмена',
+                    buttons: [{type: 'ok'}]
+                });
+            });
+        };
+
+        window.shareReferralCode = function() {
+            const code = document.getElementById('referralCode').textContent;
+            const botName = tg.initDataUnsafe?.bot?.username || 'bot';
+            const text = `Присоединяйся к игре! Мой реферальный код: ${code}\nhttps://t.me/${botName}`;
+            
+            tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(text)}`);
+        };
+
+        window.useReferralCode = async function() {
+            const input = document.getElementById('referralInput');
+            const code = input.value.trim().toUpperCase();
+            
+            if (!code) {
+                tg.showPopup({
+                    title: '❌ Ошибка',
+                    message: 'Введите код',
+                    buttons: [{type: 'ok'}]
+                });
+                return;
+            }
+            
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '⏳...';
+            btn.disabled = true;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/referral/use_code`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        code: code
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    tg.showPopup({
+                        title: '✅ Успех!',
+                        message: `Код активирован! +5 см пользователю ${data.referrer_name}`,
+                        buttons: [{type: 'ok'}]
+                    });
+                    input.value = '';
+                    loadUser();
+                } else {
+                    tg.showPopup({
+                        title: '❌ Ошибка',
+                        message: data.error || 'Неверный код',
+                        buttons: [{type: 'ok'}]
+                    });
+                }
+                
+            } catch (e) {
+                console.error('Referral error:', e);
+                tg.showPopup({
+                    title: '❌ Ошибка',
+                    message: 'Не удалось подключиться к серверу',
+                    buttons: [{type: 'ok'}]
+                });
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        };
+
+        window.usePromoCode = async function() {
+            const input = document.getElementById('promoInput');
+            const code = input.value.trim().toUpperCase();
+            
+            if (!code) {
+                tg.showPopup({
+                    title: '❌ Ошибка',
+                    message: 'Введите промокод',
+                    buttons: [{type: 'ok'}]
+                });
+                return;
+            }
+            
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '⏳...';
+            btn.disabled = true;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/promocode/use`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        code: code
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    tg.showPopup({
+                        title: '✅ Промокод активирован!',
+                        message: `+${data.reward_size} см и уникальный скин 🚀`,
+                        buttons: [{type: 'ok'}]
+                    });
+                    input.value = '';
+                    loadUser();
+                    
+                    document.getElementById('promoResult').innerHTML = `
+                        <div style="background: rgba(76, 175, 80, 0.2); border: 1px solid #4caf50; border-radius: 12px; padding: 12px; text-align: center;">
+                            ✅ +${data.reward_size} см и скин 🚀 получен!
+                        </div>
+                    `;
+                } else {
+                    tg.showPopup({
+                        title: '❌ Ошибка',
+                        message: data.error || 'Неверный промокод',
+                        buttons: [{type: 'ok'}]
+                    });
+                }
+                
+            } catch (e) {
+                console.error('Promo error:', e);
+                tg.showPopup({
+                    title: '❌ Ошибка',
+                    message: 'Не удалось подключиться к серверу',
+                    buttons: [{type: 'ok'}]
+                });
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        };
+
+        // АДМИН ФУНКЦИИ ДЛЯ ПРОМОКОДОВ
+        window.showCreatePromoForm = function() {
+            const code = prompt('Введите код промокода (например: ROCKET2024):');
+            if (!code) return;
+            
+            const maxUses = prompt('Сколько раз можно использовать? (например: 10):', '10');
+            if (!maxUses || isNaN(maxUses)) return;
+            
+            createPromocode(code.toUpperCase(), parseInt(maxUses));
+        };
+
+        window.createPromocode = async function(code, maxUses) {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/promocode/create`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        code: code,
+                        max_uses: maxUses
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    alert(`✅ Промокод ${code} создан!`);
+                } else {
+                    alert('❌ Ошибка: ' + data.error);
+                }
+                
+            } catch (e) {
+                console.error('Create promo error:', e);
+                alert('❌ Ошибка подключения');
+            }
+        };
+
+        window.listPromocodes = async function() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/promocode/list`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id)
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    let message = '📋 Промокоды:\n\n';
+                    data.promocodes.forEach(p => {
+                        message += `🔸 ${p.code}: ${p.used_count}/${p.max_uses} использовано (осталось ${p.remaining})\n`;
+                    });
+                    alert(message);
+                } else {
+                    alert('❌ Ошибка: ' + data.error);
+                }
+                
+            } catch (e) {
+                console.error('List promo error:', e);
+                alert('❌ Ошибка подключения');
             }
         };
 
@@ -1125,7 +1491,10 @@
         function renderShop() {
             const skinsGrid = document.getElementById('skinsGrid');
             
-            skinsGrid.innerHTML = allSkins.map(skin => {
+            // Фильтруем промоскины (они не продаются в магазине)
+            const shopSkins = allSkins.filter(skin => !skin.isPromo);
+            
+            skinsGrid.innerHTML = shopSkins.map(skin => {
                 const isOwned = ownedSkins.includes(skin.id);
                 const canBuy = size >= skin.price;
                 
