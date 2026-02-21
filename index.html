@@ -14,7 +14,7 @@
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
             height: 100vh;
             display: flex;
@@ -27,29 +27,29 @@
             padding: 8px;
         }
 
-        /* Градиенты для скинов */
-        body.bg-default { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        body.bg-neon { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-        body.bg-gold { background: linear-gradient(135deg, #f4d03f 0%, #e67e22 100%); }
-        body.bg-rainbow { background: linear-gradient(135deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3); background-size: 400% 400%; animation: rainbow 10s ease infinite; }
-        body.bg-dark { background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); }
-        body.bg-forest { background: linear-gradient(135deg, #134e5e 0%, #71b280 100%); }
-        body.bg-ocean { background: linear-gradient(135deg, #56ccf2 0%, #2f80ed 100%); }
-        body.bg-lava { background: linear-gradient(135deg, #e65c00 0%, #f9d423 100%); }
-        body.bg-space { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); }
-        body.bg-cyber { background: linear-gradient(135deg, #00f260 0%, #0575e6 100%); }
-        body.bg-blood { background: linear-gradient(135deg, #cb2d3e 0%, #ef473a 100%); }
-        body.bg-royal { background: linear-gradient(135deg, #834d9b 0%, #d04ed6 100%); }
-        body.bg-punk { background: linear-gradient(135deg, #ff0080 0%, #ff8c00 100%); }
-        body.bg-desert { background: linear-gradient(135deg, #decba4 0%, #3e5151 100%); }
-        body.bg-swamp { background: linear-gradient(135deg, #1f4037 0%, #99f2c8 100%); }
-        body.bg-heaven { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
-        body.bg-hell { background: linear-gradient(135deg, #ff512f 0%, #dd2476 100%); }
-        body.bg-matrix { background: linear-gradient(135deg, #0f9b0f 0%, #00ff00 100%); }
-        body.bg-candy { background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%); }
-        body.bg-night { background: linear-gradient(135deg, #141e30 0%, #243b55 100%); }
-        body.bg-sunset { background: linear-gradient(135deg, #ff6b6b 0%, #ffeaa7 100%); }
-        body.bg-arctic { background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); }
+        /* Стандартный цвет как был раньше */
+        body.bg-default { background: linear-gradient(145deg, #1a1e2c 0%, #2a2f42 100%); }
+        body.bg-neon { background: linear-gradient(145deg, #20002c, #6a1b9a); }
+        body.bg-gold { background: linear-gradient(145deg, #7d6608, #b8860b); }
+        body.bg-rainbow { background: linear-gradient(145deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3); background-size: 400% 400%; animation: rainbow 10s ease infinite; }
+        body.bg-dark { background: linear-gradient(145deg, #0a0a0a, #1a1a1a); }
+        body.bg-forest { background: linear-gradient(145deg, #1b4d1b, #2e7d32); }
+        body.bg-ocean { background: linear-gradient(145deg, #01579b, #0288d1); }
+        body.bg-lava { background: linear-gradient(145deg, #bf360c, #d84315); }
+        body.bg-space { background: linear-gradient(145deg, #0b0b2b, #1b1b4b); }
+        body.bg-cyber { background: linear-gradient(145deg, #00ff00, #00cc00); }
+        body.bg-blood { background: linear-gradient(145deg, #8b0000, #b22222); }
+        body.bg-royal { background: linear-gradient(145deg, #4169e1, #0000cd); }
+        body.bg-punk { background: linear-gradient(145deg, #ff00ff, #ff1493); }
+        body.bg-desert { background: linear-gradient(145deg, #edc9af, #c19a6b); }
+        body.bg-swamp { background: linear-gradient(145deg, #2f4f4f, #556b2f); }
+        body.bg-heaven { background: linear-gradient(145deg, #87ceeb, #f0e68c); }
+        body.bg-hell { background: linear-gradient(145deg, #ff4500, #8b0000); }
+        body.bg-matrix { background: linear-gradient(145deg, #00ff00, #003300); }
+        body.bg-candy { background: linear-gradient(145deg, #ff69b4, #ffb6c1); }
+        body.bg-night { background: linear-gradient(145deg, #191970, #000080); }
+        body.bg-sunset { background: linear-gradient(145deg, #ff7f50, #ff6347); }
+        body.bg-arctic { background: linear-gradient(145deg, #e0ffff, #b0e0e6); }
 
         @keyframes rainbow {
             0% { background-position: 0% 50%; }
@@ -68,12 +68,12 @@
 
         .game-container {
             flex: 1;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
             border-radius: 32px 32px 0 0;
             padding: 20px 16px;
             box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-bottom: none;
             overflow-y: auto;
             display: flex;
@@ -81,42 +81,40 @@
         }
 
         .timer-banner {
-            background: rgba(255, 255, 255, 0.15);
+            background: linear-gradient(145deg, #ffd966, #e68a2e);
             border-radius: 20px;
             padding: 10px;
             margin-bottom: 12px;
-            color: white;
+            color: #1a1e2c;
             font-weight: bold;
+            box-shadow: 0 4px 0 #b3540b;
             flex-shrink: 0;
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .timer-banner .label { font-size: 0.8rem; opacity: 0.9; }
         .timer-banner .time { font-size: 1.2rem; font-family: monospace; letter-spacing: 1px; }
-        .timer-banner.disabled { opacity: 0.5; }
+        .timer-banner.disabled { background: linear-gradient(145deg, #95a5a6, #7f8c8d); box-shadow: 0 4px 0 #4a4a4a; }
 
         .user-info {
             display: flex;
             flex-direction: column;
             gap: 8px;
             margin-bottom: 16px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 30px;
             padding: 12px;
             flex-shrink: 0;
-            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .rank-badge {
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
+            background: linear-gradient(135deg, #ffd966, #e68a2e);
+            color: #1a1e2c;
             padding: 6px 12px;
             border-radius: 30px;
             font-size: 0.9rem;
             font-weight: 600;
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .user-row {
@@ -129,15 +127,14 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
+            background: linear-gradient(135deg, #ff99cc, #b3d9ff);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
             font-size: 20px;
-            color: white;
+            color: #1a1e2c;
             flex-shrink: 0;
-            border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
         .username {
@@ -149,26 +146,6 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-
-        .stars {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            background: rgba(255, 215, 0, 0.2);
-            padding: 5px 10px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            flex-shrink: 0;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .stars:hover {
-            background: rgba(255, 215, 0, 0.3);
-        }
-
-        .star-icon { font-size: 14px; }
-        .star-amount { font-weight: 600; color: #ffd966; font-size: 0.9rem; }
 
         .content-area {
             flex: 1;
@@ -183,37 +160,36 @@
         .page { display: none; flex: 1; flex-direction: column; align-items: center; justify-content: flex-start; }
         .page.active { display: flex; }
 
-        h1 { font-size: 1.8rem; margin: 10px 0; color: white; text-align: center; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-        h2 { font-size: 1.3rem; margin-bottom: 12px; color: white; text-align: center; width: 100%; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        h1 { font-size: 1.8rem; margin: 10px 0; background: linear-gradient(135deg, #ff99cc, #b3d9ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center; }
+        h2 { font-size: 1.3rem; margin-bottom: 12px; color: #ffd966; text-align: center; width: 100%; }
 
         .tap-area {
             width: 180px;
             height: 180px;
             margin: 15px auto;
-            background: rgba(255, 255, 255, 0.2);
+            background: radial-gradient(circle at 30% 30%, #ffd966, #e68a2e);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 12px 0 rgba(0, 0, 0, 0.2), 0 15px 25px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 12px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6);
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(5px);
+            border: 3px solid #ffb347;
         }
 
-        .tap-area:active { transform: translateY(6px) scale(0.95); box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2), 0 12px 20px rgba(0, 0, 0, 0.6); }
-        .tap-area.cooldown { opacity: 0.5; cursor: not-allowed; pointer-events: none; transform: translateY(4px) scale(0.98); }
+        .tap-area:active { transform: translateY(6px) scale(0.95); box-shadow: 0 6px 0 #b3540b, 0 12px 20px rgba(0, 0, 0, 0.6); }
+        .tap-area.cooldown { opacity: 0.5; filter: grayscale(80%); cursor: not-allowed; pointer-events: none; transform: translateY(4px) scale(0.98); box-shadow: 0 4px 0 #7a4a1f; }
         .tap-area.ready { animation: smoothPulse 2s ease-in-out infinite; }
 
         @keyframes smoothPulse {
-            0% { box-shadow: 0 12px 0 rgba(0, 0, 0, 0.2), 0 15px 25px rgba(0, 0, 0, 0.6); }
-            50% { box-shadow: 0 12px 0 rgba(0, 0, 0, 0.2), 0 15px 25px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 255, 255, 0.5); }
-            100% { box-shadow: 0 12px 0 rgba(0, 0, 0, 0.2), 0 15px 25px rgba(0, 0, 0, 0.6); }
+            0% { box-shadow: 0 12px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6); }
+            50% { box-shadow: 0 12px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6), 0 0 25px #ffd966; }
+            100% { box-shadow: 0 12px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6); }
         }
 
-        .size-display { font-size: 3.5rem; font-weight: 900; color: white; text-shadow: 0 3px 0 rgba(0, 0, 0, 0.2), 0 5px 12px black; line-height: 1; margin: 5px 0; text-align: center; }
-        .size-label { font-size: 1.3rem; color: rgba(255,255,255,0.9); margin-bottom: 5px; text-align: center; }
+        .size-display { font-size: 3.5rem; font-weight: 900; color: #ffe484; text-shadow: 0 3px 0 #b3540b, 0 5px 12px black; line-height: 1; margin: 5px 0; text-align: center; }
+        .size-label { font-size: 1.3rem; color: #f5c6a0; margin-bottom: 5px; text-align: center; }
         .change-indicator { font-size: 1.8rem; font-weight: bold; min-height: 40px; margin: 5px 0; text-align: center; }
         .positive { color: #4caf50; }
         .negative { color: #f44336; }
@@ -224,30 +200,30 @@
             padding: 6px 16px;
             border-radius: 40px;
             display: inline-block;
-            color: rgba(255,255,255,0.7);
-            border: 1px solid rgba(255,255,255,0.2);
+            color: #aaa;
+            border: 1px solid #444;
             margin: 10px auto;
             font-family: monospace;
             letter-spacing: 1px;
         }
-        .timer-text.active { color: white; border-color: rgba(255,255,255,0.5); box-shadow: 0 0 15px rgba(255,255,255,0.3); }
+        .timer-text.active { color: #ffd966; border-color: #ffd966; box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
 
         .nav-menu {
             display: flex;
             justify-content: space-around;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(10px);
             border-radius: 30px;
             padding: 8px 4px;
             margin-top: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             flex-shrink: 0;
         }
 
         .nav-btn {
             background: transparent;
             border: none;
-            color: rgba(255,255,255,0.6);
+            color: #8e94ab;
             font-size: 0.8rem;
             padding: 6px 0;
             cursor: pointer;
@@ -259,7 +235,7 @@
             border-radius: 20px;
             transition: all 0.2s ease;
         }
-        .nav-btn.active { color: white; background: rgba(255,255,255,0.15); }
+        .nav-btn.active { color: #ffd966; background: rgba(255, 215, 0, 0.15); }
         .nav-icon { font-size: 1.3rem; }
 
         .leaderboard-item {
@@ -267,177 +243,106 @@
             align-items: center;
             gap: 8px;
             padding: 8px 10px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.03);
             border-radius: 12px;
             margin-bottom: 6px;
             width: 100%;
-            border: 1px solid rgba(255,255,255,0.1);
         }
         .leaderboard-rank {
             width: 28px;
             height: 28px;
-            background: rgba(255, 255, 255, 0.15);
+            background: linear-gradient(135deg, #ffd966, #e68a2e);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            color: white;
+            color: #1a1e2c;
             font-size: 0.9rem;
             flex-shrink: 0;
         }
-        .leaderboard-rank-1 { background: #ffd700; }
-        .leaderboard-rank-2 { background: #c0c0c0; }
-        .leaderboard-rank-3 { background: #cd7f32; }
+        .leaderboard-rank-1 { background: linear-gradient(135deg, #ffd700, #ffa500); }
+        .leaderboard-rank-2 { background: linear-gradient(135deg, #c0c0c0, #a0a0a0); }
+        .leaderboard-rank-3 { background: linear-gradient(135deg, #cd7f32, #b06d2a); }
         .leaderboard-name { flex: 1; text-align: left; font-weight: 500; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .leaderboard-size { font-weight: bold; color: #ffd966; font-size: 0.9rem; margin-right: 5px; }
-        .profile-btn { background: rgba(255, 255, 255, 0.1); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-decoration: none; border: 1px solid rgba(255,255,255,0.2); }
-        .leaderboard-you { background: rgba(255, 215, 0, 0.15); border: 1px solid rgba(255, 215, 0, 0.3); }
+        .profile-btn { background: rgba(255, 255, 255, 0.1); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-decoration: none; }
+        .leaderboard-you { background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); }
         .leaderboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; width: 100%; }
-        .refresh-btn { background: rgba(255, 255, 255, 0.1); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); }
+        .refresh-btn { background: rgba(255, 255, 255, 0.1); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; }
 
-        /* Магазин скинов - красивая сетка */
+        /* Магазин скинов - сетка */
         .skins-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+            gap: 10px;
             width: 100%;
             margin-bottom: 20px;
         }
 
         .skin-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
-            border-radius: 20px;
-            padding: 16px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 12px;
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s;
-        }
-
-        .skin-card:hover {
-            transform: translateY(-2px);
-            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s;
         }
 
         .skin-card.owned {
-            border: 2px solid #ffd966;
-            background: rgba(255, 215, 0, 0.15);
+            border-color: #ffd966;
+            background: rgba(255, 215, 0, 0.1);
         }
 
         .skin-icon {
-            font-size: 3.5rem;
+            font-size: 3rem;
             margin-bottom: 8px;
-            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.3));
         }
 
         .skin-name {
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             margin-bottom: 4px;
-            color: white;
         }
 
         .skin-price {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #ffd966;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
         .skin-price span {
-            color: white;
+            color: #fff;
             font-weight: bold;
         }
 
         .buy-skin-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #4caf50;
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-size: 0.9rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
             font-weight: 600;
             cursor: pointer;
             width: 100%;
-            border: 1px solid rgba(255,255,255,0.2);
-            transition: 0.2s;
-        }
-
-        .buy-skin-btn:hover {
-            transform: scale(1.02);
         }
 
         .buy-skin-btn:disabled {
-            opacity: 0.5;
+            opacity: 0.3;
             cursor: not-allowed;
-            transform: none;
-        }
-
-        .buy-skin-btn.not-enough {
-            background: rgba(255, 107, 107, 0.5);
-        }
-
-        .cooldown-reset-card {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(5px);
-            border-radius: 20px;
-            padding: 16px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: 0.2s;
-        }
-
-        .cooldown-reset-card:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .cooldown-reset-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .cooldown-reset-icon {
-            font-size: 2rem;
-        }
-
-        .cooldown-reset-text {
-            text-align: left;
-        }
-
-        .cooldown-reset-title {
-            font-weight: bold;
-            font-size: 1rem;
-        }
-
-        .cooldown-reset-desc {
-            font-size: 0.8rem;
-            opacity: 0.9;
-        }
-
-        .cooldown-reset-price {
-            background: rgba(255, 215, 0, 0.2);
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-weight: bold;
-            color: #ffd966;
-            border: 1px solid rgba(255, 215, 0, 0.3);
+            background: #7f8c8d;
         }
 
         .current-skin {
             font-size: 0.9rem;
-            color: white;
+            color: #ffd966;
             margin: 8px 0;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
+            padding: 8px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 16px;
             text-align: center;
             width: 100%;
-            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .inventory-grid {
@@ -449,55 +354,51 @@
         }
 
         .inventory-item {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
-            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
             padding: 12px;
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .inventory-item.owned { border: 2px solid #ffd966; background: rgba(255, 215, 0, 0.15); }
-        .inventory-item.default { border: 2px solid white; background: rgba(255, 255, 255, 0.15); }
-        .inventory-item-icon { font-size: 2.5rem; margin-bottom: 8px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
-        .inventory-item-title { font-weight: 600; font-size: 0.85rem; margin-bottom: 8px; }
+        .inventory-item.owned { border-color: #ffd966; background: rgba(255, 215, 0, 0.1); }
+        .inventory-item.default { border-color: #ffffff; background: rgba(255, 255, 255, 0.15); }
+        .inventory-item-icon { font-size: 2.2rem; margin-bottom: 6px; }
+        .inventory-item-title { font-weight: 600; font-size: 0.8rem; margin-bottom: 8px; }
         .inventory-item-controls { display: flex; gap: 4px; justify-content: center; min-height: 32px; align-items: center; }
-        .inv-btn { background: rgba(255, 255, 255, 0.15); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; transition: 0.2s; }
-        .inv-btn:hover { background: rgba(255, 255, 255, 0.25); }
-        .equipped-badge { color: #4caf50; font-size: 0.8rem; font-weight: 600; background: rgba(76, 175, 80, 0.2); padding: 4px 10px; border-radius: 20px; border: 1px solid #4caf50; }
+        .inv-btn { background: #3a3f55; color: white; border: none; padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; cursor: pointer; border-bottom: 2px solid #1e2230; }
+        .equipped-badge { color: #4caf50; font-size: 0.75rem; font-weight: 600; background: rgba(76, 175, 80, 0.2); padding: 3px 6px; border-radius: 10px; }
 
         /* Админ-панель */
         .admin-section {
             width: 100%;
             margin-top: 15px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
+            padding: 10px;
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            border-radius: 16px;
         }
         .admin-title { color: #ff6b6b; font-size: 1rem; font-weight: 600; margin-bottom: 10px; text-align: center; }
         .admin-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-        .admin-btn { background: rgba(255, 107, 107, 0.2); border: 1px solid #ff6b6b; color: white; padding: 10px; border-radius: 12px; font-size: 0.85rem; cursor: pointer; text-align: center; transition: 0.2s; }
-        .admin-btn:hover { background: rgba(255, 107, 107, 0.3); }
+        .admin-btn { background: rgba(255, 107, 107, 0.2); border: 1px solid #ff6b6b; color: white; padding: 8px; border-radius: 12px; font-size: 0.8rem; cursor: pointer; text-align: center; }
         .admin-btn.wide { grid-column: span 2; }
 
         .loading {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #1a1e2c;
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 1000;
             font-size: 1.2rem;
-            color: white;
         }
 
         .loader {
-            border: 3px solid rgba(255,255,255,0.3);
-            border-top: 3px solid white;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #ffd966;
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
+            width: 16px;
+            height: 16px;
             animation: spin 1s linear infinite;
             display: inline-block;
             margin-left: 8px;
@@ -510,10 +411,7 @@
     </style>
 </head>
 <body class="bg-default" id="body">
-    <div class="loading" id="loading">
-        <span>Загрузка...</span>
-        <span class="loader"></span>
-    </div>
+    <div class="loading" id="loading">Загрузка...</div>
 
     <div class="app-wrapper" id="gameContent" style="display: none;">
         <div class="game-container">
@@ -528,10 +426,7 @@
                 <div class="user-row">
                     <div class="avatar" id="avatar">👤</div>
                     <div class="username" id="username">Загрузка...</div>
-                    <div class="stars" id="starsBtn">
-                        <span class="star-icon">⭐️</span>
-                        <span class="star-amount" id="starAmount">0</span>
-                    </div>
+                    <!-- Звезды удалены! -->
                 </div>
             </div>
 
@@ -560,19 +455,7 @@
                     <h2>🏪 Магазин</h2>
                     <div class="current-skin" id="currentSkinDisplay">Текущий фон: Обычный</div>
                     
-                    <!-- Сброс таймера за 1 звезду -->
-                    <div class="cooldown-reset-card" id="cooldownResetBtn">
-                        <div class="cooldown-reset-info">
-                            <div class="cooldown-reset-icon">⏱️</div>
-                            <div class="cooldown-reset-text">
-                                <div class="cooldown-reset-title">Сброс таймера</div>
-                                <div class="cooldown-reset-desc">Мгновенный сброс ожидания</div>
-                            </div>
-                        </div>
-                        <div class="cooldown-reset-price">⭐️ 1</div>
-                    </div>
-                    
-                    <h3 style="color: white; margin: 10px 0; text-align: center;">🔥 Скины за размер</h3>
+                    <h3 style="color: #ffd966; margin: 10px 0;">🔥 Скины за звезды</h3>
                     <div class="skins-grid" id="skinsGrid"></div>
                 </div>
 
@@ -625,7 +508,6 @@
         const changeEl = document.getElementById('changeIndicator');
         const clickTimerEl = document.getElementById('clickTimer');
         const circle = document.getElementById('tapCircle');
-        const starAmountEl = document.getElementById('starAmount');
         const currentSkinDisplay = document.getElementById('currentSkinDisplay');
         const inventoryCurrentSkin = document.getElementById('inventoryCurrentSkin');
         const rankDisplay = document.getElementById('rankDisplay');
@@ -651,7 +533,6 @@
         let globalTimerInterval = null;
         let currentBackground = 'default';
         let ownedSkins = ['default'];
-        let stars = 0;
         let isAdmin = false;
         let isMaster = false;
         let globalTimerEnabled = false;
@@ -661,27 +542,27 @@
         
         // ВСЕ СКИНЫ (21 штука)
         const allSkins = [
-            { id: 'neon', name: 'Неоновый', icon: '💜', price: 20 },
-            { id: 'gold', name: 'Золотой', icon: '💛', price: 30 },
-            { id: 'rainbow', name: 'Радужный', icon: '🌈', price: 40 },
-            { id: 'dark', name: 'Тёмный', icon: '🖤', price: 25 },
-            { id: 'forest', name: 'Лесной', icon: '🌲', price: 35 },
-            { id: 'ocean', name: 'Океанский', icon: '🌊', price: 45 },
-            { id: 'lava', name: 'Лавовый', icon: '🌋', price: 50 },
-            { id: 'space', name: 'Космический', icon: '🚀', price: 60 },
-            { id: 'cyber', name: 'Киберпанк', icon: '🤖', price: 55 },
-            { id: 'blood', name: 'Кровавый', icon: '🩸', price: 65 },
-            { id: 'royal', name: 'Королевский', icon: '👑', price: 70 },
-            { id: 'punk', name: 'Панк', icon: '🤘', price: 45 },
-            { id: 'desert', name: 'Пустынный', icon: '🏜️', price: 40 },
-            { id: 'swamp', name: 'Болотный', icon: '🐊', price: 50 },
-            { id: 'heaven', name: 'Райский', icon: '😇', price: 80 },
-            { id: 'hell', name: 'Адский', icon: '👿', price: 85 },
-            { id: 'matrix', name: 'Матрица', icon: '💊', price: 55 },
-            { id: 'candy', name: 'Конфетный', icon: '🍬', price: 30 },
-            { id: 'night', name: 'Ночной', icon: '🌙', price: 35 },
-            { id: 'sunset', name: 'Закат', icon: '🌅', price: 45 },
-            { id: 'arctic', name: 'Арктика', icon: '❄️', price: 50 }
+            { id: 'neon', name: 'Неоновый', icon: '💜' },
+            { id: 'gold', name: 'Золотой', icon: '💛' },
+            { id: 'rainbow', name: 'Радужный', icon: '🌈' },
+            { id: 'dark', name: 'Тёмный', icon: '🖤' },
+            { id: 'forest', name: 'Лесной', icon: '🌲' },
+            { id: 'ocean', name: 'Океанский', icon: '🌊' },
+            { id: 'lava', name: 'Лавовый', icon: '🌋' },
+            { id: 'space', name: 'Космический', icon: '🚀' },
+            { id: 'cyber', name: 'Киберпанк', icon: '🤖' },
+            { id: 'blood', name: 'Кровавый', icon: '🩸' },
+            { id: 'royal', name: 'Королевский', icon: '👑' },
+            { id: 'punk', name: 'Панк', icon: '🤘' },
+            { id: 'desert', name: 'Пустынный', icon: '🏜️' },
+            { id: 'swamp', name: 'Болотный', icon: '🐊' },
+            { id: 'heaven', name: 'Райский', icon: '😇' },
+            { id: 'hell', name: 'Адский', icon: '👿' },
+            { id: 'matrix', name: 'Матрица', icon: '💊' },
+            { id: 'candy', name: 'Конфетный', icon: '🍬' },
+            { id: 'night', name: 'Ночной', icon: '🌙' },
+            { id: 'sunset', name: 'Закат', icon: '🌅' },
+            { id: 'arctic', name: 'Арктика', icon: '❄️' }
         ];
         
         const backgroundNames = {
@@ -797,7 +678,6 @@
                 const data = await res.json();
                 
                 size = data.size;
-                stars = data.stars || 0;
                 ownedSkins = data.ownedSkins || ['default'];
                 currentBackground = data.background || 'default';
                 if (data.last_click) {
@@ -813,7 +693,6 @@
                 
                 applyBackground(currentBackground);
                 updateSize();
-                updateStars();
                 
                 await syncTime();
                 checkCooldown();
@@ -926,10 +805,6 @@
             }
         }
 
-        function updateStars() {
-            starAmountEl.textContent = stars;
-        }
-
         async function handleTap() {
             if (cooldown) return;
             
@@ -959,18 +834,9 @@
             }
         }
 
-        // ПОКУПКА СКИНА ЗА РАЗМЕР
-        window.buySkin = async function(skinId, requiredPrice) {
-            console.log('Покупка скина:', skinId, 'цена:', requiredPrice, 'текущий размер:', size);
-            
-            if (size < requiredPrice) {
-                tg.showPopup({
-                    title: '❌ Недостаточно размера',
-                    message: `Нужно ${requiredPrice} см, а у вас ${size} см`,
-                    buttons: [{type: 'ok'}]
-                });
-                return;
-            }
+        // ПОКУПКА СКИНА ЗА ЗВЕЗДЫ TELEGRAM
+        window.buySkin = async function(skinId, skinName, skinIcon) {
+            console.log('Покупка скина:', skinId, skinName);
             
             const btn = event?.target;
             const originalText = btn?.textContent;
@@ -980,46 +846,61 @@
             }
             
             try {
-                const res = await fetch(`${API_URL}/api/buy_skin`, {
+                // 1. Создаем инвойс
+                const res = await fetch(`${API_URL}/api/create_skin_invoice`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         telegram_id: String(user.id),
                         skin_id: skinId,
-                        required_size: requiredPrice
+                        skin_name: skinName
                     })
                 });
                 
                 const data = await res.json();
-                console.log('Ответ сервера:', res.status, data);
                 
-                if (res.ok) {
-                    ownedSkins = data.ownedSkins;
-                    tg.showPopup({
-                        title: '✅ Покупка успешна!',
-                        message: `Скин "${skinId}" добавлен в инвентарь`,
-                        buttons: [{type: 'ok'}]
-                    });
-                    renderShop();
-                    renderInventory();
-                } else if (res.status === 402) {
-                    tg.showPopup({
-                        title: '❌ Недостаточно размера',
-                        message: `Нужно ${data.required} см, а у вас ${data.current || size} см`,
-                        buttons: [{type: 'ok'}]
+                if (data.success && data.invoice_link) {
+                    // 2. Открываем оплату Telegram Stars
+                    tg.openInvoice(data.invoice_link, async (paymentStatus) => {
+                        console.log('Статус оплаты:', paymentStatus);
+                        
+                        if (paymentStatus === 'paid') {
+                            // 3. Подтверждаем покупку
+                            const confirmRes = await fetch(`${API_URL}/api/confirm_skin_purchase`, {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({
+                                    telegram_id: String(user.id),
+                                    skin_id: skinId
+                                })
+                            });
+                            
+                            const confirmData = await confirmRes.json();
+                            
+                            if (confirmData.success) {
+                                ownedSkins = confirmData.ownedSkins;
+                                
+                                tg.showPopup({
+                                    title: '✅ Покупка успешна!',
+                                    message: `Скин "${skinName}" добавлен в инвентарь`,
+                                    buttons: [{type: 'ok'}]
+                                });
+                                
+                                renderShop();
+                                renderInventory();
+                            }
+                        }
                     });
                 } else {
                     tg.showPopup({
                         title: '❌ Ошибка',
-                        message: data.error || 'Неизвестная ошибка',
+                        message: data.error || 'Не удалось создать инвойс',
                         buttons: [{type: 'ok'}]
                     });
                 }
                 
             } catch (e) {
-                console.error('Buy skin error:', e);
+                console.error('Ошибка покупки:', e);
                 tg.showPopup({
                     title: '❌ Ошибка',
                     message: 'Не удалось подключиться к серверу',
@@ -1032,101 +913,6 @@
                 }
             }
         };
-
-        // СБРОС ТАЙМЕРА ЗА ЗВЕЗДУ
-        window.buyCooldownReset = async function() {
-            if (stars < 1) {
-                tg.showPopup({
-                    title: '⭐️ Нужна звезда',
-                    message: 'Купить звезду для сброса таймера?',
-                    buttons: [
-                        {id: 'buy', type: 'default', text: 'Купить за 1 ⭐️'},
-                        {type: 'cancel'}
-                    ]
-                }, async (btnId) => {
-                    if (btnId === 'buy') {
-                        await purchaseStar();
-                    }
-                });
-                return;
-            }
-            
-            try {
-                const res = await fetch(`${API_URL}/api/reset_cooldown`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({telegram_id: String(user.id)})
-                });
-                
-                const data = await res.json();
-                
-                if (res.ok) {
-                    stars = data.stars;
-                    updateStars();
-                    
-                    if (clickTimerInterval) clearInterval(clickTimerInterval);
-                    cooldown = false;
-                    lastClickTime = 0;
-                    circle.classList.remove('cooldown');
-                    circle.classList.add('ready');
-                    clickTimerEl.textContent = '⚡ готов ⚡';
-                    clickTimerEl.classList.remove('active');
-                    
-                    tg.showPopup({
-                        title: '✅ Таймер сброшен!',
-                        message: 'Можете тапать снова',
-                        buttons: [{type: 'ok'}]
-                    });
-                }
-                
-            } catch (e) {
-                console.error('Reset cooldown error:', e);
-            }
-        };
-
-        // ПОКУПКА ЗВЕЗДЫ
-        async function purchaseStar() {
-            try {
-                const res = await fetch(`${API_URL}/api/create_invoice`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id)
-                    })
-                });
-                
-                const data = await res.json();
-                
-                if (data.success && data.invoice_link) {
-                    tg.openInvoice(data.invoice_link, async (paymentStatus) => {
-                        if (paymentStatus === 'paid') {
-                            const confirmRes = await fetch(`${API_URL}/api/confirm_payment`, {
-                                method: 'POST',
-                                headers: {'Content-Type': 'application/json'},
-                                body: JSON.stringify({
-                                    telegram_id: String(user.id)
-                                })
-                            });
-                            
-                            const confirmData = await confirmRes.json();
-                            if (confirmData.success) {
-                                stars = confirmData.stars;
-                                updateStars();
-                                
-                                tg.showPopup({
-                                    title: '✅ Звезда получена!',
-                                    message: 'Теперь можно сбросить таймер',
-                                    buttons: [{type: 'ok'}]
-                                });
-                            }
-                        }
-                    });
-                }
-                
-            } catch (e) {
-                console.error('Purchase star error:', e);
-            }
-        }
 
         // Надеть скин
         window.equipSkin = async function(skinId) {
@@ -1167,7 +953,7 @@
                 const leaders = await res.json();
                 
                 if (leaders.length === 0) {
-                    listEl.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.6); padding: 20px;">Пока нет игроков</div>';
+                    listEl.innerHTML = '<div style="text-align: center; color: #8e94ab; padding: 20px;">Пока нет игроков</div>';
                     return;
                 }
                 
@@ -1194,19 +980,17 @@
             
             skinsGrid.innerHTML = allSkins.map(skin => {
                 const isOwned = ownedSkins.includes(skin.id);
-                const canBuy = size >= skin.price;
                 
                 return `
                     <div class="skin-card ${isOwned ? 'owned' : ''}">
                         <div class="skin-icon">${skin.icon}</div>
                         <div class="skin-name">${skin.name}</div>
-                        <div class="skin-price">нужно <span>${skin.price} см</span></div>
+                        <div class="skin-price">⭐️ 1 звезда</div>
                         ${isOwned ? 
-                            '<div style="color: #4caf50; font-size: 0.9rem;">✅ Уже есть</div>' : 
-                            `<button class="buy-skin-btn ${!canBuy ? 'not-enough' : ''}" 
-                                    onclick="buySkin('${skin.id}', ${skin.price})"
-                                    ${!canBuy ? 'disabled' : ''}>
-                                ${canBuy ? 'Купить' : `Нужно ${skin.price} см`}
+                            '<div style="color: #4caf50; font-size: 0.8rem;">✅ Уже есть</div>' : 
+                            `<button class="buy-skin-btn" 
+                                    onclick="buySkin('${skin.id}', '${skin.name}', '${skin.icon}')">
+                                Купить за ⭐️
                             </button>`
                         }
                     </div>
@@ -1654,16 +1438,6 @@
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
 
         circle.addEventListener('click', handleTap);
-        
-        document.getElementById('cooldownResetBtn').addEventListener('click', buyCooldownReset);
-        
-        document.getElementById('starsBtn').addEventListener('click', () => {
-            tg.showPopup({
-                title: '⭐️ Telegram Stars',
-                message: `У вас ${stars} звезд\n\nЗвезды нужны для сброса таймера`,
-                buttons: [{type: 'ok'}]
-            });
-        });
 
         if (!user) {
             usernameEl.textContent = 'Тест';
