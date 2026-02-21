@@ -7,254 +7,272 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background: #1a1e2c;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #0a0a0a;
             color: white;
+            margin: 0;
+            padding: 16px;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 16px;
         }
         
-        .container {
+        .card {
             max-width: 400px;
             width: 100%;
-            background: rgba(255,255,255,0.05);
+            background: #1c1c1e;
             border-radius: 24px;
             padding: 24px;
-            text-align: center;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
         }
         
         h1 {
+            font-size: 28px;
+            margin: 0 0 8px 0;
             color: #ffd966;
-            font-size: 1.8rem;
-            margin-bottom: 20px;
+            text-align: center;
         }
         
-        .balance {
-            background: rgba(0,0,0,0.3);
-            border-radius: 40px;
-            padding: 12px 20px;
-            margin-bottom: 30px;
+        .subtitle {
+            text-align: center;
+            color: #8e8e93;
+            margin-bottom: 32px;
+            font-size: 14px;
+        }
+        
+        .balance-card {
+            background: #2c2c2e;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
+        }
+        
+        .balance-label {
+            font-size: 16px;
+            color: #8e8e93;
+        }
+        
+        .balance-value {
+            display: flex;
+            align-items: center;
             gap: 8px;
-            border: 1px solid rgba(255,215,0,0.3);
-        }
-        
-        .star {
-            font-size: 24px;
-        }
-        
-        .amount {
             font-size: 24px;
             font-weight: bold;
             color: #ffd966;
         }
         
-        .test-btn {
-            background: linear-gradient(145deg, #ffd966, #e68a2e);
-            color: #1a1e2c;
+        .star-icon {
+            font-size: 28px;
+        }
+        
+        .button {
+            background: #ffd966;
+            color: #000;
             border: none;
-            padding: 16px 32px;
-            border-radius: 40px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            border-bottom: 4px solid #b3540b;
-            width: 100%;
-            margin-bottom: 16px;
-            transition: transform 0.1s;
-        }
-        
-        .test-btn:active {
-            transform: translateY(2px);
-            border-bottom-width: 2px;
-        }
-        
-        .message {
-            background: rgba(76, 175, 80, 0.2);
-            border: 1px solid #4caf50;
-            border-radius: 16px;
+            border-radius: 14px;
             padding: 16px;
-            margin-top: 20px;
-            color: #4caf50;
-            display: none;
+            font-size: 17px;
+            font-weight: 600;
+            width: 100%;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: opacity 0.2s;
         }
         
-        .error {
-            background: rgba(244, 67, 54, 0.2);
-            border: 1px solid #f44336;
-            color: #f44336;
+        .button:active {
+            opacity: 0.7;
         }
         
-        .status {
-            margin-top: 20px;
+        .button.secondary {
+            background: #2c2c2e;
+            color: #ffd966;
+            border: 1px solid #ffd966;
+        }
+        
+        .log {
+            background: #2c2c2e;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 24px;
+            font-family: monospace;
             font-size: 14px;
-            color: #8e94ab;
+            color: #8e8e93;
+            max-height: 200px;
+            overflow-y: auto;
         }
+        
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid #3a3a3c;
+        }
+        
+        .success { color: #30d158; }
+        .error { color: #ff453a; }
+        .info { color: #0a84ff; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>⭐️ Тест Telegram Stars</h1>
+    <div class="card">
+        <h1>⭐️ Telegram Stars</h1>
+        <div class="subtitle">Тест реальных звезд</div>
         
-        <!-- Баланс звезд -->
-        <div class="balance">
-            <span class="star">⭐️</span>
-            <span class="amount" id="starBalance">0</span>
-            <span style="color: #8e94ab;">звезд</span>
+        <!-- Баланс -->
+        <div class="balance-card">
+            <span class="balance-label">Ваш баланс</span>
+            <div class="balance-value">
+                <span class="star-icon">⭐️</span>
+                <span id="balance">0</span>
+            </div>
         </div>
         
-        <!-- Тестовая кнопка -->
-        <button class="test-btn" id="testButton">
-            🚀 Запросить 1 звезду
+        <!-- Кнопки -->
+        <button class="button" id="buyBtn">
+            💎 Купить 1 звезду (тест)
         </button>
         
-        <!-- Сообщение об успехе -->
-        <div class="message" id="successMessage">
-            ✅ Ура! Звезда потрачена! Спасибо за тест!
+        <button class="button secondary" id="spendBtn">
+            🎮 Потратить 1 звезду
+        </button>
+        
+        <button class="button secondary" id="checkBtn">
+            🔄 Проверить баланс
+        </button>
+        
+        <!-- Лог действий -->
+        <div class="log" id="log">
+            <div class="log-entry">👋 Нажмите кнопку для теста</div>
         </div>
         
-        <!-- Статус -->
-        <div class="status" id="status">
-            Нажми кнопку, чтобы запросить звезду
-        </div>
-        
-        <!-- Информация -->
-        <div style="margin-top: 20px; font-size: 12px; color: #666;">
-            Это тест Telegram Stars. Звезды списываются реально! ⭐️
+        <div style="font-size: 12px; color: #8e8e93; text-align: center; margin-top: 16px;">
+            ID: <span id="userId">загрузка...</span>
         </div>
     </div>
 
     <script>
-        // Получаем WebApp
+        // Инициализация Telegram WebApp
         const tg = window.Telegram.WebApp;
         tg.expand();
+        tg.enableClosingConfirmation();
+        
+        // Получаем данные пользователя
+        const user = tg.initDataUnsafe?.user;
+        const userId = user?.id || 'тест';
         
         // Элементы
-        const testButton = document.getElementById('testButton');
-        const starBalance = document.getElementById('starBalance');
-        const successMessage = document.getElementById('successMessage');
-        const statusEl = document.getElementById('status');
+        const balanceEl = document.getElementById('balance');
+        const logEl = document.getElementById('log');
+        const userIdEl = document.getElementById('userId');
         
-        // Начальный баланс (будет загружен)
+        // Баланс (храним в памяти для теста)
         let stars = 0;
         
-        // Загружаем баланс при старте
-        async function loadBalance() {
-            try {
-                // Тут должен быть ваш API запрос
-                // Для теста просто показываем 5 звезд
-                stars = 5;
-                starBalance.textContent = stars;
-            } catch (e) {
-                console.error('Ошибка загрузки баланса:', e);
-            }
+        // Показываем ID пользователя
+        userIdEl.textContent = userId;
+        
+        // Функция добавления в лог
+        function addLog(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logEl.appendChild(entry);
+            logEl.scrollTop = logEl.scrollHeight;
         }
         
-        // Обновить отображение баланса
+        // Обновить баланс на экране
         function updateBalance(newStars) {
             stars = newStars;
-            starBalance.textContent = stars;
+            balanceEl.textContent = stars;
+            addLog(`💰 Баланс обновлен: ${stars} ⭐️`, 'success');
         }
         
-        // Тестовая функция - запрос 1 звезды
-        async function requestOneStar() {
-            statusEl.textContent = '⏳ Открываю окно оплаты...';
+        // ЗАПРОС 1 ЗВЕЗДЫ (реальные звезды Telegram!)
+        document.getElementById('buyBtn').addEventListener('click', function() {
+            addLog('🔄 Открываю окно оплаты...', 'info');
             
-            // Создаем инвойс на 1 звезду
-            // currency: 'XTR' - это код Telegram Stars
-            // amount: 1 - цена в звездах
-            tg.openInvoice({
-                currency: 'XTR',
-                prices: [{ 
-                    label: 'Тестовая покупка', 
-                    amount: 1  // 1 звезда
-                }]
-            }, function(status) {
-                // Этот коллбэк вызывается после закрытия окна оплаты
-                console.log('Статус оплаты:', status);
-                
-                if (status === 'paid') {
-                    // Оплата прошла успешно!
-                    statusEl.textContent = '✅ Оплата прошла! Добавляю звезду...';
+            try {
+                tg.openInvoice({
+                    currency: 'XTR',  // XTR = Telegram Stars
+                    prices: [{
+                        label: 'Тестовая покупка',
+                        amount: 1  // 1 звезда
+                    }]
+                }, function(status) {
+                    addLog(`📦 Статус оплаты: ${status}`, 'info');
                     
-                    // Имитируем добавление звезды (тут должен быть ваш API)
-                    setTimeout(() => {
-                        // Увеличиваем баланс на 1
+                    if (status === 'paid') {
+                        // Успешно оплачено!
+                        addLog('✅ Оплата прошла успешно!', 'success');
+                        
+                        // Добавляем звезду на баланс
                         updateBalance(stars + 1);
                         
-                        // Показываем сообщение
-                        successMessage.style.display = 'block';
-                        statusEl.textContent = '✅ Тест пройден! Звезда добавлена!';
+                        // Показываем уведомление
+                        tg.showPopup({
+                            title: 'Успешно!',
+                            message: 'Вы купили 1 звезду! ⭐️',
+                            buttons: [{type: 'ok'}]
+                        });
                         
-                        // Через 3 секунды скрываем сообщение
-                        setTimeout(() => {
-                            successMessage.style.display = 'none';
-                        }, 3000);
-                    }, 500);
-                    
-                } else if (status === 'cancelled') {
-                    // Пользователь отменил оплату
-                    statusEl.textContent = '❌ Оплата отменена';
-                    
-                } else if (status === 'failed') {
-                    // Ошибка оплаты
-                    statusEl.textContent = '❌ Ошибка оплаты';
-                }
-            });
-        }
-        
-        // Тестовая функция - потратить 1 звезду
-        async function spendOneStar() {
-            if (stars < 1) {
-                statusEl.textContent = '❌ Недостаточно звезд! Купите сначала.';
-                return;
-            }
-            
-            statusEl.textContent = '⏳ Списываю звезду...';
-            
-            // Имитируем запрос к серверу
-            setTimeout(() => {
-                // Уменьшаем баланс
-                updateBalance(stars - 1);
-                
-                // Показываем сообщение
-                successMessage.textContent = '✅ Звезда потрачена! Спасибо за покупку!';
-                successMessage.style.display = 'block';
-                statusEl.textContent = '✅ Готово! Осталось звезд: ' + (stars - 1);
-                
-                setTimeout(() => {
-                    successMessage.style.display = 'none';
-                }, 3000);
-            }, 500);
-        }
-        
-        // Обработчик кнопки
-        testButton.addEventListener('click', () => {
-            // Для теста: сначала запрашиваем звезду, потом даем кнопку на трату
-            if (confirm('Запросить 1 звезду у Telegram?')) {
-                requestOneStar();
+                    } else if (status === 'cancelled') {
+                        addLog('❌ Пользователь отменил оплату', 'error');
+                        
+                    } else if (status === 'failed') {
+                        addLog('❌ Ошибка оплаты', 'error');
+                    }
+                });
+            } catch (e) {
+                addLog(`❌ Ошибка: ${e.message}`, 'error');
+                console.error('Invoice error:', e);
             }
         });
         
-        // Добавим вторую тестовую кнопку
-        const spendBtn = document.createElement('button');
-        spendBtn.className = 'test-btn';
-        spendBtn.style.background = 'linear-gradient(145deg, #ff6b6b, #ff4757)';
-        spendBtn.textContent = '💰 Потратить 1 звезду';
-        spendBtn.addEventListener('click', spendOneStar);
-        testButton.parentNode.insertBefore(spendBtn, testButton.nextSibling);
+        // ПОТРАТИТЬ 1 ЗВЕЗДУ
+        document.getElementById('spendBtn').addEventListener('click', function() {
+            if (stars < 1) {
+                addLog('❌ Недостаточно звезд!', 'error');
+                tg.showPopup({
+                    title: 'Ошибка',
+                    message: 'Сначала купите звезду!',
+                    buttons: [{type: 'ok'}]
+                });
+                return;
+            }
+            
+            addLog('🔄 Трачу 1 звезду...', 'info');
+            
+            // Имитация запроса к серверу
+            setTimeout(() => {
+                updateBalance(stars - 1);
+                addLog('✅ Звезда потрачена!', 'success');
+                
+                tg.showPopup({
+                    title: 'Готово!',
+                    message: 'Звезда успешно потрачена!',
+                    buttons: [{type: 'ok'}]
+                });
+            }, 500);
+        });
         
-        // Загружаем баланс при старте
-        loadBalance();
+        // ПРОВЕРИТЬ БАЛАНС
+        document.getElementById('checkBtn').addEventListener('click', function() {
+            addLog(`ℹ️ Текущий баланс: ${stars} ⭐️`, 'info');
+            tg.showPopup({
+                title: 'Баланс',
+                message: `У вас ${stars} звезд ⭐️`,
+                buttons: [{type: 'ok'}]
+            });
+        });
         
-        // Показываем информацию о пользователе
-        console.log('Telegram User:', tg.initDataUnsafe?.user);
+        // Приветствие
+        addLog(`👋 Привет, ${user?.first_name || 'тестер'}!`, 'success');
+        
+        // Показываем информацию о поддержке звезд
+        console.log('Telegram WebApp version:', tg.version);
+        console.log('Platform:', tg.platform);
         
     </script>
 </body>
