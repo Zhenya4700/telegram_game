@@ -147,19 +147,7 @@
             text-overflow: ellipsis;
         }
 
-        .stars {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            background: rgba(255, 215, 0, 0.15);
-            padding: 5px 10px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            flex-shrink: 0;
-            cursor: pointer;
-        }
-        .star-icon { font-size: 14px; }
-        .star-amount { font-weight: 600; color: #ffd966; font-size: 0.9rem; }
+        /* ЗВЕЗДЫ УДАЛЕНЫ - больше нет блока stars */
 
         .content-area {
             flex: 1;
@@ -494,10 +482,7 @@
                 <div class="user-row">
                     <div class="avatar" id="avatar">👤</div>
                     <div class="username" id="username">Загрузка...</div>
-                    <div class="stars" id="starsBtn">
-                        <span class="star-icon">⭐️</span>
-                        <span class="star-amount" id="starAmount">0</span>
-                    </div>
+                    <!-- ЗВЕЗДЫ ПОЛНОСТЬЮ УДАЛЕНЫ -->
                 </div>
             </div>
 
@@ -591,7 +576,6 @@
         const changeEl = document.getElementById('changeIndicator');
         const clickTimerEl = document.getElementById('clickTimer');
         const circle = document.getElementById('tapCircle');
-        const starAmountEl = document.getElementById('starAmount');
         const currentSkinDisplay = document.getElementById('currentSkinDisplay');
         const inventoryCurrentSkin = document.getElementById('inventoryCurrentSkin');
         const rankDisplay = document.getElementById('rankDisplay');
@@ -618,7 +602,6 @@
         let globalTimerInterval = null;
         let currentBackground = 'default';
         let ownedSkins = ['default'];
-        let stars = 0;
         let isAdmin = false;
         let isMaster = false;
         let globalTimerEnabled = false;
@@ -764,7 +747,6 @@
                 const data = await res.json();
                 
                 size = data.size;
-                stars = data.stars || 0;
                 ownedSkins = data.ownedSkins || ['default'];
                 currentBackground = data.background || 'default';
                 if (data.last_click) {
@@ -780,7 +762,6 @@
                 
                 applyBackground(currentBackground);
                 updateSize();
-                updateStars();
                 
                 await syncTime();
                 checkCooldown();
@@ -891,10 +872,6 @@
             } catch (e) {
                 console.error('Rank error:', e);
             }
-        }
-
-        function updateStars() {
-            starAmountEl.textContent = stars;
         }
 
         async function handleTap() {
@@ -1612,14 +1589,6 @@
         circle.addEventListener('click', handleTap);
         
         cooldownResetBtn.addEventListener('click', buyCooldownReset);
-        
-        document.getElementById('starsBtn').addEventListener('click', () => {
-            tg.showPopup({
-                title: '⭐️ Telegram Stars',
-                message: `У вас ${stars} звезд\n\n35 звезд = сброс таймера`,
-                buttons: [{type: 'ok'}]
-            });
-        });
 
         if (!user) {
             usernameEl.textContent = 'Тест';
