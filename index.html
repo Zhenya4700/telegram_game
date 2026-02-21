@@ -113,12 +113,27 @@
         .success { color: #30d158; }
         .error { color: #ff453a; }
         .info { color: #0a84ff; }
+        
+        .warning {
+            background: rgba(255, 149, 0, 0.2);
+            border: 1px solid #ff9500;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 16px;
+            color: #ff9500;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
     <div class="card">
         <h1>⭐️ Telegram Stars</h1>
         <div class="subtitle">Тест реальных звезд</div>
+        
+        <!-- Предупреждение -->
+        <div class="warning" id="warning">
+            ⚠️ Настройте платежи в @BotFather сначала!
+        </div>
         
         <!-- Баланс -->
         <div class="balance-card">
@@ -131,7 +146,7 @@
         
         <!-- Кнопки -->
         <button class="button" id="buyBtn">
-            💎 Купить 1 звезду (тест)
+            💎 Купить 1 звезду
         </button>
         
         <button class="button secondary" id="spendBtn">
@@ -148,6 +163,7 @@
         </div>
         
         <div style="font-size: 12px; color: #8e8e93; text-align: center; margin-top: 16px;">
+            Bot: @YourBotName<br>
             ID: <span id="userId">загрузка...</span>
         </div>
     </div>
@@ -156,22 +172,33 @@
         // Инициализация Telegram WebApp
         const tg = window.Telegram.WebApp;
         tg.expand();
-        tg.enableClosingConfirmation();
         
         // Получаем данные пользователя
         const user = tg.initDataUnsafe?.user;
-        const userId = user?.id || 'тест';
+        const userId = user?.id || 'неизвестно';
+        const botName = tg.initDataUnsafe?.bot?.username || 'неизвестно';
         
         // Элементы
         const balanceEl = document.getElementById('balance');
         const logEl = document.getElementById('log');
         const userIdEl = document.getElementById('userId');
+        const warningEl = document.getElementById('warning');
         
-        // Баланс (храним в памяти для теста)
+        // Баланс
         let stars = 0;
         
-        // Показываем ID пользователя
+        // Показываем информацию
         userIdEl.textContent = userId;
+        
+        // Проверяем, включены ли звезды
+        function checkStarsEnabled() {
+            // Если версия WebApp старая, показываем предупреждение
+            if (!tg.version || parseFloat(tg.version) < 6.9) {
+                warningEl.innerHTML = '⚠️ Обновите Telegram до последней версии!';
+                return false;
+            }
+            return true;
+        }
         
         // Функция добавления в лог
         function addLog(message, type = 'info') {
@@ -182,43 +209,65 @@
             logEl.scrollTop = logEl.scrollHeight;
         }
         
-        // Обновить баланс на экране
+        // Обновить баланс
         function updateBalance(newStars) {
             stars = newStars;
             balanceEl.textContent = stars;
-            addLog(`💰 Баланс обновлен: ${stars} ⭐️`, 'success');
+            addLog(`💰 Баланс: ${stars} ⭐️`, 'success');
         }
         
-        // ЗАПРОС 1 ЗВЕЗДЫ (реальные звезды Telegram!)
+        // ПРОВЕРКА ПЛАТЕЖЕЙ
+        async function checkPayments() {
+            addLog('🔍 Проверка платежей...', 'info');
+            
+            try {
+                // Пытаемся открыть тестовый инвойс
+                tg.openInvoice({
+                    currency: 'XTR',
+                    prices: [{
+                        label: 'Тест',
+                        amount: 1
+                    }]
+                }, function(status) {
+                    if (status === 'cancelled') {
+                        // Если отменили - ок, значит работает
+                        addLog('✅ Платежи работают!', 'success');
+                        warningEl.style.display = 'none';
+                    }
+                });
+            } catch (e) {
+                addLog(`❌ Ошибка: ${e.message}`, 'error');
+            }
+        }
+        
+        // КУПИТЬ ЗВЕЗДУ
         document.getElementById('buyBtn').addEventListener('click', function() {
             addLog('🔄 Открываю окно оплаты...', 'info');
             
             try {
                 tg.openInvoice({
-                    currency: 'XTR',  // XTR = Telegram Stars
+                    currency: 'XTR',
                     prices: [{
-                        label: 'Тестовая покупка',
-                        amount: 1  // 1 звезда
-                    }]
+                        label: 'Одна звезда Telegram',
+                        amount: 1
+                    }],
+                    // Добавляем description для лучшего вида
+                    description: 'Тестовая покупка звезды'
                 }, function(status) {
-                    addLog(`📦 Статус оплаты: ${status}`, 'info');
+                    addLog(`📦 Статус: ${status}`, 'info');
                     
                     if (status === 'paid') {
-                        // Успешно оплачено!
-                        addLog('✅ Оплата прошла успешно!', 'success');
-                        
-                        // Добавляем звезду на баланс
+                        addLog('✅ Оплачено!', 'success');
                         updateBalance(stars + 1);
                         
-                        // Показываем уведомление
                         tg.showPopup({
                             title: 'Успешно!',
-                            message: 'Вы купили 1 звезду! ⭐️',
+                            message: 'Звезда добавлена на баланс!',
                             buttons: [{type: 'ok'}]
                         });
                         
                     } else if (status === 'cancelled') {
-                        addLog('❌ Пользователь отменил оплату', 'error');
+                        addLog('❌ Отменено', 'error');
                         
                     } else if (status === 'failed') {
                         addLog('❌ Ошибка оплаты', 'error');
@@ -227,13 +276,18 @@
             } catch (e) {
                 addLog(`❌ Ошибка: ${e.message}`, 'error');
                 console.error('Invoice error:', e);
+                
+                // Показываем подробности
+                if (e.message.includes('WebAppInvoiceUrlInvalid')) {
+                    warningEl.innerHTML = '❌ Платежи не включены! Идите в @BotFather → Payments → Звёзды Telegram';
+                }
             }
         });
         
-        // ПОТРАТИТЬ 1 ЗВЕЗДУ
+        // ПОТРАТИТЬ ЗВЕЗДУ
         document.getElementById('spendBtn').addEventListener('click', function() {
             if (stars < 1) {
-                addLog('❌ Недостаточно звезд!', 'error');
+                addLog('❌ Нет звезд!', 'error');
                 tg.showPopup({
                     title: 'Ошибка',
                     message: 'Сначала купите звезду!',
@@ -242,16 +296,16 @@
                 return;
             }
             
-            addLog('🔄 Трачу 1 звезду...', 'info');
+            addLog('🔄 Трачу звезду...', 'info');
             
-            // Имитация запроса к серверу
+            // Тут должен быть запрос к вашему API
             setTimeout(() => {
                 updateBalance(stars - 1);
                 addLog('✅ Звезда потрачена!', 'success');
                 
                 tg.showPopup({
                     title: 'Готово!',
-                    message: 'Звезда успешно потрачена!',
+                    message: 'Звезда успешно использована!',
                     buttons: [{type: 'ok'}]
                 });
             }, 500);
@@ -259,7 +313,7 @@
         
         // ПРОВЕРИТЬ БАЛАНС
         document.getElementById('checkBtn').addEventListener('click', function() {
-            addLog(`ℹ️ Текущий баланс: ${stars} ⭐️`, 'info');
+            addLog(`ℹ️ Баланс: ${stars} ⭐️`, 'info');
             tg.showPopup({
                 title: 'Баланс',
                 message: `У вас ${stars} звезд ⭐️`,
@@ -267,12 +321,16 @@
             });
         });
         
-        // Приветствие
+        // Старт
         addLog(`👋 Привет, ${user?.first_name || 'тестер'}!`, 'success');
         
-        // Показываем информацию о поддержке звезд
-        console.log('Telegram WebApp version:', tg.version);
-        console.log('Platform:', tg.platform);
+        // Проверяем версию
+        if (!checkStarsEnabled()) {
+            warningEl.style.display = 'block';
+        }
+        
+        // Автоматически проверяем платежи через 1 секунду
+        setTimeout(checkPayments, 1000);
         
     </script>
 </body>
