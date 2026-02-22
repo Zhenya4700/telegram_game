@@ -1286,7 +1286,7 @@
         window.shareReferralCode = function() {
             const code = document.getElementById('referralCode').textContent;
             const botName = tg.initDataUnsafe?.bot?.username || 'bot';
-            const text = `Присоединяйся к игре! Мой реферальный код: ${code}\nhttps://t.me/${botName}`;
+            const text = `Присоединяйся к игре! Мой реферальный код: ${code}\nhttps://t.me/Costrulka_bot`;
             
             tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(text)}`);
         };
@@ -2029,3 +2029,4 @@
     </script>
 </body>
 </html>
+
