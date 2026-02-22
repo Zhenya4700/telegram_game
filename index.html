@@ -163,7 +163,7 @@
         h1 { font-size: 1.8rem; margin: 10px 0; background: linear-gradient(135deg, #ff99cc, #b3d9ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center; }
         h2 { font-size: 1.3rem; margin-bottom: 12px; color: #ffd966; text-align: center; width: 100%; }
 
-        /* ===== КРУГЛАЯ КНОПКА С РАКЕТОЙ И ОБВОДКОЙ ===== */
+        /* ===== КРУГЛАЯ КНОПКА С РАКЕТОЙ В ЦЕНТРЕ ===== */
         .tap-area {
             width: 200px;
             height: 200px;
@@ -182,28 +182,38 @@
             outline: 2px solid rgba(255, 215, 0, 0.5);
             outline-offset: 2px;
             position: relative;
+            
+            /* АНИМАЦИЯ КНОПКИ (пульсация) */
+            animation: buttonPulse 2s ease-in-out infinite;
         }
 
-        /* РАКЕТА НА КРУГЛОЙ КНОПКЕ */
+        /* РАКЕТА В ЦЕНТРЕ КНОПКИ (без анимации) */
         .tap-area::after {
             content: "🚀";
             position: absolute;
-            top: -15px;
-            right: -15px;
-            font-size: 40px;
-            filter: drop-shadow(0 0 10px gold) drop-shadow(0 0 20px orange);
-            animation: rocketSpin 3s linear infinite;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 60px;
+            filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
             z-index: 20;
-            transform-origin: center;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+            /* БЕЗ АНИМАЦИИ - ракета статична */
         }
 
-        @keyframes rocketSpin {
-            0% { transform: rotate(0deg) scale(1); }
-            25% { transform: rotate(10deg) scale(1.1); }
-            50% { transform: rotate(0deg) scale(1.2); }
-            75% { transform: rotate(-10deg) scale(1.1); }
-            100% { transform: rotate(0deg) scale(1); }
+        /* Анимация кнопки (пульсация) */
+        @keyframes buttonPulse {
+            0% { 
+                box-shadow: 0 12px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6), 0 0 10px gold;
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 12px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6), 0 0 30px gold;
+                transform: scale(1.05);
+            }
+            100% { 
+                box-shadow: 0 12px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6), 0 0 10px gold;
+                transform: scale(1);
+            }
         }
 
         /* Эффект при нажатии */
@@ -211,13 +221,13 @@
             transform: translateY(6px) scale(0.95);
             box-shadow: 0 6px 0 #b3540b, 0 12px 20px rgba(0, 0, 0, 0.6);
             border-color: #ffd700;
+            animation: none; /* Отключаем анимацию при нажатии */
         }
 
-        /* Состояние готовности */
+        /* Состояние готовности - усиленная анимация */
         .tap-area.ready {
-            animation: smoothPulse 2s ease-in-out infinite;
             border-color: #ffd700;
-            box-shadow: 0 12px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6), 0 0 30px gold;
+            animation: buttonPulse 1.5s ease-in-out infinite;
         }
 
         /* Состояние перезарядки */
@@ -229,23 +239,7 @@
             transform: translateY(4px) scale(0.98);
             box-shadow: 0 4px 0 #7a4a1f;
             border-color: #888;
-        }
-
-        /* Дополнительный блеск для ракеты в состоянии ready */
-        .tap-area.ready::after {
-            animation: rocketSpin 1s linear infinite, rocketGlow 0.5s ease-in-out infinite alternate;
-            filter: drop-shadow(0 0 15px gold) drop-shadow(0 0 25px orange) drop-shadow(0 0 35px red);
-        }
-
-        @keyframes rocketGlow {
-            from { filter: drop-shadow(0 0 10px gold) drop-shadow(0 0 20px orange); }
-            to { filter: drop-shadow(0 0 20px gold) drop-shadow(0 0 30px orange) drop-shadow(0 0 40px red); }
-        }
-
-        @keyframes smoothPulse {
-            0% { box-shadow: 0 12px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6), 0 0 20px gold; }
-            50% { box-shadow: 0 12px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6), 0 0 40px gold; }
-            100% { box-shadow: 0 12px 0 #b3540b, 0 15px 25px rgba(0, 0, 0, 0.6), 0 0 20px gold; }
+            animation: none; /* Отключаем анимацию при перезарядке */
         }
 
         .size-display { 
@@ -258,6 +252,7 @@
             text-align: center;
             position: relative;
             z-index: 5;
+            animation: sizePop 0.3s ease-out when changed;
         }
         
         .size-label { 
@@ -646,7 +641,7 @@
                 <!-- Главная -->
                 <div class="page active" id="homePage">
                     <h1>⚡ MEM-метр ⚡</h1>
-                    <!-- Круглая кнопка с ракетой и обводкой -->
+                    <!-- Круглая кнопка с ракетой в центре -->
                     <div class="tap-area" id="tapCircle"></div>
                     <div class="size-display" id="sizeValue">0</div>
                     <div class="size-label">сантиметров</div>
