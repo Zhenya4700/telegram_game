@@ -1083,7 +1083,7 @@
 
         .promocode-expired {
             opacity: 0.3;
-            display: none; /* Скрываем промокоды с 0 активаций */
+            display: none;
         }
 
         .loading {
@@ -1274,7 +1274,7 @@
         tg.expand();
         
         const user = tg.initDataUnsafe?.user;
-        const botUsername = 'Costrulka_bot'; // Имя бота
+        const botUsername = 'Costrulka_bot';
         
         // Элементы
         const body = document.getElementById('body');
@@ -1451,6 +1451,21 @@
 
         async function loadUser() {
             try {
+                // Показываем загрузку
+                loading.style.display = 'flex';
+                
+                // Проверяем, есть ли пользователь
+                if (!user) {
+                    usernameEl.textContent = 'Тест';
+                    loading.style.display = 'none';
+                    gameContent.style.display = 'flex';
+                    circle.classList.add('ready');
+                    return;
+                }
+                
+                usernameEl.textContent = user.first_name || user.username || 'Игрок';
+                
+                // Загружаем данные
                 const res = await fetch(`${API_URL}/api/auth`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -1463,18 +1478,18 @@
                 
                 if (res.status === 403) {
                     alert('Вы забанены!');
+                    loading.style.display = 'none';
+                    gameContent.style.display = 'flex';
                     return;
                 }
                 
                 const data = await res.json();
                 
-                size = data.size;
+                size = data.size || 0;
                 ownedSkins = data.ownedSkins || ['default'];
                 currentBackground = data.background || 'default';
                 if (data.last_click) {
                     lastClickTime = new Date(data.last_click).getTime();
-                } else {
-                    lastClickTime = 0;
                 }
                 isAdmin = data.is_admin || false;
                 isMaster = data.is_master || false;
@@ -1497,8 +1512,26 @@
                 
                 await syncTime();
                 checkCooldown();
-                await loadUserRank();
                 
+                // Загружаем рейтинг
+                loadUserRank().then(() => {
+                    // Скрываем загрузку после получения рейтинга
+                    loading.style.display = 'none';
+                    gameContent.style.display = 'flex';
+                }).catch(e => {
+                    console.error('Rank error:', e);
+                    loading.style.display = 'none';
+                    gameContent.style.display = 'flex';
+                });
+                
+                updateGlobalTimer();
+                if (globalTimerInterval) clearInterval(globalTimerInterval);
+                globalTimerInterval = setInterval(updateGlobalTimer, 1000);
+                
+                // Загружаем топ кланов
+                loadClanLeaderboard();
+                
+                // Админ кнопка
                 if (isAdmin) {
                     const existingAdminBtn = document.querySelector('.nav-btn[onclick*="admin"]');
                     if (!existingAdminBtn) {
@@ -1512,20 +1545,13 @@
                     }
                 }
                 
-                loading.style.display = 'none';
-                gameContent.style.display = 'flex';
-                
-                updateGlobalTimer();
-                if (globalTimerInterval) clearInterval(globalTimerInterval);
-                globalTimerInterval = setInterval(updateGlobalTimer, 1000);
-                
-                // Загружаем топ кланов
-                loadClanLeaderboard();
-                
             } catch (e) {
                 console.error('Auth error:', e);
+                // В случае ошибки всё равно показываем интерфейс
                 loading.style.display = 'none';
                 gameContent.style.display = 'flex';
+                usernameEl.textContent = user?.first_name || user?.username || 'Игрок';
+                circle.classList.add('ready');
             }
         }
 
@@ -1533,7 +1559,7 @@
             const referralLinkEl = document.getElementById('referralLink');
             const referralsCountEl = document.getElementById('referralsCount');
             
-            if (referralLinkEl) {
+            if (referralLinkEl && referralCode) {
                 const link = `https://t.me/${botUsername}?start=${referralCode}`;
                 referralLinkEl.textContent = link;
             }
@@ -1548,7 +1574,7 @@
                 const leaders = await res.json();
                 
                 // Находим место пользователя
-                const userIndex = leaders.findIndex(l => l.telegram_id === String(user.id));
+                const userIndex = leaders.findIndex(l => l.telegram_id === String(user?.id));
                 userRank = userIndex + 1;
                 
                 rankDisplay.textContent = userRank > 0 ? `🏆 Ваше место: ${userRank}` : '🏆 Место в рейтинге: ...';
@@ -1573,12 +1599,12 @@
                     return;
                 }
                 
-                // Топ 10
                 let html = '<div class="leaderboard-container">';
                 
+                // Топ 10
                 leaders.slice(0, 10).forEach((item, i) => {
                     const displayName = item.first_name || item.username || 'Игрок';
-                    const isUser = item.telegram_id === String(user.id);
+                    const isUser = item.telegram_id === String(user?.id);
                     
                     html += `
                         <div class="leaderboard-item ${isUser ? 'leaderboard-you' : ''}">
@@ -1595,28 +1621,30 @@
                     `;
                 });
                 
-                // Если пользователь не в топ-10, показываем его место отдельно
-                const userInTop10 = leaders.slice(0, 10).some(l => l.telegram_id === String(user.id));
-                
-                if (!userInTop10 && user) {
-                    const userData = leaders.find(l => l.telegram_id === String(user.id));
-                    if (userData) {
-                        const userRank = leaders.findIndex(l => l.telegram_id === String(user.id)) + 1;
-                        
-                        html += `
-                            <div class="leaderboard-separator">•••</div>
-                            <div class="leaderboard-item leaderboard-you">
-                                <div class="leaderboard-rank">${userRank}</div>
-                                <div class="leaderboard-avatar">${(userData.first_name || userData.username || 'Игрок').charAt(0).toUpperCase()}</div>
-                                <div class="leaderboard-info">
-                                    <div class="leaderboard-name">${userData.first_name || userData.username || 'Игрок'} (вы)</div>
-                                    <div class="leaderboard-stats">
-                                        <span>📏 ${userData.size} см</span>
+                // Если пользователь не в топ-10 и существует, показываем его место отдельно
+                if (user) {
+                    const userInTop10 = leaders.slice(0, 10).some(l => l.telegram_id === String(user.id));
+                    
+                    if (!userInTop10) {
+                        const userData = leaders.find(l => l.telegram_id === String(user.id));
+                        if (userData) {
+                            const userRank = leaders.findIndex(l => l.telegram_id === String(user.id)) + 1;
+                            
+                            html += `
+                                <div class="leaderboard-separator">•••</div>
+                                <div class="leaderboard-item leaderboard-you">
+                                    <div class="leaderboard-rank">${userRank}</div>
+                                    <div class="leaderboard-avatar">${(userData.first_name || userData.username || 'Игрок').charAt(0).toUpperCase()}</div>
+                                    <div class="leaderboard-info">
+                                        <div class="leaderboard-name">${userData.first_name || userData.username || 'Игрок'} (вы)</div>
+                                        <div class="leaderboard-stats">
+                                            <span>📏 ${userData.size} см</span>
+                                        </div>
                                     </div>
+                                    <div class="leaderboard-size">${userData.size} см</div>
                                 </div>
-                                <div class="leaderboard-size">${userData.size} см</div>
-                            </div>
-                        `;
+                            `;
+                        }
                     }
                 }
                 
@@ -1629,7 +1657,7 @@
             }
         };
 
-        // ========== ФУНКЦИИ ДЛЯ КЛАНОВ (УЛУЧШЕННЫЕ) ==========
+        // ========== ФУНКЦИИ ДЛЯ КЛАНОВ ==========
 
         async function loadClanData() {
             const clanContent = document.getElementById('clanContent');
@@ -1651,6 +1679,7 @@
                 clanLeaderboard = await res.json();
             } catch (e) {
                 console.error('Error loading clan leaderboard:', e);
+                clanLeaderboard = [];
             }
         }
 
@@ -1660,6 +1689,7 @@
                 clanMembers = await res.json();
             } catch (e) {
                 console.error('Error loading clan members:', e);
+                clanMembers = [];
             }
         }
 
@@ -1687,7 +1717,7 @@
             // Топ кланов
             html += `<h3 style="color: #ffd966; margin: 20px 0 15px;">🏆 Топ кланов</h3>`;
             
-            if (clanLeaderboard.length > 0) {
+            if (clanLeaderboard && clanLeaderboard.length > 0) {
                 clanLeaderboard.slice(0, 10).forEach((clan, i) => {
                     html += `
                         <div class="clan-leaderboard-item" onclick="showClanDetails(${clan.id})">
@@ -1714,7 +1744,7 @@
 
         function renderClanInfo() {
             const clanContent = document.getElementById('clanContent');
-            const isOwner = currentClan.owner_id === String(user.id);
+            const isOwner = currentClan && currentClan.owner_id === String(user?.id);
             
             let html = `
                 <div class="clan-info-card">
@@ -1771,25 +1801,29 @@
             
             let html = `<div class="members-list">`;
             
-            clanMembers.sort((a, b) => b.size - a.size).forEach((member, i) => {
-                const isOwner = member.telegram_id === currentClan.owner_id;
-                const isYou = member.telegram_id === String(user.id);
-                
-                html += `
-                    <div class="member-item">
-                        <div class="member-avatar">${(member.first_name || member.username || 'Игрок').charAt(0).toUpperCase()}</div>
-                        <div class="member-info">
-                            <div class="member-name">
-                                ${member.first_name || member.username || 'Игрок'}
-                                ${isOwner ? '<span class="member-owner-badge">👑</span>' : ''}
-                                ${isYou ? ' (вы)' : ''}
+            if (clanMembers && clanMembers.length > 0) {
+                clanMembers.sort((a, b) => b.size - a.size).forEach((member, i) => {
+                    const isOwner = member.telegram_id === currentClan?.owner_id;
+                    const isYou = member.telegram_id === String(user?.id);
+                    
+                    html += `
+                        <div class="member-item">
+                            <div class="member-avatar">${(member.first_name || member.username || 'Игрок').charAt(0).toUpperCase()}</div>
+                            <div class="member-info">
+                                <div class="member-name">
+                                    ${member.first_name || member.username || 'Игрок'}
+                                    ${isOwner ? '<span class="member-owner-badge">👑</span>' : ''}
+                                    ${isYou ? ' (вы)' : ''}
+                                </div>
+                                <div class="member-rank">#${i+1} в клане</div>
                             </div>
-                            <div class="member-rank">#${i+1} в клане</div>
+                            <div class="member-size">${member.size} см</div>
                         </div>
-                        <div class="member-size">${member.size} см</div>
-                    </div>
-                `;
-            });
+                    `;
+                });
+            } else {
+                html += `<p style="text-align: center;">Нет участников</p>`;
+            }
             
             html += `</div>`;
             tabContent.innerHTML = html;
@@ -1800,24 +1834,28 @@
             
             let html = `<div class="members-list">`;
             
-            clanLeaderboard.slice(0, 20).forEach((clan, i) => {
-                html += `
-                    <div class="clan-leaderboard-item" ${clan.id !== currentClan.id ? 'onclick="showClanDetails(' + clan.id + ')"' : ''}>
-                        <div class="clan-leaderboard-rank">${i+1}</div>
-                        <div class="clan-leaderboard-info">
-                            <div>
-                                <span class="clan-leaderboard-name">${clan.name}</span>
-                                <span class="clan-leaderboard-tag">[${clan.tag}]</span>
-                                ${clan.id === currentClan.id ? ' (ваш)' : ''}
-                            </div>
-                            <div class="clan-leaderboard-stats">
-                                <span>👥 ${clan.members_count}/20</span>
-                                <span>📏 ${clan.total_size} см</span>
+            if (clanLeaderboard && clanLeaderboard.length > 0) {
+                clanLeaderboard.slice(0, 20).forEach((clan, i) => {
+                    html += `
+                        <div class="clan-leaderboard-item" ${clan.id !== currentClan?.id ? 'onclick="showClanDetails(' + clan.id + ')"' : ''}>
+                            <div class="clan-leaderboard-rank">${i+1}</div>
+                            <div class="clan-leaderboard-info">
+                                <div>
+                                    <span class="clan-leaderboard-name">${clan.name}</span>
+                                    <span class="clan-leaderboard-tag">[${clan.tag}]</span>
+                                    ${clan.id === currentClan?.id ? ' (ваш)' : ''}
+                                </div>
+                                <div class="clan-leaderboard-stats">
+                                    <span>👥 ${clan.members_count}/20</span>
+                                    <span>📏 ${clan.total_size} см</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
-            });
+                    `;
+                });
+            } else {
+                html += `<p style="text-align: center;">Нет кланов</p>`;
+            }
             
             html += `</div>`;
             tabContent.innerHTML = html;
@@ -2189,7 +2227,7 @@
             }
         };
 
-        // ========== АДМИН-ПАНЕЛЬ (ПОЛНАЯ) ==========
+        // ========== АДМИН-ПАНЕЛЬ ==========
 
         function loadAdminPanel() {
             const adminPage = document.getElementById('adminPage');
@@ -2813,7 +2851,6 @@
                 const data = await res.json();
                 
                 if (res.ok) {
-                    // Фильтруем только промокоды с остатком > 0
                     const activePromocodes = data.promocodes.filter(p => p.remaining > 0);
                     
                     if (activePromocodes.length === 0) {
@@ -2836,7 +2873,6 @@
             }
         };
 
-        // Управление админами
         window.promptAddAdmin = function() {
             if (!isMaster) {
                 alert('❌ Только главный админ может добавлять админов!');
@@ -2913,7 +2949,6 @@
             }
         };
 
-        // Бан/разбан
         window.promptBanUser = function() {
             const userId = prompt('Введите Telegram ID пользователя для бана:');
             if (userId) {
@@ -2979,15 +3014,8 @@
         circle.addEventListener('click', handleTap);
         cooldownResetBtn.addEventListener('click', buyCooldownReset);
 
-        if (!user) {
-            usernameEl.textContent = 'Тест';
-            loading.style.display = 'none';
-            gameContent.style.display = 'flex';
-            circle.classList.add('ready');
-        } else {
-            usernameEl.textContent = user.first_name || user.username || 'Игрок';
-            loadUser();
-        }
+        // Запускаем загрузку пользователя
+        loadUser();
         
         window.addEventListener('beforeunload', function() {
             if (clickTimerInterval) clearInterval(clickTimerInterval);
