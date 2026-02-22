@@ -300,6 +300,144 @@
 
         .nav-icon { font-size: 1.3rem; }
 
+        /* ===== СТИЛИ ДЛЯ ЛИДЕРБОРДА ===== */
+        .leaderboard-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+        
+        .refresh-btn {
+            background: rgba(255, 215, 0, 0.2);
+            border: 1px solid #ffd966;
+            color: #ffd966;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+        
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 40px;
+            margin-bottom: 6px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .leaderboard-you {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid #ffd966;
+        }
+        
+        .leaderboard-rank {
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .leaderboard-rank-1 {
+            background: linear-gradient(135deg, #ffd700, #ffa500);
+            color: #1a1e2c;
+        }
+        
+        .leaderboard-rank-2 {
+            background: linear-gradient(135deg, #c0c0c0, #a0a0a0);
+            color: #1a1e2c;
+        }
+        
+        .leaderboard-rank-3 {
+            background: linear-gradient(135deg, #cd7f32, #b87333);
+            color: #1a1e2c;
+        }
+        
+        .leaderboard-name {
+            flex: 1;
+            font-weight: 500;
+        }
+        
+        .leaderboard-size {
+            font-weight: bold;
+            color: #ffd966;
+        }
+        
+        .profile-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+        
+        .leaderboard-divider {
+            width: 100%;
+            margin: 15px 0 10px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .leaderboard-divider::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 30%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .leaderboard-divider::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            width: 30%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .leaderboard-divider span {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+        
+        .your-rank-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            background: rgba(255, 215, 0, 0.15);
+            border-radius: 40px;
+            margin-top: 5px;
+            width: 100%;
+            border: 2px solid #ffd966;
+        }
+
         /* ===== СТИЛИ ДЛЯ КЛАНОВ ===== */
         
         /* Клан информация */
@@ -466,6 +604,12 @@
             border-radius: 12px;
             margin-bottom: 6px;
             width: 100%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .clan-leaderboard-item:hover {
+            background: rgba(255, 255, 255, 0.1);
         }
         
         .clan-leaderboard-rank {
@@ -806,15 +950,40 @@
         .admin-section {
             width: 100%;
             margin-top: 15px;
-            padding: 10px;
+            padding: 15px;
             background: rgba(255, 0, 0, 0.1);
             border: 1px solid rgba(255, 0, 0, 0.3);
             border-radius: 16px;
         }
-        .admin-title { color: #ff6b6b; font-size: 1rem; font-weight: 600; margin-bottom: 10px; text-align: center; }
-        .admin-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-        .admin-btn { background: rgba(255, 107, 107, 0.2); border: 1px solid #ff6b6b; color: white; padding: 8px; border-radius: 12px; font-size: 0.8rem; cursor: pointer; text-align: center; }
-        .admin-btn.wide { grid-column: span 2; }
+        .admin-title { 
+            color: #ff6b6b; 
+            font-size: 1rem; 
+            font-weight: 600; 
+            margin-bottom: 15px; 
+            text-align: center; 
+        }
+        .admin-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 10px; 
+        }
+        .admin-btn { 
+            background: rgba(255, 107, 107, 0.2); 
+            border: 1px solid #ff6b6b; 
+            color: white; 
+            padding: 10px; 
+            border-radius: 12px; 
+            font-size: 0.9rem; 
+            cursor: pointer; 
+            text-align: center; 
+            transition: all 0.2s;
+        }
+        .admin-btn:hover {
+            background: rgba(255, 107, 107, 0.3);
+        }
+        .admin-btn.wide { 
+            grid-column: span 2; 
+        }
 
         .loading {
             position: fixed;
@@ -841,6 +1010,27 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        /* Стили для создания клана */
+        .clan-create-info {
+            background: linear-gradient(145deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.05));
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid #ffd966;
+        }
+        
+        .clan-required {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ffd966;
+        }
+        
+        .clan-required span {
+            color: white;
+            font-size: 1.5rem;
         }
     </style>
 </head>
@@ -911,7 +1101,7 @@
                     <div class="inventory-grid" id="inventoryGrid"></div>
                 </div>
 
-                <!-- КЛАНЫ - новая вкладка -->
+                <!-- КЛАНЫ -->
                 <div class="page" id="clanPage">
                     <h2>⚔️ КЛАНЫ</h2>
                     
@@ -931,9 +1121,10 @@
                                 <div style="font-size: 1.8rem; font-weight: bold; color: #ffd966; letter-spacing: 2px;" id="referralCode">ЗАГРУЗКА</div>
                             </div>
                         </div>
-                        <div style="display: flex; gap: 8px;">
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                             <button class="inv-btn" style="flex: 1;" onclick="copyReferralCode()">📋 Копировать</button>
                             <button class="inv-btn" style="flex: 1;" onclick="shareReferralCode()">📤 Поделиться</button>
+                            <button class="inv-btn" style="flex: 1;" onclick="getReferralLink()">🔗 Получить ссылку</button>
                         </div>
                     </div>
                     
@@ -1002,6 +1193,10 @@
         const API_URL = 'https://zhenya4700.pythonanywhere.com';
         const tg = window.Telegram.WebApp;
         tg.expand();
+        
+        // Получаем параметры startapp для автоматической активации реферального кода
+        const startParam = tg.initDataUnsafe?.start_param || '';
+        console.log('Start param:', startParam);
         
         const user = tg.initDataUnsafe?.user;
         
@@ -1237,7 +1432,13 @@
                 
                 await syncTime();
                 checkCooldown();
-                loadUserRank();
+                await loadUserRank();
+                
+                // Автоматическая активация реферального кода из start_param
+                if (startParam && startParam !== referralCode) {
+                    console.log('Auto-activating referral code:', startParam);
+                    setTimeout(() => autoActivateReferral(startParam), 1000);
+                }
                 
                 if (isAdmin) {
                     const existingAdminBtn = document.querySelector('.nav-btn[onclick*="admin"]');
@@ -1260,12 +1461,40 @@
                 globalTimerInterval = setInterval(updateGlobalTimer, 1000);
                 
                 // Загружаем топ кланов
-                loadClanLeaderboard();
+                await loadClanLeaderboard();
                 
             } catch (e) {
                 console.error('Auth error:', e);
                 loading.style.display = 'none';
                 gameContent.style.display = 'flex';
+            }
+        }
+
+        async function autoActivateReferral(code) {
+            try {
+                const res = await fetch(`${API_URL}/api/referral/use_code`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        code: code
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    tg.showPopup({
+                        title: '✅ Реферальный код активирован!',
+                        message: `Код ${code} активирован! +5 см пользователю ${data.referrer_name}`,
+                        buttons: [{type: 'ok'}]
+                    });
+                    loadUser();
+                } else {
+                    console.log('Auto-activation failed:', data.error);
+                }
+            } catch (e) {
+                console.error('Auto-activation error:', e);
             }
         }
 
@@ -1275,30 +1504,49 @@
                 <h2>🔧 Админ-панель</h2>
                 
                 <div class="admin-section">
-                    <div class="admin-title">Глобальный таймер</div>
+                    <div class="admin-title">⏰ Глобальный таймер</div>
                     <div class="admin-grid">
-                        <button class="admin-btn wide" id="toggleTimerBtn" onclick="toggleGlobalTimer()">⏯️ Включить таймер</button>
-                        <button class="admin-btn wide" onclick="restartTimer()">🔄 Запустить заново</button>
+                        <button class="admin-btn wide" id="toggleTimerBtn" onclick="toggleGlobalTimer()">⏯️ Включить/Выключить</button>
+                        <button class="admin-btn wide" onclick="restartTimer()">🔄 Запустить заново (30 дней)</button>
                         <button class="admin-btn" onclick="setTimerDays(30)">📅 30 дней</button>
                         <button class="admin-btn" onclick="setTimerDays(7)">📅 7 дней</button>
                         <button class="admin-btn wide" onclick="promptSetDays()">✏️ Своё число</button>
+                        <button class="admin-btn wide" onclick="promptSetCooldown()">⏱️ Установить кулдаун (сек)</button>
                     </div>
                 </div>
 
                 <div class="admin-section">
-                    <div class="admin-title">Управление размером</div>
+                    <div class="admin-title">📏 Управление размером</div>
                     <div class="admin-grid">
                         <button class="admin-btn wide" onclick="clearAllSizes()">🧹 Сбросить ВСЕМ</button>
                         <button class="admin-btn wide" onclick="clearUserPrompt()">👤 Очистить пользователя</button>
                         <button class="admin-btn wide" onclick="setMySize()">📏 Изменить свой размер</button>
+                        <button class="admin-btn wide" onclick="resetAllCooldowns()">⏱️ Сбросить кулдаун всем</button>
                     </div>
                 </div>
 
                 <div class="admin-section">
-                    <div class="admin-title">Промокоды</div>
+                    <div class="admin-title">🎫 Промокоды</div>
                     <div class="admin-grid">
-                        <button class="admin-btn wide" onclick="showCreatePromoForm()">➕ Создать</button>
-                        <button class="admin-btn wide" onclick="listPromocodes()">📋 Список</button>
+                        <button class="admin-btn wide" onclick="showCreatePromoForm()">➕ Создать промокод</button>
+                        <button class="admin-btn wide" onclick="listPromocodes()">📋 Список промокодов</button>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <div class="admin-title">🔨 Управление админами</div>
+                    <div class="admin-grid">
+                        <button class="admin-btn wide" onclick="showAddAdminForm()">➕ Добавить админа</button>
+                        <button class="admin-btn wide" onclick="showRemoveAdminForm()">➖ Удалить админа</button>
+                        <button class="admin-btn wide" onclick="listAdmins()">📋 Список админов</button>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <div class="admin-title">🚫 Бан система</div>
+                    <div class="admin-grid">
+                        <button class="admin-btn wide" onclick="showBanUserForm()">🔨 Забанить пользователя</button>
+                        <button class="admin-btn wide" onclick="showUnbanUserForm()">🔓 Разбанить пользователя</button>
                     </div>
                 </div>
             `;
@@ -1308,8 +1556,8 @@
             try {
                 const res = await fetch(`${API_URL}/api/leaderboard`);
                 const leaders = await res.json();
-                const rank = leaders.findIndex(l => l.telegram_id === String(user.id)) + 1;
-                rankDisplay.textContent = rank > 0 ? `🏆 Место в рейтинге: ${rank}` : '🏆 Место в рейтинге: ...';
+                const userRank = leaders.findIndex(l => l.telegram_id === String(user.id)) + 1;
+                rankDisplay.textContent = userRank > 0 ? `🏆 Место в рейтинге: ${userRank}` : '🏆 Место в рейтинге: ...';
             } catch (e) {
                 console.error('Rank error:', e);
             }
@@ -1527,18 +1775,11 @@
         };
 
         window.showCreateClanForm = function() {
-            if (size < 10) {
-                tg.showPopup({
-                    title: '❌ Недостаточно размера',
-                    message: `Для создания клана нужно 10 см, а у вас ${size} см`,
-                    buttons: [{type: 'ok'}]
-                });
-                return;
-            }
+            const required = 10;
             
             tg.showPopup({
                 title: '⚔️ Создание клана',
-                message: 'Введите название и тег клана\n\nФормат: Название | ТЕГ',
+                message: `Для создания клана нужно ${required} см\n\nУ вас: ${size} см\n\nВведите название и тег клана в формате:\nНазвание | ТЕГ\n\nПример: "Воины Света | WARS"`,
                 buttons: [
                     {id: 'create', type: 'default', text: 'Создать'},
                     {type: 'cancel'}
@@ -1549,7 +1790,23 @@
                     if (input) {
                         const parts = input.split('|').map(s => s.trim());
                         if (parts.length >= 2) {
-                            createClan(parts[0], parts[1]);
+                            if (parts[0].length < 3 || parts[0].length > 100) {
+                                tg.showPopup({
+                                    title: '❌ Ошибка',
+                                    message: 'Название должно быть от 3 до 100 символов',
+                                    buttons: [{type: 'ok'}]
+                                });
+                                return;
+                            }
+                            if (parts[1].length < 2 || parts[1].length > 10) {
+                                tg.showPopup({
+                                    title: '❌ Ошибка',
+                                    message: 'Тег должен быть от 2 до 10 символов',
+                                    buttons: [{type: 'ok'}]
+                                });
+                                return;
+                            }
+                            createClan(parts[0], parts[1].toUpperCase());
                         } else {
                             tg.showPopup({
                                 title: '❌ Ошибка',
@@ -1589,7 +1846,7 @@
                 } else if (res.status === 402) {
                     tg.showPopup({
                         title: '❌ Недостаточно размера',
-                        message: `Нужно ${data.required} см`,
+                        message: `Нужно ${data.required} см, а у вас ${data.current} см`,
                         buttons: [{type: 'ok'}]
                     });
                 } else {
@@ -1735,7 +1992,6 @@
         };
 
         window.showClanDetails = function(clanId) {
-            // Здесь можно показать информацию о клане
             tg.showPopup({
                 title: 'ℹ️ Информация',
                 message: 'Чтобы вступить, нужен код приглашения от владельца',
@@ -1895,9 +2151,23 @@
 
         window.shareReferralCode = function() {
             const code = document.getElementById('referralCode').textContent;
-            const botName = tg.initDataUnsafe?.bot?.username || 'bot';
-            const text = `Присоединяйся к игре! Мой реферальный код: ${code}\nhttps://t.me/${botName}`;
-            tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(text)}`);
+            const botName = 'Costrulka_bot';
+            const text = `Присоединяйся к игре! Мой реферальный код: ${code}`;
+            tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(text)}&text=${encodeURIComponent(text)}`);
+        };
+
+        window.getReferralLink = function() {
+            const code = document.getElementById('referralCode').textContent;
+            const botName = 'Costrulka_bot';
+            const link = `https://t.me/${botName}/57D63D52?startapp=${code}`;
+            
+            navigator.clipboard.writeText(link).then(() => {
+                tg.showPopup({
+                    title: '✅ Ссылка скопирована!',
+                    message: 'Ссылка с вашим реферальным кодом скопирована. При переходе по ней код активируется автоматически!',
+                    buttons: [{type: 'ok'}]
+                });
+            });
         };
 
         window.useReferralCode = async function() {
@@ -2032,10 +2302,13 @@
             const maxUses = prompt('Сколько раз можно использовать?', '10');
             if (!maxUses || isNaN(maxUses)) return;
             
-            createPromocode(code.toUpperCase(), parseInt(maxUses));
+            const rewardSize = prompt('Сколько см давать?', '5');
+            if (!rewardSize || isNaN(rewardSize)) return;
+            
+            createPromocode(code.toUpperCase(), parseInt(maxUses), parseInt(rewardSize));
         };
 
-        window.createPromocode = async function(code, maxUses) {
+        window.createPromocode = async function(code, maxUses, rewardSize) {
             try {
                 const res = await fetch(`${API_URL}/api/admin/promocode/create`, {
                     method: 'POST',
@@ -2043,7 +2316,8 @@
                     body: JSON.stringify({
                         telegram_id: String(user.id),
                         code: code,
-                        max_uses: maxUses
+                        max_uses: maxUses,
+                        reward_size: rewardSize
                     })
                 });
                 
@@ -2074,8 +2348,16 @@
                 const data = await res.json();
                 
                 if (res.ok) {
-                    let message = '📋 Промокоды:\n\n';
-                    data.promocodes.forEach(p => {
+                    // Показываем только активные промокоды (с остатком > 0)
+                    const activePromocodes = data.promocodes.filter(p => p.remaining > 0);
+                    
+                    if (activePromocodes.length === 0) {
+                        alert('📋 Нет активных промокодов');
+                        return;
+                    }
+                    
+                    let message = '📋 Активные промокоды:\n\n';
+                    activePromocodes.forEach(p => {
                         message += `🔸 ${p.code}: ${p.used_count}/${p.max_uses} (осталось ${p.remaining})\n`;
                     });
                     alert(message);
@@ -2126,15 +2408,18 @@
             try {
                 const res = await fetch(`${API_URL}/api/leaderboard`);
                 const leaders = await res.json();
+                const allLeaders = await fetch(`${API_URL}/api/leaderboard/all`).then(r => r.json()).catch(() => []);
                 
                 if (leaders.length === 0) {
                     listEl.innerHTML = '<div style="text-align: center; padding: 20px;">Пока нет игроков</div>';
                     return;
                 }
                 
-                listEl.innerHTML = leaders.map((item, i) => {
+                // Показываем топ-10
+                let html = '';
+                leaders.forEach((item, i) => {
                     const displayName = item.first_name || item.username || 'Игрок';
-                    return `
+                    html += `
                         <div class="leaderboard-item ${user && item.telegram_id === String(user.id) ? 'leaderboard-you' : ''}">
                             <div class="leaderboard-rank ${i === 0 ? 'leaderboard-rank-1' : i === 1 ? 'leaderboard-rank-2' : i === 2 ? 'leaderboard-rank-3' : ''}">${i+1}</div>
                             <div class="leaderboard-name">${displayName}</div>
@@ -2142,9 +2427,30 @@
                             <a href="tg://user?id=${item.telegram_id}" class="profile-btn">👤</a>
                         </div>
                     `;
-                }).join('');
+                });
+                
+                // Если пользователь не в топ-10, показываем его место
+                if (!leaders.some(l => l.telegram_id === String(user.id)) && allLeaders.length > 0) {
+                    const userRank = allLeaders.findIndex(l => l.telegram_id === String(user.id)) + 1;
+                    if (userRank > 0) {
+                        html += `
+                            <div class="leaderboard-divider">
+                                <span>Ваше место</span>
+                            </div>
+                            <div class="your-rank-item">
+                                <div class="leaderboard-rank">${userRank}</div>
+                                <div class="leaderboard-name">${user.first_name || user.username || 'Игрок'}</div>
+                                <div class="leaderboard-size">${size} см</div>
+                                <a href="tg://user?id=${user.id}" class="profile-btn">👤</a>
+                            </div>
+                        `;
+                    }
+                }
+                
+                listEl.innerHTML = html;
                 
             } catch (e) {
+                console.error('Leaderboard error:', e);
                 listEl.innerHTML = 'Ошибка загрузки';
             }
         };
@@ -2195,7 +2501,7 @@
             `;
             
             for (let skin of allSkins) {
-                if (ownedSkins.includes(skin.id)) {
+                if (ownedSkins.includes(skin.id) && skin.id !== 'default') {
                     html += `
                         <div class="inventory-item owned">
                             <div class="inventory-item-icon">${skin.icon}</div>
@@ -2426,9 +2732,161 @@
         };
 
         window.promptSetCooldown = function() {
-            const seconds = prompt('Введите количество секунд:');
+            const seconds = prompt('Введите количество секунд для кулдауна:', '100');
             if (seconds && !isNaN(seconds)) {
                 setCooldown(parseInt(seconds));
+            }
+        };
+
+        window.resetAllCooldowns = async function() {
+            if (!confirm('Сбросить кулдаун для всех пользователей?')) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/admin/reset_all_cooldowns`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({telegram_id: String(user.id)})
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    alert(`✅ Кулдаун сброшен для ${data.count} пользователей`);
+                }
+            } catch (e) {
+                console.error('Reset cooldowns error:', e);
+            }
+        };
+
+        window.showBanUserForm = function() {
+            const userId = prompt('Введите Telegram ID пользователя для бана:');
+            if (userId) {
+                banUser(userId);
+            }
+        };
+
+        window.banUser = async function(targetId) {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/ban_user`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        target_id: targetId
+                    })
+                });
+                
+                if (res.ok) {
+                    alert(`✅ Пользователь ${targetId} забанен`);
+                } else {
+                    const data = await res.json();
+                    alert('❌ Ошибка: ' + data.error);
+                }
+            } catch (e) {
+                console.error('Ban error:', e);
+            }
+        };
+
+        window.showUnbanUserForm = function() {
+            const userId = prompt('Введите Telegram ID пользователя для разбана:');
+            if (userId) {
+                unbanUser(userId);
+            }
+        };
+
+        window.unbanUser = async function(targetId) {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/unban_user`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        target_id: targetId
+                    })
+                });
+                
+                if (res.ok) {
+                    alert(`✅ Пользователь ${targetId} разбанен`);
+                } else {
+                    const data = await res.json();
+                    alert('❌ Ошибка: ' + data.error);
+                }
+            } catch (e) {
+                console.error('Unban error:', e);
+            }
+        };
+
+        window.showAddAdminForm = function() {
+            const userId = prompt('Введите Telegram ID нового админа:');
+            if (userId) {
+                addAdmin(userId);
+            }
+        };
+
+        window.addAdmin = async function(targetId) {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/add_admin`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        target_id: targetId
+                    })
+                });
+                
+                if (res.ok) {
+                    alert(`✅ Пользователь ${targetId} теперь админ`);
+                } else {
+                    const data = await res.json();
+                    alert('❌ Ошибка: ' + data.error);
+                }
+            } catch (e) {
+                console.error('Add admin error:', e);
+            }
+        };
+
+        window.showRemoveAdminForm = function() {
+            const userId = prompt('Введите Telegram ID админа для удаления:');
+            if (userId) {
+                removeAdmin(userId);
+            }
+        };
+
+        window.removeAdmin = async function(targetId) {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/remove_admin`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        target_id: targetId
+                    })
+                });
+                
+                if (res.ok) {
+                    alert(`✅ Пользователь ${targetId} больше не админ`);
+                } else {
+                    const data = await res.json();
+                    alert('❌ Ошибка: ' + data.error);
+                }
+            } catch (e) {
+                console.error('Remove admin error:', e);
+            }
+        };
+
+        window.listAdmins = async function() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/list_admins`);
+                const data = await res.json();
+                
+                let message = `👑 Мастер-админ: ${data.master_admin}\n\n`;
+                message += `🔧 Админы:\n`;
+                data.admins.forEach(admin => {
+                    message += `• ${admin}\n`;
+                });
+                
+                alert(message);
+            } catch (e) {
+                console.error('List admins error:', e);
             }
         };
 
