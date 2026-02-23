@@ -2375,29 +2375,30 @@
             codeModal.style.display = 'none';
         };
         
-        window.createClanFromModal = function() {
-            const name = clanNameInput.value.trim();
-            
-            if (!name) {
-                tg.showPopup({
-                    title: '❌ ОШИБКА',
-                    message: 'ВВЕДИТЕ НАЗВАНИЕ КЛАНА',
-                    buttons: [{type: 'ok'}]
-                });
-                return;
-            }
-            
-            if (name.length < 3) {
-                tg.showPopup({
-                    title: '❌ ОШИБКА',
-                    message: 'НАЗВАНИЕ ДОЛЖНО БЫТЬ НЕ МЕНЕЕ 3 СИМВОЛОВ',
-                    buttons: [{type: 'ok'}]
-                });
-                return;
-            }
-            
-            createClan(name);
-        };
+window.createClanFromModal = function() {
+    const name = clanNameInput.value.trim();
+    
+    if (!name) {
+        tg.showPopup({
+            title: '❌ ОШИБКА',
+            message: 'ВВЕДИТЕ НАЗВАНИЕ КЛАНА',
+            buttons: [{type: 'ok'}]
+        });
+        return;
+    }
+    
+    if (name.length < 3) {
+        tg.showPopup({
+            title: '❌ ОШИБКА',
+            message: 'НАЗВАНИЕ ДОЛЖНО БЫТЬ НЕ МЕНЕЕ 3 СИМВОЛОВ',
+            buttons: [{type: 'ok'}]
+        });
+        return;
+    }
+    
+    // Используем название как name, а тег делаем таким же
+    createClan(name, name);
+};
         
         window.joinClanFromModal = function() {
             const code = codeInput.value.trim().toUpperCase();
@@ -2414,54 +2415,58 @@
             joinClan(code);
         };
 
-        window.createClan = async function(name) {
-            closeClanModal();
-            
-            try {
-                const res = await fetch(`${API_URL}/api/clan/create`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id),
-                        name: name
-                    })
-                });
-                
-                const data = await res.json();
-                
-                if (res.ok) {
-                    size = data.size;
-                    updateSize();
-                    tg.showPopup({
-                        title: '✅ КЛАН СОЗДАН!',
-                        message: `КОД ДЛЯ ПРИГЛАШЕНИЯ: ${data.clan.invite_code}`,
-                        buttons: [{type: 'ok'}]
-                    });
-                    loadUser();
-                    switchPage('clan');
-                } else if (res.status === 402) {
-                    tg.showPopup({
-                        title: '❌ НЕДОСТАТОЧНО РАЗМЕРА',
-                        message: `НУЖНО ${data.required} СМ, А У ВАС ${data.current} СМ`,
-                        buttons: [{type: 'ok'}]
-                    });
-                } else {
-                    tg.showPopup({
-                        title: '❌ ОШИБКА',
-                        message: data.error || 'НЕИЗВЕСТНАЯ ОШИБКА',
-                        buttons: [{type: 'ok'}]
-                    });
-                }
-                
-            } catch (e) {
-                console.error('Create clan error:', e);
-                tg.showPopup({
-                    title: '❌ ОШИБКА',
-                    message: 'НЕ УДАЛОСЬ ПОДКЛЮЧИТЬСЯ К СЕРВЕРУ',
-                    buttons: [{type: 'ok'}]
-                });
-            }
-        };
+window.createClan = async function(name, tag) {
+    closeClanModal();
+    
+    try {
+        console.log('Sending clan data:', { name, tag }); // Для отладки
+        
+        const res = await fetch(`${API_URL}/api/clan/create`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                telegram_id: String(user.id),
+                name: name,
+                tag: tag  // tag = name (полное название клана)
+            })
+        });
+        
+        const data = await res.json();
+        console.log('Server response:', data); // Для отладки
+        
+        if (res.ok) {
+            size = data.size;
+            updateSize();
+            tg.showPopup({
+                title: '✅ КЛАН СОЗДАН!',
+                message: `КОД ДЛЯ ПРИГЛАШЕНИЯ: ${data.clan.invite_code}`,
+                buttons: [{type: 'ok'}]
+            });
+            loadUser();
+            switchPage('clan');
+        } else if (res.status === 402) {
+            tg.showPopup({
+                title: '❌ НЕДОСТАТОЧНО РАЗМЕРА',
+                message: `НУЖНО ${data.required} СМ, А У ВАС ${data.current} СМ`,
+                buttons: [{type: 'ok'}]
+            });
+        } else {
+            tg.showPopup({
+                title: '❌ ОШИБКА',
+                message: data.error || 'НЕИЗВЕСТНАЯ ОШИБКА',
+                buttons: [{type: 'ok'}]
+            });
+        }
+        
+    } catch (e) {
+        console.error('Create clan error:', e);
+        tg.showPopup({
+            title: '❌ ОШИБКА',
+            message: 'НЕ УДАЛОСЬ ПОДКЛЮЧИТЬСЯ К СЕРВЕРУ',
+            buttons: [{type: 'ok'}]
+        });
+    }
+};
 
         window.joinClan = async function(code) {
             closeCodeModal();
@@ -3490,3 +3495,4 @@
     </script>
 </body>
 </html>
+
