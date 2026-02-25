@@ -2132,96 +2132,158 @@
         }
 
         // ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ ЛИДЕРБОРДА ==========
-        window.loadLeaderboard = async function() {
-            const listEl = document.getElementById('leaderboardList');
-            
-            try {
-                // Получаем топ-10
-                const res = await fetch(`${API_URL}/api/leaderboard`);
-                const leaders = await res.json();
-                
-                // Получаем полный список для определения места пользователя
-                let allLeaders = [];
-                try {
-                    const allRes = await fetch(`${API_URL}/api/leaderboard?all=true`);
-                    if (allRes.ok) {
-                        allLeaders = await allRes.json();
-                    } else {
-                        allLeaders = leaders;
-                    }
-                } catch (e) {
-                    console.log('Using same list for ranking');
-                    allLeaders = leaders;
-                }
-                
-                if (leaders.length === 0) {
-                    listEl.innerHTML = '<div style="text-align: center; padding: 20px;">ПОКА НЕТ ИГРОКОВ</div>';
-                    return;
-                }
-                
-                // Показываем топ-10
-                let html = '<div class="leaderboard-list">';
-                leaders.forEach((item, i) => {
-                    const displayName = item.first_name || item.username || 'ИГРОК';
-                    // Форматируем имя с кланом: [КЛАН] Имя
-                    const nameWithClan = item.clan_tag ? 
-                        `<span title="${displayName}">[${item.clan_tag}] ${displayName}</span>` : 
-                        `<span title="${displayName}">${displayName}</span>`;
-                    
-                    html += `
-                        <div class="leaderboard-item ${user && item.telegram_id === String(user.id) ? 'leaderboard-you' : ''}">
-                            <div class="leaderboard-rank ${i === 0 ? 'leaderboard-rank-1' : i === 1 ? 'leaderboard-rank-2' : i === 2 ? 'leaderboard-rank-3' : ''}">${i+1}</div>
-                            <div class="leaderboard-name">
-                                ${nameWithClan}
-                            </div>
-                            <div class="leaderboard-size">${item.size} СМ</div>
-                            <a href="tg://user?id=${item.telegram_id}" class="profile-btn">👤</a>
-                        </div>
-                    `;
-                });
-                html += '</div>';
-                
-                // Находим место текущего пользователя
-                let userRank = -1;
-                if (user && allLeaders.length > 0) {
-                    userRank = allLeaders.findIndex(l => l.telegram_id === String(user.id)) + 1;
-                }
-                
-                // Если пользователь не в топ-10, показываем его место
-                if (user && !leaders.some(l => l.telegram_id === String(user.id)) && userRank > 0) {
-                    // Находим данные пользователя
-                    const userData = allLeaders.find(l => l.telegram_id === String(user.id));
-                    const userSize = userData ? userData.size : size;
-                    const userClanTag = userData && userData.clan_tag ? userData.clan_tag : (currentClan ? currentClan.tag : '');
-                    
-                    // Форматируем имя с кланом для пользователя
-                    const userNameWithClan = userClanTag ? 
-                        `<span title="${user.first_name || user.username || 'ИГРОК'}">[${userClanTag}] ${user.first_name || user.username || 'ИГРОК'}</span>` : 
-                        `<span title="${user.first_name || user.username || 'ИГРОК'}">${user.first_name || user.username || 'ИГРОК'}</span>`;
-                    
-                    html += `
-                        <div class="leaderboard-divider">
-                            <span>ВАШЕ МЕСТО</span>
-                        </div>
-                        <div class="your-rank-item">
-                            <div class="leaderboard-rank">${userRank}</div>
-                            <div class="leaderboard-name">
-                                ${userNameWithClan}
-                            </div>
-                            <div class="leaderboard-size">${userSize} СМ</div>
-                            <a href="tg://user?id=${user.id}" class="profile-btn">👤</a>
-                        </div>
-                    `;
-                }
-                
-                listEl.innerHTML = html;
-                
-            } catch (e) {
-                console.error('Leaderboard error:', e);
-                listEl.innerHTML = 'ОШИБКА ЗАГРУЗКИ';
+        // ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ ЛИДЕРБОРДА ==========
+window.loadLeaderboard = async function() {
+    const listEl = document.getElementById('leaderboardList');
+    
+    try {
+        // Получаем топ-10 игроков
+        const res = await fetch(`${API_URL}/api/leaderboard`);
+        const leaders = await res.json();
+        
+        // Получаем список всех кланов для сопоставления
+        let clans = [];
+        try {
+            const clansRes = await fetch(`${API_URL}/api/clan/leaderboard`);
+            clans = await clansRes.json();
+        } catch (e) {
+            console.log('Could not load clans');
+        }
+        
+        // Создаем мапу клан_id -> clan_tag
+        const clanMap = {};
+        clans.forEach(clan => {
+            clanMap[clan.id] = clan.tag;
+        });
+        
+        // Получаем полный список для определения места пользователя
+        let allLeaders = [];
+        try {
+            const allRes = await fetch(`${API_URL}/api/leaderboard?all=true`);
+            if (allRes.ok) {
+                allLeaders = await allRes.json();
+            } else {
+                allLeaders = leaders;
             }
-        };
-
+        } catch (e) {
+            console.log('Using same list for ranking');
+            allLeaders = leaders;
+        }
+        
+        if (leaders.length === 0) {
+            listEl.innerHTML = '<div style="text-align: center; padding: 20px;">ПОКА НЕТ ИГРОКОВ</div>';
+            return;
+        }
+        
+        // Получаем данные о кланах пользователей
+        const userClans = {};
+        if (user) {
+            try {
+                // Получаем инфо о текущем пользователе
+                const userRes = await fetch(`${API_URL}/api/auth`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id)
+                    })
+                });
+                const userData = await userRes.json();
+                if (userData.clan) {
+                    userClans[user.id] = userData.clan.tag;
+                }
+            } catch (e) {
+                console.log('Could not load user clan');
+            }
+        }
+        
+        // Показываем топ-10
+        let html = '<div class="leaderboard-list">';
+        
+        for (const item of leaders) {
+            const i = leaders.indexOf(item);
+            const displayName = item.first_name || item.username || 'ИГРОК';
+            
+            // Пытаемся получить тег клана
+            let clanTag = null;
+            
+            // Если у пользователя есть clan_id, ищем в мапе
+            if (item.clan_id && clanMap[item.clan_id]) {
+                clanTag = clanMap[item.clan_id];
+            }
+            // Если это текущий пользователь и у него есть клан
+            else if (user && item.telegram_id === String(user.id) && currentClan) {
+                clanTag = currentClan.tag;
+            }
+            // Если есть в кэше пользователей
+            else if (userClans[item.telegram_id]) {
+                clanTag = userClans[item.telegram_id];
+            }
+            
+            // Форматируем имя с кланом: [КЛАН] Имя
+            const nameWithClan = clanTag ? 
+                `<span title="${displayName}">[${clanTag}] ${displayName}</span>` : 
+                `<span title="${displayName}">${displayName}</span>`;
+            
+            html += `
+                <div class="leaderboard-item ${user && item.telegram_id === String(user.id) ? 'leaderboard-you' : ''}">
+                    <div class="leaderboard-rank ${i === 0 ? 'leaderboard-rank-1' : i === 1 ? 'leaderboard-rank-2' : i === 2 ? 'leaderboard-rank-3' : ''}">${i+1}</div>
+                    <div class="leaderboard-name">
+                        ${nameWithClan}
+                    </div>
+                    <div class="leaderboard-size">${item.size} СМ</div>
+                    <a href="tg://user?id=${item.telegram_id}" class="profile-btn">👤</a>
+                </div>
+            `;
+        }
+        html += '</div>';
+        
+        // Находим место текущего пользователя
+        let userRank = -1;
+        if (user && allLeaders.length > 0) {
+            userRank = allLeaders.findIndex(l => l.telegram_id === String(user.id)) + 1;
+        }
+        
+        // Если пользователь не в топ-10, показываем его место
+        if (user && !leaders.some(l => l.telegram_id === String(user.id)) && userRank > 0) {
+            // Находим данные пользователя
+            const userData = allLeaders.find(l => l.telegram_id === String(user.id));
+            const userSize = userData ? userData.size : size;
+            
+            // Получаем тег клана пользователя
+            let userClanTag = null;
+            if (currentClan) {
+                userClanTag = currentClan.tag;
+            } else if (userData && userData.clan_id && clanMap[userData.clan_id]) {
+                userClanTag = clanMap[userData.clan_id];
+            }
+            
+            // Форматируем имя с кланом для пользователя
+            const userNameWithClan = userClanTag ? 
+                `<span title="${user.first_name || user.username || 'ИГРОК'}">[${userClanTag}] ${user.first_name || user.username || 'ИГРОК'}</span>` : 
+                `<span title="${user.first_name || user.username || 'ИГРОК'}">${user.first_name || user.username || 'ИГРОК'}</span>`;
+            
+            html += `
+                <div class="leaderboard-divider">
+                    <span>ВАШЕ МЕСТО</span>
+                </div>
+                <div class="your-rank-item">
+                    <div class="leaderboard-rank">${userRank}</div>
+                    <div class="leaderboard-name">
+                        ${userNameWithClan}
+                    </div>
+                    <div class="leaderboard-size">${userSize} СМ</div>
+                    <a href="tg://user?id=${user.id}" class="profile-btn">👤</a>
+                </div>
+            `;
+        }
+        
+        listEl.innerHTML = html;
+        
+    } catch (e) {
+        console.error('Leaderboard error:', e);
+        listEl.innerHTML = 'ОШИБКА ЗАГРУЗКИ';
+    }
+};
         // ========== ФУНКЦИИ ДЛЯ КЛАНОВ ==========
 
         async function loadClanData() {
@@ -3712,3 +3774,4 @@
     </script>
 </body>
 </html>
+
