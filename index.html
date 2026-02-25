@@ -1380,28 +1380,6 @@
             border: 2px solid white;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
-        
-        .error-message {
-            background: rgba(255, 107, 107, 0.2);
-            border: 2px solid #ff6b6b;
-            border-radius: 30px;
-            padding: 20px;
-            text-align: center;
-            margin: 20px 0;
-            color: #ff6b6b;
-            font-weight: 700;
-        }
-        
-        .retry-btn {
-            background: #ff6b6b;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-weight: 700;
-            margin-top: 10px;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body class="bg-default" id="body">
@@ -1767,108 +1745,171 @@
             else if (page === 'clan') loadClanData();
         };
 
-        // ========== ЗАГРУЗКА ПОЛЬЗОВАТЕЛЯ С ТАЙМАУТОМ ==========
+        // ========== ЗАГРУЗКА ПОЛЬЗОВАТЕЛЯ ==========
         async function loadUser() {
-            // Устанавливаем таймаут на 5 секунд
-            const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('Timeout')), 5000);
-            });
-            
             try {
-                // Гонка между запросом и таймаутом
-                await Promise.race([
-                    fetch(`${API_URL}/api/auth`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            telegram_id: String(user?.id || '123456789'),
-                            username: user?.username || 'test',
-                            first_name: user?.first_name || 'Test'
-                        })
-                    }).then(async res => {
-                        if (res.status === 403) {
-                            throw new Error('BANNED');
-                        }
-                        const data = await res.json();
+                if (!user) {
+                    usernameEl.textContent = 'ТЕСТ';
+                    loading.style.display = 'none';
+                    gameContent.style.display = 'flex';
+                    circle.classList.add('ready');
+                    return;
+                }
+
+                usernameEl.textContent = user.first_name || user.username || 'ИГРОК';
+                
+                const res = await fetch(`${API_URL}/api/auth`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        username: user.username || '',
+                        first_name: user.first_name || ''
+                    })
+                });
+                
+                if (res.status === 403) {
+                    alert('ВЫ ЗАБАНЕНЫ!');
+                    return;
+                }
+                
+                const data = await res.json();
+                
+                size = data.size || 0;
+                ownedSkins = data.ownedSkins || ['default'];
+                currentBackground = data.background || 'default';
+                if (data.last_click) {
+                    lastClickTime = new Date(data.last_click).getTime();
+                }
+                isAdmin = data.is_admin || false;
+                isMaster = data.is_master || false;
+                globalTimerEnabled = data.global_timer?.enabled || false;
+                globalTimerEndDate = data.global_timer?.end_date;
+                clickCooldown = data.global_timer?.cooldown || 100;
+                
+                referralCode = data.referral_code || 'ОШИБКА';
+                referralsCount = data.referrals_count || 0;
+                currentClan = data.clan || null                applyBackground(currentBackground);
+;
+                
+                applyBackground(currentBackground);
+                update                updateSize();
+                
+                const referralCodeEl = document.getElementById('referralCode');
+                if (referralCodeEl) referralCodeEl.textContent = referralCodeSize();
+                
+                const referralCodeEl = document.getElementById('referralCode');
+                if (referralCodeEl) referralCodeEl.textContent = referralCode;
+                
+;
+                
+                const referralsCountEl =                const referralsCountEl = document.getElementById('referralsCount');
+                if (referralsCountEl) referralsCountEl.textContent = referralsCount;
+                
+                await syncTime();
+ document.getElementById('referralsCount');
+                if (referralsCountEl) referralsCountEl.textContent = referralsCount;
+                
+                await syncTime();
+                check                checkCooldown();
+                await loadUserRank();
+                
+                if (startParam && startCooldown();
+                await loadUserRank();
+                
+                if (startParam && startParam !== referralCode) {
+                    setTimeout(() => autoActivateReferral(startParam !== referralCode) {
+                    setTimeout(() => autoActivateReferral(startParam),Param), 1000);
+ 1000);
+                }
+                }
+                
+                if (isAdmin) {
+                    const existingAdminBtn = document.querySelector('.nav-btn[onclick*="admin"]');
+                    if (!existingAdminBtn) {
+                        const adminBtn = document.createElement('button');
+                        adminBtn                
+                if (isAdmin) {
+                    const existingAdminBtn = document.querySelector('.nav-btn[onclick*="admin"]');
+                    if (!existingAdminBtn) {
+                        const adminBtn = document.createElement('button');
+                        adminBtn.className.className = 'nav-btn';
+                        adminBtn = 'nav-btn';
+                        adminBtn.innerHTML =.innerHTML = '<span class="nav-icon">🔧</span><span>АДМИН</span '<span class="nav-icon">🔧</span><span>АДМИН</span>';
+                        adminBtn.setAttribute('onclick', "switchPage('>';
+                        adminBtn.setAttribute('onclick', "switchPage('admin')admin')");
+                        navMenu");
+                        navMenu.appendChild(.appendChild(adminBtn);
                         
-                        size = data.size || 0;
-                        ownedSkins = data.ownedSkins || ['default'];
-                        currentBackground = data.background || 'default';
-                        if (data.last_click) {
-                            lastClickTime = new Date(data.last_click).getTime();
-                        }
-                        isAdmin = data.is_admin || false;
-                        isMaster = data.is_master || false;
-                        globalTimerEnabled = data.global_timer?.enabled || false;
-                        globalTimerEndDate = data.global_timer?.end_date;
-                        clickCooldown = data.global_timer?.cooldown || 100;
+                        loadAdminPanel();
+                    }
+                }
+                
+                loading.style.display = 'none';
+adminBtn);
                         
-                        referralCode = data.referral_code || 'ОШИБКА';
-                        referralsCount = data.referrals_count || 0;
-                        currentClan = data.clan || null;
-                        
-                        applyBackground(currentBackground);
-                        updateSize();
-                        
-                        const referralCodeEl = document.getElementById('referralCode');
-                        if (referralCodeEl) referralCodeEl.textContent = referralCode;
-                        
-                        const referralsCountEl = document.getElementById('referralsCount');
-                        if (referralsCountEl) referralsCountEl.textContent = referralsCount;
-                        
-                        await syncTime();
-                        checkCooldown();
-                        await loadUserRank();
-                        
-                        if (startParam && startParam !== referralCode) {
-                            setTimeout(() => autoActivateReferral(startParam), 1000);
-                        }
-                        
-                        if (isAdmin) {
-                            const existingAdminBtn = document.querySelector('.nav-btn[onclick*="admin"]');
-                            if (!existingAdminBtn) {
-                                const adminBtn = document.createElement('button');
-                                adminBtn.className = 'nav-btn';
-                                adminBtn.innerHTML = '<span class="nav-icon">🔧</span><span>АДМИН</span>';
-                                adminBtn.setAttribute('onclick', "switchPage('admin')");
-                                navMenu.appendChild(adminBtn);
-                                
-                                loadAdminPanel();
-                            }
-                        }
-                        
-                        loading.style.display = 'none';
-                        gameContent.style.display = 'flex';
-                        
-                        updateGlobalTimer();
-                        if (globalTimerInterval) clearInterval(globalTimerInterval);
-                        globalTimerInterval = setInterval(updateGlobalTimer, 1000);
-                        
-                        if (updateInterval) clearInterval(updateInterval);
-                        updateInterval = setInterval(async () => {
-                            if (pages.clan.classList.contains('active')) {
-                                await loadClanData();
-                            }
-                            await loadLeaderboard();
-                        }, 10000);
-                        
-                        await loadClanLeaderboard();
-                        await loadLeaderboard();
-                    }),
-                    timeoutPromise
-                ]);
+                        loadAdminPanel();
+                    }
+                }
+                
+                loading.style.display = 'none';
+                game                gameContent.style.display = 'flex';
+                
+                updateGlobalTimer();
+               Content.style.display = 'flex';
+                
+                updateGlobalTimer();
+                if (globalTimer if (globalTimerInterval) clearIntervalInterval) clearInterval(globalTimerInterval);
+                globalTimerInterval = setInterval(updateGlobalTimer, 1000);
+                
+                if (updateInterval) clear(globalTimerIntervalInterval(update);
+                globalTimerInterval = setInterval(updateGlobalTimer, 1000);
+                
+                if (updateInterval) clearInterval(updateInterval);
+                updateInterval);
+                updateInterval = setInterval(async () => {
+                    if (pages.clan.classList.contains('active')) {
+                        await loadClInterval = setInterval(async () => {
+                    if (pages.clan.classList.contains('active')) {
+                        await loadClanDataanData();
+                    }
+                    await load();
+                    }
+                    await loadLeaderboard();
+               Leaderboard();
+                }, 10000);
+                
+                await loadClanLeaderboard();
+                await loadLeaderboard();
+                
+            } catch (e) {
+                console.error('Auth error }, 10000);
+                
+                await loadClanLeaderboard();
+                await loadLeaderboard();
                 
             } catch (e) {
                 console.error('Auth error:', e);
-                // Показываем ошибку но все равно загружаем интерфейс
+               :', e);
                 loading.style.display = 'none';
-                gameContent.style.display = 'flex';
+                gameContent loading.style.display = 'none';
+                gameContent.style.display = '.style.display = 'flex';
                 
-                // Показываем сообщение об ошибке
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'error-message';
-                errorDiv.innerHTML = '❌ ОШИБКА ПОДКЛЮЧЕНИЯ К СЕРВЕРУ<br><button class="retry-btn" onclick="location.reload()">ПОВТОРИТЬ</button>';
+               flex';
+                
+                // Показыва // Показываем сообщение об ошибке но не блокируем игру
+                const errorем сообщение об ошибке но не блокируем игру
+                const errorDiv =Div = document.createElement('div');
+                errorDiv.style.cssText = 'background document.createElement('div');
+                errorDiv.style.cssText = 'background: rgba(255: rgba,107,107,0.2); border: 2px solid #ff6b6b; border-radius: 30px; padding: 15px; margin: (255,107,107,0.2); border: 2px solid #ff6b6b; border-radius: 30px; padding: 15px; margin10px 0; text: 10px 0; text-align: center; color: #ff6b6b; font-weight: 700;';
+                errorDiv.innerHTML = '⚠️-align: center; color: #ff6b6b; font-weight: 700;';
+                errorDiv.innerHTML = '⚠️ ПРОБЛЕМА С СЕР ПРОБЛЕМА С СЕРВЕРОМ, НО ТАПАТЬ МОЖНО';
+                document.querySelector('.content-area').ВЕРОМ, НО ТАПАТЬ МОЖНО';
                 document.querySelector('.content-area').prepend(errorDiv);
+            }
+        }
+
+        async function loadUserRank()prepend(errorDiv);
             }
         }
 
@@ -1877,26 +1918,56 @@
                 const res = await fetch(`${API_URL}/api/leaderboard?all=true`);
                 let leaders = [];
                 
+ {
+            try {
+                const res = await fetch(`${API_URL}/api/leaderboard?all=true`);
+                let leaders = [];
+                
                 if (res.ok) {
                     leaders = await res.json();
                 }
                 
+                               if (res.ok) {
+                    leaders = await res.json();
+                }
+                
                 const userRank = leaders.findIndex(l => l.telegram_id === String(user?.id)) + 1;
+                rank const userRank = leaders.findIndex(l => l.telegram_id === String(user?.id)) + Display.textContent = userRank > 0 ? `🏆 МЕСТ1;
                 rankDisplay.textContent = userRank > 0 ? `🏆 МЕСТО: ${userRank}` : '🏆 МЕСТО: ...';
             } catch (e) {
+О: ${userRank}` : '🏆 МЕСТО: ...';
+            } catch (e) {
                 console.error('Rank error:', e);
-                rankDisplay.textContent = '🏆 МЕСТО: ERROR';
+                rankDisplay.textContent = '                console.error('Rank error:', e);
+                rankDisplay.textContent = '🏆🏆 МЕСТО: ...';
             }
         }
 
         async function autoActivateReferral(code) {
             try {
+                МЕСТО: ...';
+            }
+        }
+
+        async function autoActivateReferral(code) {
+ await fetch(`${API_URL}/            try {
                 await fetch(`${API_URL}/api/referral/use_code`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
+                    body: JSONapi/referral/use_code`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
+                        telegram_id:.stringify({
                         telegram_id: String(user.id),
+ String(user.id),
                         code: code
+                    })
+                });
+            } catch (e) {
+                console.error('Auto-activation error:', e);
+            }
+                               code: code
                     })
                 });
             } catch (e) {
@@ -1907,39 +1978,89 @@
         function loadAdminPanel() {
             const adminPage = document.getElementById('adminPage');
             adminPage.innerHTML = `
+                <h2>🔧 АД }
+
+        function loadAdminPanel() {
+            const adminPageМИН-ПАНЕЛЬ</h2>
+                <div class="admin-section">
+                    <div class="admin-title">⚡ = document.getElementById('adminPage');
+            adminPage.innerHTML = `
                 <h2>🔧 АДМИН-ПАНЕЛЬ</h2>
                 <div class="admin-section">
-                    <div class="admin-title">⚠️ РЕЖИМ ТЕСТИРОВАНИЯ</div>
-                    <div class="admin-info">Сервер не отвечает. Функции админа недоступны.</div>
+                    <div class="admin-title"> ФУНКЦИИ АДМИНА⚡ ФУНКЦИИ АД</div>
+                    <div class="admin-grid">
+                        <button class="admin-btn wide" onclick="alert('ФМИНА</div>
+                    <div class="admin-grid">
+                        <button class="admin-btn wide" onclick="alert('Функция временно недоступна')">⏱️ СБРОС ТАЙМЕРА</button>
+ункция временно недоступна')">⏱️ СБРОС ТАЙМЕРА</button>
+                        <button class                        <button class="admin-btn wide" onclick="alert('Функция временно недоступ="admin-btn wide" onclick="alert('Функция временно недоступна')">на')📏 УПРАВЛЕНИЕ РАЗМЕРОМ</button>
+                    </div>
                 </div>
             `;
         }
 
+       ">📏 УПРАВЛЕНИЕ РАЗМЕРОМ</button>
+                    </div>
+                </div>
+            `;
+        // ========== ЛИДЕРБОРД ==========
+ }
+
         // ========== ЛИДЕРБОРД ==========
         window.loadLeaderboard = async function() {
+            const listEl = document.getElementById('leaderboard        window.loadLeaderboard = async function() {
             const listEl = document.getElementById('leaderboardList');
+List');
             
+            try {
+                const res = await fetch(`${API_URL}/api/leaderboard`);
+                const leaders = await res.json            
             try {
                 const res = await fetch(`${API_URL}/api/leaderboard`);
                 const leaders = await res.json();
                 
+                if (leaders.length === 0();
+                
                 if (leaders.length === 0) {
-                    listEl.innerHTML = '<div style="text-align: center; padding: 20px;">ПОКА НЕТ ИГРОКОВ</div>';
+                    listEl.innerHTML =) {
+                    listEl.innerHTML = '<div style="text-align: center; padding: 20px;">ПОКА НЕТ '<div style="text-align: center; padding: 20px;">ПОКА НЕТ ИГРОКОВ</div>';
+                    return;
+                }
+                
+                let html = '<div class="leaderboard-list">';
+                ИГРОКОВ</div>';
                     return;
                 }
                 
                 let html = '<div class="leaderboard-list">';
                 leaders.forEach((item, i) => {
+                    const displayName = item.first_name || item.username leaders.forEach((item, i) => {
                     const displayName = item.first_name || item.username || 'ИГРОК';
                     
                     html += `
-                        <div class="leaderboard-item">
-                            <div class="leaderboard-rank ${i === 0 ? 'leaderboard-rank-1' : i === 1 ? 'leaderboard-rank-2' : i === 2 ? 'leaderboard-rank-3' : ''}">${i+1}</div>
+                        <div class="leaderboard-item ${user && item || 'ИГРОК';
+                    
+                    html += `
+                        <div class="leaderboard-item ${user && item.telegram_id === String(user.id) ? 'leaderboard-you' : ''}">
+                           .telegram_id === String(user.id) ? 'leaderboard-you' : ''} <div class="leaderboard-rank ${i === 0 ? 'leaderboard-rank-1' : i === ">
+                            <div class="leaderboard-rank ${i === 0 ? 'leaderboard-rank-1'1 ? 'leaderboard-rank-2' : i === 2 ? ' : i === 1 ? 'leaderboard-rank-2' : i === 2leaderboard-rank-3' : ''}">${i+1}</div>
                             <div class="leaderboard-name">
                                 <span>${displayName}</span>
                             </div>
-                            <div class="leaderboard-size">${item.size} СМ</div>
+                            <div class ? 'leaderboard-rank-3' : ''}">${i+1}</div>
+                            <div class="leaderboard-name">
+                                <span>${displayName}</span>
+                            </div>
+                           ="leaderboard-size">${item.size} СМ</div>
+                            <a href="tg://user?id=${item. <div class="leaderboard-size">${item.size} СМ</div>
+                            <a href="tg://user?id=${item.telegram_id}" class="telegram_id}" class="profile-btn">👤</profile-btn">👤</a>
+                        </a>
                         </div>
+                    `;
+                });
+                html += '</div>';
+                
+                listdiv>
                     `;
                 });
                 html += '</div>';
@@ -1948,7 +2069,7 @@
                 
             } catch (e) {
                 console.error('Leaderboard error:', e);
-                listEl.innerHTML = 'ОШИБКА ЗАГРУЗКИ';
+                listEl.innerHTML = '<div style="text-align: center; padding: 20px;">⚠️ ОШИБКА ЗАГРУЗКИ</div>';
             }
         };
 
@@ -1960,9 +2081,12 @@
             clanContent.innerHTML = `
                 <div class="no-clan">
                     <div class="no-clan-icon">⚔️</div>
-                    <div class="no-clan-title">СЕРВЕР НЕ ОТВЕЧАЕТ</div>
-                    <div class="no-clan-text">Попробуйте позже</div>
-                    <button class="action-btn" onclick="location.reload()">🔄 ПОВТОРИТЬ</button>
+                    <div class="no-clan-title">ВЫ НЕ В КЛАНЕ</div>
+                    <div class="no-clan-text">СОЗДАЙТЕ СВОЙ КЛАН ЗА 10 СМ ИЛИ ВСТУПИТЕ В СУЩЕСТВУЮЩИЙ</div>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="alert('Функция временно недоступна')">➕ СОЗДАТЬ КЛАН</button>
+                        <button class="action-btn" onclick="alert('Функция временно недоступна')">🔑 ВСТУПИТЬ ПО КОДУ</button>
+                    </div>
                 </div>
             `;
         }
@@ -1971,7 +2095,7 @@
 
         // ===== МОДАЛЬНЫЕ ОКНА =====
         window.showCreateClanModal = function() {
-            alert('Сервер не отвечает. Попробуйте позже.');
+            alert('Функция временно недоступна');
         };
         
         window.closeClanModal = function() {
@@ -1979,57 +2103,197 @@
         };
         
         window.showCodeModal = function() {
-            alert('Сервер не отвечает. Попробуйте позже.');
+            alert('Функция временно недоступна');
         };
         
         window.closeCodeModal = function() {
-            codeModal.style.display = 'none';
+            codeModal.styleEl.innerHTML = html;
+                
+            } catch (e) {
+                console.error('Leaderboard error:', e);
+                listEl.innerHTML = '<div style="text-align: center; padding: 20px;">⚠️ ОШИБКА ЗАГРУЗКИ</div>';
+            }
+        };
+
+        // ========== ФУНКЦИИ ДЛЯ КЛАНОВ ==========
+        async function loadClanData() {
+            const clanContent = document.getElementById('clanContent');
+            if (!clanContent) return;
+            
+            clanContent.innerHTML = `
+                <div class="no-clan">
+                    <div class="no-clan-icon">⚔️</div>
+                    <div class="no-clan-title">ВЫ НЕ В КЛАНЕ</div>
+                    <div class="no-clan-text">СОЗДАЙТЕ СВОЙ КЛАН ЗА 10 СМ ИЛИ ВСТУПИТЕ В СУЩЕСТВУЮЩИЙ</div>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="alert('Функция временно недоступна')">➕ СОЗДАТЬ КЛАН</button>
+                        <button class="action-btn" onclick="alert('Функция временно недоступна')">🔑 ВСТУПИТЬ ПО КОДУ</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadClanLeaderboard() {}
+
+        // ===== МОДАЛЬНЫЕ ОКНА =====
+        window.showCreateClanModal = function() {
+            alert('Функция временно недоступна');
+        };
+        
+        window.closeClanModal = function() {
+            clanModal.style.display = 'none';
+        };
+        
+        window.showCodeModal = function() {
+            alert('Функция временно недоступна');
+        };
+        
+        window.closeCodeModal = function() {
+            codeModal.style.display =.display = 'none';
         };
         
         window.createClanFromModal = function() {}
         window.joinClanFromModal = function() {}
 
         // ========== ПОКУПКА СКИНА ==========
-        window.buySkin = async function(skinId, requiredPrice) {
-            alert('Сервер не отвечает. Попробуйте позже.');
+        'none';
+        };
+        
+        window.createClanFromModal = function() {}
+        window.joinClanFromModal = function() {}
+
+        // ========== ПОКУПКА СКИНА ==========
+        window.buySkin = async function(s window.buySkin = async function(skinId, requiredPrice)kinId, requiredPrice) {
+            alert('Функция времен {
+            alert('Функно недоступна');
         };
 
-        // СБРОС ТАЙМЕРА
-        window.buyCooldownReset = async function() {
-            alert('Сервер не отвечает. Попробуйте позже.');
+       ция временно недоступна');
+        // СБРОС Т };
+
+        // СБРОАЙМЕС ТАЙМЕРА
+        windowРА
+.buyCoold        window.buyownReset = asyncCooldownReset = async function() {
+            function() {
+            alert(' alert('Функция временно недоФункция временно недоступна');
         };
 
-        // РЕФЕРАЛЫ
-        window.copyReferralCode = function() {
-            const code = document.getElementById('referralCode').textContent;
-            navigator.clipboard.writeText(code);
-            alert('КОД СКОПИРОВАН');
+       ступна');
+        };
+
+        // РЕФ // РЕФЕРАЛЫЕРАЛЫ
+       
+        window.copyReferralCode = window.copyReferralCode = function() {
+            function() {
+            const code = document const code = document.getElementById('referral.getElementById('referralCode').textContent;
+           Code').textContent;
+            navigator.clip navigator.clipboard.writeText(codeboard.writeText(code);
+           );
+            tg.showPopup({
+                tg.showPopup({
+ title: '✅ СКОП                title: '✅ СКОПИРОВАНО',
+ИРОВАНО',
+                message                message: 'КОД: 'КОД СКОПИРОВ СКОПИРОВАН',
+                buttonsАН',
+                buttons: [{type: 'ok'}]
+            });
         };
 
         window.shareReferralCode = function() {
             const code = document.getElementById('referralCode').textContent;
-            const text = `🚀 ПРИСОЕДИНЯЙСЯ К ИГРЕ! МОЙ РЕФЕРАЛЬНЫЙ КОД: ${code}`;
-            tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(text)}`);
+            const text = `🚀 ПРИСОЕДИНЯЙСЯ К ИГРЕ! МОЙ РЕФЕ: [{type: 'ok'}]
+            });
         };
 
-        window.getReferralLink = function() {
+        window.shareReferralCode = function() {
             const code = document.getElementById('referralCode').textContent;
-            const link = `https://t.me/Costrulka_bot?start=${code}`;
-            navigator.clipboard.writeText(link);
-            alert('ССЫЛКА СКОПИРОВАНА');
+            const text = `🚀 ПРИСОЕДИНЯЙСЯ К ИГРЕ! МОЙ РЕФЕРАЛЬНЫЙРАЛЬНЫЙ КОД: ${code}`;
+            tg.openTelegram КОД: ${code}`;
+            tg.openTelegramLink(`https://Link(`https://t.me/share/url?t.me/share/url?url=${encodeURIComponent(texturl=${encodeURIComponent(text)}`);
+)}`);
         };
+
+        window.getReferralLink        };
+
+        window.getRefer = function() {
+            const code =ralLink = function() {
+            const code = document.getElementById('referralCode').textContent;
+            const document.getElementById('referralCode').textContent;
+            const link = `https://t.me/Costrulka_b link = `https://t.me/Costrulka_bot?start=${ot?start=${code}`;
+            navigatorcode}`;
+            navigator.clipboard.writeText(link);
+.clipboard.writeText(link);
+            tg.showPopup({
+                title:            tg.showPopup '✅ ССЫЛКА С({
+                title: '✅ ССЫЛКОПИРОВАНКА СКОПИРА',
+                message: 'ОВАНА',
+                messageССЫЛКА С ВАШ: 'ССЫЛКАИМ КОДОМ С ВАШИМ СКОПИ КОДОМ СКОРОВАНА',
+               ПИРОВАНА',
+ buttons: [{type: '                buttons: [{type: 'ok'}]
+            });
+        };
+
+       ok'}]
+            });
+        window.useReferral };
 
         window.useReferralCode = async function() {
-            alert('Сервер не отвечает. Попробуйте позже.');
+Code =            alert('Функция async function() {
+            alert('Функция временно недоступна');
+ временно        };
+
+        window недоступна');
         };
 
-        window.usePromoCode = async function() {
-            alert('Сервер не отвечает. Попробуйте позже.');
+.usePromoCode = async        window.usePromoCode function() {
+            alert(' = async function() {
+           Функция временно недо alert('Функция временно недоступна');
         };
 
-        // ЭКИПИРОВКА СКИНА
+       ступна');
+        };
+
+        // ЭКИПИ // ЭКИПИРОВКА СКИНА
         window.equipSkin = async function(skinId) {
-            alert('Сервер не отвечает. Попробуйте позже.');
+            alert('Функция временно недоступна');
+        };
+
+        // МАГАЗИН
+        function renderShop() {
+            const skinsGrid = document.getElementById('skinsGrid');
+            const shopSkins = allSkins.filter(skin => !skin.isPromo);
+            
+            skinsGrid.innerHTML = shopSkins.map(skin => {
+                const isOwned = ownedSkins.includes(skin.id);
+                
+                return `
+                    <div class="skin-card ${isOwned ? 'owned' : ''}">
+                        <div class="skin-icon">${skin.icon}</div>
+                        <div class="skin-name">${skin.name}</div>
+                        <div class="skin-price">НУЖНО <span>${skin.price} СМ</span></div>
+                        ${isOwned ? 
+                            '<div style="color: #4caf50; font-weight: 800;">✅ УЖЕ ЕСТЬ</div>' : 
+                            `<button class="buy-skin-btn not-enough" disabled>НУЖНО ${skin.price} СМ</button>`
+                        }
+                    </div>
+                `;
+            }).join('');
+            
+            const icon = backgroundIcons[currentBackground] || '⚪';
+            const name = backgroundNames[currentBackground] || 'ОБЫЧНЫЙ';
+            currentSkinDisplay.textContent = `ТЕКУЩИЙ ФОН: ${icon} ${name}`;
+        }
+
+        // ИНВЕНТАРЬ
+        function renderInventory() {
+            let html = `
+                <div class="inventory-item default">
+                    <div class="inventory-item-icon">⚪</div>
+                    <div class="inventory-item-title">ОБЫЧНЫЙ</div>
+                    <div class="inventory-item-controls">
+                        <span class="equipped-badge">РОВКА СКИНА
+        window.equipSkin = async function(skinId) {
+            alert('Функция временно недоступна');
         };
 
         // МАГАЗИН
@@ -2070,15 +2334,56 @@
                 </div>
             `;
             
-            document.getElementById('inventoryGrid').innerHTML = html;
+            for (let skin of allSkins) {
+                if (ownedSkins.includes(skin.id) && skin.id !== 'default') {
+                    html += `
+                        <div class="inventory-item owned">
+                            <div class="inventory✅ НАДЕТО</span>
+                    </div>
+                </div>
+            `;
             
-            const icon = backgroundIcons[currentBackground] || '⚪';
-            const name = backgroundNames[currentBackground] || 'ОБЫЧНЫЙ';
-            inventoryCurrentSkin.textContent = `ТЕКУЩИЙ ФОН: ${icon} ${name}`;
+            for (let skin of allSkins) {
+                if (ownedSkins.includes(skin.id) && skin.id !== 'default') {
+                    html += `
+                        <div class="inventory-item owned">
+                            <div class="-item-icon">${skin.icon}</div>
+                            <divinventory-item-icon">${skin.icon}</div>
+                            < class="inventorydiv class="-item-title">${skin.nameinventory-item-title">${}</div>
+                           skin.name}</div <div class=">
+                            <div class="inventory-item-controls">
+inventory-item-controls">
+                                <span class                                <="equipped-badge">span class="equipped-badge">✅ В ИН✅ ВВЕНТАРЕ</ ИНВЕНТАРЕ</span>
+span>
+                            </                            </div>
+                        </div>
+                        </div>
+                    `;
+               div>
+                    `;
+                }
+            }
+            
+ }
+            }
+            
+            document            document.getElementById('inventory.getElementById('inventoryGrid').Grid').innerHTML = htmlinnerHTML = html;
+            
+            const icon =;
+            
+            const icon = backgroundIcons[current backgroundIcons[currentBackground] || '⚪';
+            const name = backgroundNames[currentBackground] || '⚪';
+            const name = backgroundNames[currentBackground]Background] || ' || 'ОБЫЧНЫЙОБЫЧНЫЙ';
+            inventoryCurrentSkin.text';
+            inventoryCurrentSkin.textContent = `ТЕКУЩИЙContent = `ТЕКУЩИЙ ФОН: ${icon} ФОН: ${icon} ${name}`;
         }
 
-        function applyBackground(bg) {
-            body.className = '';
+        function applyBackground(bg ${name}`;
+        }
+
+        function applyBackground) {
+            body.className(bg) {
+            body = '';
             body.classList.add(`bg-${bg}`);
         }
 
@@ -2094,11 +2399,19 @@
         }
 
         function checkCooldown() {
-            circle.classList.remove('cooldown');
-            circle.classList.add('ready');
-            clickTimerEl.textContent = '⚡ ГОТОВ ⚡';
-            clickTimerEl.classList.remove('active');
-            cooldown = false;
+            const now = getCurrentTime();
+            const lastClick = lastClickTime || 0;
+            const diff = (now - lastClick) / 1000;
+            
+            if (diff < clickCooldown && lastClick > 0) {
+                startCooldown(clickCooldown - diff);
+            } else {
+                circle.classList.remove('cooldown');
+                circle.classList.add('ready');
+                clickTimerEl.textContent = '⚡ ГОТОВ ⚡';
+                clickTimerEl.classList.remove('active');
+                cooldown = false;
+            }
         }
 
         function startCooldown(seconds) {
@@ -2125,21 +2438,106 @@
                     const hours = Math.floor(timeLeft / 3600);
                     const minutes = Math.floor((timeLeft % 3600) / 60);
                     const seconds = timeLeft % 60;
-                    clickTimerEl.textContent = `⏳ ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    clickTimer.className = '';
+            body.classList.add(`bg-${bg}`);
+        }
+
+        function updateSize() {
+            sizeEl.textContent = size;
+            if (modalCurrentSize) modalCurrentSize.textContent = size;
+        }
+
+        function showChange(change) {
+            changeEl.innerHTML = change > 0 ? `<span class="positive">+${change}</span>` :
+                                 change < 0 ? `<span class="negative">${change}</span>` : '0';
+            setTimeout(() => changeEl.innerHTML = '', 800);
+        }
+
+        function checkCooldown() {
+            const now = getCurrentTime();
+            const lastClick = lastClickTime || 0;
+            const diff = (now - lastClick) / 1000;
+            
+            if (diff < clickCooldown && lastClick > 0) {
+                startCooldown(clickCooldown - diff);
+            } else {
+                circle.classList.remove('cooldown');
+                circle.classList.add('ready');
+                clickTimerEl.textContent = '⚡ ГОТОВ ⚡';
+                clickTimerEl.classList.remove('active');
+                cooldown = false;
+            }
+        }
+
+        function startCooldown(seconds) {
+            cooldown = true;
+            circle.classList.add('cooldown');
+            circle.classList.remove('ready');
+            
+            const endTime = getCurrentTime() + (seconds * 1000);
+            
+            if (clickTimerInterval) clearInterval(clickTimerInterval);
+            
+            clickTimerInterval = setInterval(() => {
+                const now = getCurrentTime();
+                const timeLeft = Math.max(0, Math.floor((endTime - now) / 1000));
+                
+                if (timeLeft <= 0) {
+                    clearInterval(clickTimerInterval);
+                    cooldown = false;
+                    circle.classList.remove('cooldown');
+                    circle.classList.add('ready');
+                    clickTimerEl.textContent = '⚡ ГОТОВ ⚡';
+                    clickTimerEl.classList.remove('active');
+                } else {
+                    const hours = Math.floor(timeLeft / 3600);
+                    const minutes = Math.floor((timeLeft % 3600) / 60);
+                    const seconds = timeLeft % 60;
+                   El.textContent = `⏳ ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    clickTimerEl.classList.add('active');
+                }
+            clickTimerEl.textContent = `⏳ ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                     clickTimerEl.classList.add('active');
                 }
             }, 1000);
+        }, 1000);
         }
+
+        async function handleTap }
 
         async function handleTap() {
             if (cooldown) return;
             
-            // Имитация клика без сервера
-            const change = Math.floor(Math.random() * 21) - 10;
-            size = Math.max(-10, Math.min(999, size + change));
-            updateSize();
-            showChange(change);
-            startCooldown(clickCooldown);
+            try {
+                const res = await fetch(`${API_URL}/api/click`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({telegram_id: String(user?.id || '123456789')})
+                });
+                
+                if (res.status === 429) {
+                    const data = await res.json();
+                    startCooldown(data.wait);
+                    return;
+                }
+                
+                const data = await res.json();
+                size = data.size;
+                lastClickTime = new Date(data.last_click).getTime();
+                
+                updateSize();
+                showChange(data.change);
+                startCooldown(clickCooldown);
+                
+            } catch (e) {
+                console.error('Click error:', e);
+                // Если сервер не отвечает - локальный клик
+                const change = Math.floor(Math.random() * 21) - 10;
+                size = Math.max(-10, Math.min(999, size + change));
+                updateSize();
+                showChange(change);
+                startCooldown(clickCooldown);
+            }
         }
 
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
@@ -2147,15 +2545,7 @@
         circle.addEventListener('click', handleTap);
         cooldownResetBtn.addEventListener('click', buyCooldownReset);
 
-        if (!user) {
-            usernameEl.textContent = 'ТЕСТ';
-            loading.style.display = 'none';
-            gameContent.style.display = 'flex';
-            circle.classList.add('ready');
-        } else {
-            usernameEl.textContent = user.first_name || user.username || 'ИГРОК';
-            loadUser();
-        }
+        loadUser();
         
         window.addEventListener('beforeunload', function() {
             if (clickTimerInterval) clearInterval(clickTimerInterval);
@@ -2163,5 +2553,52 @@
             if (updateInterval) clearInterval(updateInterval);
         });
     </script>
-</body>
+</() {
+            if (cooldown) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/click`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({telegram_id: String(user?.id || '123456789')})
+                });
+                
+                if (res.status === 429) {
+                    const data = await res.json();
+                    startCooldown(data.wait);
+                    return;
+                }
+                
+                const data = await res.json();
+                size = data.size;
+                lastClickTime = new Date(data.last_click).getTime();
+                
+                updateSize();
+                showChange(data.change);
+                startCooldown(clickCooldown);
+                
+            } catch (e) {
+                console.error('Click error:', e);
+                // Если сервер не отвечает - локальный клик
+                const change = Math.floor(Math.random() * 21) - 10;
+                size = Math.max(-10, Math.min(999, size + change));
+                updateSize();
+                showChange(change);
+                startCooldown(clickCooldown);
+            }
+        }
+
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+
+        circle.addEventListener('click', handleTap);
+        cooldownResetBtn.addEventListener('click', buyCooldownReset);
+
+        loadUser();
+        
+        window.addEventListener('beforeunload', function() {
+            if (clickTimerInterval) clearInterval(clickTimerInterval);
+            if (globalTimerInterval) clearInterval(globalTimerInterval);
+            if (updateInterval) clearInterval(updateInterval);
+        });
+    </scriptbody>
 </html>
