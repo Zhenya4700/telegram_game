@@ -1725,16 +1725,18 @@ tg.expand();
 const startParam = tg.initDataUnsafe?.start_param || '';
 console.log('Start param:', startParam);
 
-// ========== ТЕСТОВЫЙ РЕЖИМ ==========
-// Раскомментируйте для теста в браузере
-const user = {
-    id: 1234567898765432,
-    first_name: "ТЕСТ",
-    username: "test_user"
-};
+// ========== РЕЖИМ РАБОТЫ ==========
+// Определяем, где мы запущены
+const isBrowser = !window.Telegram?.WebApp?.initDataUnsafe?.user;
+console.log('📱 Режим работы:', isBrowser ? 'БРАУЗЕР' : 'TELEGRAM');
 
-// Закомментируйте эту строку для теста
-// const user = tg.initDataUnsafe?.user;
+// В TELEGRAM - используем реальные данные
+// В БРАУЗЕРЕ - используем тестовые данные
+const user = isBrowser ? 
+    { id: 1234567898765432, first_name: "ТЕСТ БРАУЗЕРА", username: "test_browser" } : 
+    tg.initDataUnsafe?.user;
+
+console.log('👤 Пользователь:', user);
 
 console.log('👤 Тестовый пользователь:', user);
         
@@ -3807,6 +3809,7 @@ window.enableTestMode = function() {
     </script>
 </body>
 </html>
+
 
 
 
