@@ -215,19 +215,6 @@
             text-align: center;
             font-weight: 900;
             text-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            cursor: pointer;
-            transition: all 0.2s;
-            padding: 5px 15px;
-            border-radius: 30px;
-        }
-        
-        .game-title:hover {
-            background: rgba(255, 215, 0, 0.1);
-            -webkit-text-fill-color: #ffd966;
-        }
-        
-        .game-title.admin-mode {
-            border: 2px dashed #ff6b6b;
         }
 
         h2 { 
@@ -1499,29 +1486,6 @@
             border: 2px solid white;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
-
-        /* Стили для ввода названия игры */
-        .title-input-container {
-            width: 100%;
-            margin: 10px 0;
-        }
-        
-        .title-input {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid #ff6b6b;
-            border-radius: 40px;
-            padding: 12px 20px;
-            color: white;
-            font-size: 1rem;
-            font-weight: 600;
-            text-align: center;
-        }
-        
-        .title-input:focus {
-            outline: none;
-            border-color: #ffd966;
-        }
     </style>
 </head>
 <body class="bg-default" id="body">
@@ -1550,15 +1514,7 @@
             <div class="content-area">
                 <!-- Главная -->
                 <div class="page active" id="homePage">
-                    <div class="game-title" id="gameTitle" onclick="editGameTitle()">⚡ MEM-метр ⚡</div>
-                    <!-- Скрытое поле для ввода названия (появляется в админ-режиме) -->
-                    <div id="titleInputContainer" class="title-input-container" style="display: none;">
-                        <input type="text" id="titleInput" class="title-input" placeholder="ВВЕДИТЕ НАЗВАНИЕ ИГРЫ" maxlength="30">
-                        <div style="display: flex; gap: 10px; margin-top: 10px;">
-                            <button class="inv-btn" style="flex: 1;" onclick="saveGameTitle()">💾 СОХРАНИТЬ</button>
-                            <button class="inv-btn" style="flex: 1;" onclick="cancelEditTitle()">✕ ОТМЕНА</button>
-                        </div>
-                    </div>
+                    <div class="game-title" id="gameTitle">⚡ ЧЛЕН ⚡</div>
                     <div class="tap-area" id="tapCircle"></div>
                     <div class="size-display" id="sizeValue">0</div>
                     <div class="size-label">САНТИМЕТРОВ</div>
@@ -1754,9 +1710,6 @@
         const navMenu = document.getElementById('navMenu');
         const cooldownResetBtn = document.getElementById('cooldownResetBtn');
         const clanNotification = document.getElementById('clanNotification');
-        const gameTitle = document.getElementById('gameTitle');
-        const titleInputContainer = document.getElementById('titleInputContainer');
-        const titleInput = document.getElementById('titleInput');
         
         // Модальные окна
         const clanModal = document.getElementById('clanModal');
@@ -1792,7 +1745,6 @@
         let timeOffset = 0;
         let referralCode = '';
         let referralsCount = 0;
-        let gameTitleText = '⚡ MEM-метр ⚡';
         
         // Данные клана
         let currentClan = null;
@@ -1931,30 +1883,6 @@
             else if (page === 'clan') loadClanData();
         };
 
-        // Функции для изменения названия игры
-        window.editGameTitle = function() {
-            if (!isAdmin) return;
-            
-            gameTitle.style.display = 'none';
-            titleInputContainer.style.display = 'block';
-            titleInput.value = gameTitleText.replace(/[⚡]/g, '').trim();
-            titleInput.focus();
-        };
-        
-        window.saveGameTitle = function() {
-            const newTitle = titleInput.value.trim();
-            if (newTitle) {
-                gameTitleText = `⚡ ${newTitle} ⚡`;
-                gameTitle.textContent = gameTitleText;
-            }
-            cancelEditTitle();
-        };
-        
-        window.cancelEditTitle = function() {
-            gameTitle.style.display = 'block';
-            titleInputContainer.style.display = 'none';
-        };
-
         async function loadUser() {
             try {
                 const res = await fetch(`${API_URL}/api/auth`, {
@@ -2026,9 +1954,6 @@
                         
                         loadAdminPanel();
                     }
-                    
-                    // Добавляем класс для админ-режима
-                    gameTitle.classList.add('admin-mode');
                 }
                 
                 loading.style.display = 'none';
@@ -2038,19 +1963,27 @@
                 if (globalTimerInterval) clearInterval(globalTimerInterval);
                 globalTimerInterval = setInterval(updateGlobalTimer, 1000);
                 
-                // Запускаем автообновление данных клана каждые 10 секунд
+                // Запускаем автообновление данных клана каждые 5 секунд
                 if (updateInterval) clearInterval(updateInterval);
                 updateInterval = setInterval(async () => {
+                    // Обновляем данные клана если открыта страница клана
                     if (pages.clan.classList.contains('active')) {
                         await loadClanData();
                     }
+                    
+                    // Обновляем лидерборд
                     await loadLeaderboard();
                     
                     // Проверяем новые заявки если мы владелец клана
                     if (currentClan && currentClan.owner_id === String(user.id)) {
                         await checkNewRequests();
                     }
-                }, 10000);
+                    
+                    // Обновляем размер клана если мы в клане
+                    if (currentClan) {
+                        await updateClanSize();
+                    }
+                }, 5000); // Каждые 5 секунд
                 
                 // Загружаем топ кланов
                 await loadClanLeaderboard();
@@ -2060,6 +1993,29 @@
                 console.error('Auth error:', e);
                 loading.style.display = 'none';
                 gameContent.style.display = 'flex';
+            }
+        }
+
+        async function updateClanSize() {
+            if (!currentClan) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/clan/members/${currentClan.id}`);
+                const members = await res.json();
+                
+                // Обновляем общий размер клана
+                const totalSize = members.reduce((sum, member) => sum + member.size, 0);
+                currentClan.total_size = totalSize;
+                
+                // Обновляем список участников
+                clanMembers = members;
+                
+                // Если открыта страница клана, обновляем отображение
+                if (pages.clan.classList.contains('active')) {
+                    renderClanInfo();
+                }
+            } catch (e) {
+                console.error('Update clan size error:', e);
             }
         }
 
@@ -2238,6 +2194,12 @@
             try {
                 const res = await fetch(`${API_URL}/api/clan/members/${clanId}`);
                 clanMembers = await res.json();
+                
+                // Обновляем общий размер клана
+                if (currentClan) {
+                    const totalSize = clanMembers.reduce((sum, member) => sum + member.size, 0);
+                    currentClan.total_size = totalSize;
+                }
             } catch (e) {
                 console.error('Error loading clan members:', e);
             }
