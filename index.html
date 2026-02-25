@@ -953,6 +953,8 @@
             border: 3px solid #ffd966;
             box-shadow: 0 0 50px rgba(255, 215, 0, 0.3);
             animation: modalAppear 0.3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         
         @keyframes modalAppear {
@@ -1416,6 +1418,71 @@
             text-align: center;
             max-width: 300px;
         }
+        
+        .admin-stats {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .admin-stat-value {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #ffd966;
+        }
+        
+        .admin-stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .admin-search {
+            margin-bottom: 20px;
+        }
+        
+        .user-selector {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 30px;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        
+        .user-selector:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .user-selector.selected {
+            background: rgba(255, 215, 0, 0.2);
+            border: 2px solid #ffd966;
+        }
+        
+        .promocode-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        
+        .promocode-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 10px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .promocode-code {
+            font-weight: 800;
+            color: #ffd966;
+            font-size: 1.1rem;
+        }
     </style>
 </head>
 <body class="bg-default" id="body">
@@ -1598,6 +1665,56 @@
         </div>
     </div>
 
+    <div id="adminUserModal" class="modal-overlay" style="display: none;">
+        <div class="modal-container">
+            <div class="modal-close" onclick="closeAdminUserModal()">✕</div>
+            <div class="modal-title" id="adminUserModalTitle">👤 УПРАВЛЕНИЕ</div>
+            <div id="adminUserModalContent"></div>
+        </div>
+    </div>
+
+    <div id="adminPromoModal" class="modal-overlay" style="display: none;">
+        <div class="modal-container">
+            <div class="modal-close" onclick="closeAdminPromoModal()">✕</div>
+            <div class="modal-title">🎁 СОЗДАНИЕ ПРОМОКОДА</div>
+            <input type="text" id="promoCodeInput" class="modal-input" placeholder="КОД" maxlength="20">
+            <input type="number" id="promoMaxUsesInput" class="modal-input" placeholder="МАКС. ИСПОЛЬЗОВАНИЙ" value="1" min="1">
+            <input type="number" id="promoRewardInput" class="modal-input" placeholder="НАГРАДА (СМ)" value="5" min="1">
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-primary" onclick="createPromoCode()">СОЗДАТЬ</button>
+                <button class="modal-btn modal-btn-secondary" onclick="closeAdminPromoModal()">ОТМЕНА</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="adminTimerModal" class="modal-overlay" style="display: none;">
+        <div class="modal-container">
+            <div class="modal-close" onclick="closeAdminTimerModal()">✕</div>
+            <div class="modal-title">⏰ УПРАВЛЕНИЕ ТАЙМЕРОМ</div>
+            <div class="modal-info" id="timerStatus"></div>
+            <input type="number" id="timerDaysInput" class="modal-input" placeholder="ДНЕЙ" value="30" min="1">
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-primary" onclick="setTimerDays()">УСТАНОВИТЬ</button>
+                <button class="modal-btn modal-btn-primary" onclick="toggleTimer()">ВКЛ/ВЫКЛ</button>
+                <button class="modal-btn modal-btn-secondary" onclick="closeAdminTimerModal()">ЗАКРЫТЬ</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="adminCooldownModal" class="modal-overlay" style="display: none;">
+        <div class="modal-container">
+            <div class="modal-close" onclick="closeAdminCooldownModal()">✕</div>
+            <div class="modal-title">⏱️ УПРАВЛЕНИЕ КУЛДАУНОМ</div>
+            <div class="modal-info" id="cooldownStatus"></div>
+            <input type="number" id="cooldownInput" class="modal-input" placeholder="СЕКУНД" value="100" min="1">
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-primary" onclick="setCooldown()">УСТАНОВИТЬ</button>
+                <button class="modal-btn modal-btn-primary" onclick="resetAllCooldowns()">СБРОСИТЬ ВСЕМ</button>
+                <button class="modal-btn modal-btn-secondary" onclick="closeAdminCooldownModal()">ЗАКРЫТЬ</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_URL = 'https://zhenya4700.pythonanywhere.com';
         const tg = window.Telegram.WebApp;
@@ -1634,6 +1751,13 @@
         const codeInput = document.getElementById('codeInput');
         const modalCurrentSize = document.getElementById('modalCurrentSize');
         
+        const adminUserModal = document.getElementById('adminUserModal');
+        const adminUserModalTitle = document.getElementById('adminUserModalTitle');
+        const adminUserModalContent = document.getElementById('adminUserModalContent');
+        const adminPromoModal = document.getElementById('adminPromoModal');
+        const adminTimerModal = document.getElementById('adminTimerModal');
+        const adminCooldownModal = document.getElementById('adminCooldownModal');
+        
         const pages = {
             home: document.getElementById('homePage'),
             leaderboard: document.getElementById('leaderboardPage'),
@@ -1668,6 +1792,11 @@
         let updateInterval = null;
         let loadAttempts = 0;
         const MAX_LOAD_ATTEMPTS = 3;
+        
+        // Админ состояние
+        let allUsers = [];
+        let selectedUserId = null;
+        let promoCodes = [];
         
         const allSkins = [
             { id: 'neon', name: 'НЕОНОВЫЙ', icon: '💜', price: 20 },
@@ -1771,7 +1900,8 @@
                 shop: 'МАГАЗИН', 
                 inventory: 'ИНВЕНТАРЬ',
                 clan: 'КЛАНЫ',
-                referral: 'РЕФЕРАЛЫ'
+                referral: 'РЕФЕРАЛЫ',
+                admin: 'АДМИН'
             };
             
             document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -1784,6 +1914,7 @@
             else if (page === 'inventory') renderInventory();
             else if (page === 'shop') renderShop();
             else if (page === 'clan') loadClanData();
+            else if (page === 'admin') loadAdminPanel();
         };
 
         function showLoadingError(message) {
@@ -1866,8 +1997,6 @@
                         adminBtn.innerHTML = '<span class="nav-icon">🔧</span><span>АДМИН</span>';
                         adminBtn.setAttribute('onclick', "switchPage('admin')");
                         navMenu.appendChild(adminBtn);
-                        
-                        loadAdminPanel();
                     }
                 }
                 
@@ -1934,16 +2063,668 @@
             }
         }
 
-        function loadAdminPanel() {
+        // ========== АДМИН ПАНЕЛЬ ==========
+        async function loadAdminPanel() {
             const adminPage = document.getElementById('adminPage');
-            adminPage.innerHTML = `
-                <h2>🔧 АДМИН-ПАНЕЛЬ</h2>
-                <div class="admin-section">
-                    <div class="admin-title">⚠️ РЕЖИМ ТЕСТИРОВАНИЯ</div>
-                    <div class="admin-info">Сервер работает. Функции админа доступны.</div>
+            
+            if (!isAdmin) {
+                adminPage.innerHTML = `
+                    <div class="error-message">
+                        ❌ У ВАС НЕТ ПРАВ АДМИНИСТРАТОРА
+                    </div>
+                `;
+                return;
+            }
+            
+            try {
+                // Загружаем список всех пользователей
+                const usersRes = await fetch(`${API_URL}/api/leaderboard?all=true`);
+                allUsers = await usersRes.json();
+                
+                // Загружаем список промокодов
+                const promoRes = await fetch(`${API_URL}/api/admin/promocode/list`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id)
+                    })
+                });
+                
+                if (promoRes.ok) {
+                    const promoData = await promoRes.json();
+                    promoCodes = promoData.promocodes || [];
+                }
+                
+                // Загружаем список админов
+                const adminsRes = await fetch(`${API_URL}/api/admin/list_admins`);
+                const adminsData = await adminsRes.json();
+                
+                const totalUsers = allUsers.length;
+                const totalSize = allUsers.reduce((sum, u) => sum + (u.size || 0), 0);
+                const topUser = allUsers[0];
+                
+                adminPage.innerHTML = `
+                    <h2>🔧 АДМИН-ПАНЕЛЬ</h2>
+                    
+                    <div class="admin-stats">
+                        <div class="admin-stat-value">${totalUsers}</div>
+                        <div class="admin-stat-label">ВСЕГО ИГРОКОВ</div>
+                    </div>
+                    
+                    <div class="admin-stats">
+                        <div class="admin-stat-value">${totalSize}</div>
+                        <div class="admin-stat-label">ВСЕГО СМ</div>
+                    </div>
+                    
+                    ${topUser ? `
+                        <div class="admin-stats">
+                            <div class="admin-stat-value">${topUser.first_name || topUser.username}</div>
+                            <div class="admin-stat-label">ТОП-1 (${topUser.size} СМ)</div>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="admin-section">
+                        <div class="admin-title">👤 УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ</div>
+                        <div class="admin-search">
+                            <input type="text" id="userSearchInput" class="modal-input" placeholder="ПОИСК ПО ID ИЛИ ИМЕНИ" oninput="searchUsers()">
+                        </div>
+                        <div id="usersList" style="max-height: 200px; overflow-y: auto; margin-bottom: 10px;"></div>
+                        <div class="admin-grid">
+                            <button class="admin-btn" onclick="showUserModal('self')">МОИ ДАННЫЕ</button>
+                            <button class="admin-btn" onclick="clearAllUsers()">ОЧИСТИТЬ ВСЕХ</button>
+                            <button class="admin-btn" onclick="resetAllCooldowns()">СБРОС КД ВСЕМ</button>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-section">
+                        <div class="admin-title">🎁 ПРОМОКОДЫ</div>
+                        <div class="promocode-list" id="promoCodesList"></div>
+                        <div class="admin-grid">
+                            <button class="admin-btn wide" onclick="showPromoModal()">➕ СОЗДАТЬ ПРОМОКОД</button>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-section">
+                        <div class="admin-title">⏰ ГЛОБАЛЬНЫЙ ТАЙМЕР</div>
+                        <div class="admin-grid">
+                            <button class="admin-btn" onclick="showTimerModal()">УПРАВЛЕНИЕ</button>
+                            <button class="admin-btn" onclick="restartTimer()">ПЕРЕЗАПУСТИТЬ</button>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-section">
+                        <div class="admin-title">⏱️ КУЛДАУН</div>
+                        <div class="admin-grid">
+                            <button class="admin-btn" onclick="showCooldownModal()">УПРАВЛЕНИЕ</button>
+                        </div>
+                    </div>
+                    
+                    ${isMaster ? `
+                        <div class="admin-section">
+                            <div class="admin-title">👑 УПРАВЛЕНИЕ АДМИНАМИ</div>
+                            <div class="admin-info" style="margin-bottom: 10px;">
+                                МАСТЕР: ${adminsData.master_admin}<br>
+                                АДМИНЫ: ${adminsData.admins.join(', ')}
+                            </div>
+                            <div class="admin-grid">
+                                <input type="text" id="newAdminId" class="modal-input" placeholder="ID НОВОГО АДМИНА" style="grid-column: span 2;">
+                                <button class="admin-btn" onclick="addAdmin()">➕ ДОБАВИТЬ</button>
+                                <button class="admin-btn danger" onclick="removeAdmin()">➖ УДАЛИТЬ</button>
+                            </div>
+                        </div>
+                    ` : ''}
+                `;
+                
+                renderUsersList();
+                renderPromoCodesList();
+                
+            } catch (e) {
+                console.error('Admin panel error:', e);
+                adminPage.innerHTML = `
+                    <div class="error-message">
+                        ❌ ОШИБКА ЗАГРУЗКИ АДМИН-ПАНЕЛИ<br>
+                        <button class="retry-btn" onclick="loadAdminPanel()">ПОВТОРИТЬ</button>
+                    </div>
+                `;
+            }
+        }
+
+        function renderUsersList() {
+            const listEl = document.getElementById('usersList');
+            if (!listEl) return;
+            
+            const searchTerm = document.getElementById('userSearchInput')?.value.toLowerCase() || '';
+            
+            const filteredUsers = allUsers.filter(u => 
+                u.telegram_id.includes(searchTerm) || 
+                (u.first_name && u.first_name.toLowerCase().includes(searchTerm)) ||
+                (u.username && u.username.toLowerCase().includes(searchTerm))
+            ).slice(0, 20);
+            
+            listEl.innerHTML = filteredUsers.map(u => `
+                <div class="user-selector ${selectedUserId === u.telegram_id ? 'selected' : ''}" 
+                     onclick="selectUser('${u.telegram_id}')">
+                    <div style="width: 30px; height: 30px; background: rgba(255,215,0,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        ${u.first_name ? u.first_name[0] : '👤'}
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 700;">${u.first_name || u.username || 'ИГРОК'}</div>
+                        <div style="font-size: 0.8rem; opacity: 0.6;">${u.telegram_id}</div>
+                    </div>
+                    <div style="font-weight: 800; color: #ffd966;">${u.size} СМ</div>
+                </div>
+            `).join('');
+        }
+
+        window.searchUsers = function() {
+            renderUsersList();
+        };
+
+        window.selectUser = function(userId) {
+            selectedUserId = userId;
+            renderUsersList();
+            showUserModal('selected');
+        };
+
+        window.showUserModal = async function(type) {
+            let targetId;
+            if (type === 'self') {
+                targetId = String(user.id);
+            } else if (type === 'selected' && selectedUserId) {
+                targetId = selectedUserId;
+            } else {
+                alert('Выберите пользователя');
+                return;
+            }
+            
+            const targetUser = allUsers.find(u => u.telegram_id === targetId) || { telegram_id: targetId, first_name: 'Неизвестно', size: 0 };
+            
+            adminUserModalTitle.textContent = `👤 ${targetUser.first_name || 'ИГРОК'}`;
+            
+            adminUserModalContent.innerHTML = `
+                <div class="modal-info">
+                    ID: ${targetId}<br>
+                    ТЕКУЩИЙ РАЗМЕР: <span>${targetUser.size || 0} СМ</span>
+                </div>
+                
+                <h3 style="color: #ffd966; margin: 15px 0;">ИЗМЕНИТЬ РАЗМЕР</h3>
+                <input type="number" id="setSizeInput" class="modal-input" placeholder="НОВЫЙ РАЗМЕР" value="${targetUser.size || 0}">
+                
+                <div class="modal-buttons" style="margin-bottom: 20px;">
+                    <button class="modal-btn modal-btn-primary" onclick="setUserSize('${targetId}')">УСТАНОВИТЬ</button>
+                    <button class="modal-btn modal-btn-secondary" onclick="addToUserSize('${targetId}', 10)">+10</button>
+                    <button class="modal-btn modal-btn-secondary" onclick="addToUserSize('${targetId}', -10)">-10</button>
+                </div>
+                
+                <h3 style="color: #ffd966; margin: 15px 0;">УПРАВЛЕНИЕ</h3>
+                <div class="admin-grid">
+                    <button class="admin-btn" onclick="clearUser('${targetId}')">ОЧИСТИТЬ</button>
+                    <button class="admin-btn" onclick="banUser('${targetId}')">ЗАБАНИТЬ</button>
+                    <button class="admin-btn" onclick="unbanUser('${targetId}')">РАЗБАНИТЬ</button>
+                    <button class="admin-btn" onclick="resetUserCooldown('${targetId}')">СБРОСИТЬ КД</button>
                 </div>
             `;
+            
+            adminUserModal.style.display = 'flex';
+        };
+
+        window.closeAdminUserModal = function() {
+            adminUserModal.style.display = 'none';
+        };
+
+        window.setUserSize = async function(targetId) {
+            const newSize = parseInt(document.getElementById('setSizeInput').value);
+            if (isNaN(newSize)) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/admin/set_size`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        target_id: targetId,
+                        size: newSize
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert('Размер изменен');
+                    if (targetId === String(user.id)) {
+                        size = newSize;
+                        updateSize();
+                    }
+                    closeAdminUserModal();
+                    loadAdminPanel();
+                } else {
+                    alert(data.error || 'Ошибка');
+                }
+            } catch (e) {
+                alert('Ошибка соединения');
+            }
+        };
+
+        window.addToUserSize = async function(targetId, delta) {
+            try {
+                const targetUser = allUsers.find(u => u.telegram_id === targetId) || { size: 0 };
+                const newSize = Math.max(0, (targetUser.size || 0) + delta);
+                
+                const res = await fetch(`${API_URL}/api/admin/set_size`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        target_id: targetId,
+                        size: newSize
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert(`Размер изменен на ${delta > 0 ? '+' : ''}${delta}`);
+                    closeAdminUserModal();
+                    loadAdminPanel();
+                } else {
+                    alert(data.error || 'Ошибка');
+                }
+            } catch (e) {
+                alert('Ошибка соединения');
+            }
+        };
+
+        window.clearUser = async function(targetId) {
+            if (!confirm('Очистить размер пользователя?')) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/admin/clear_user`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        target_id: targetId
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert('Пользователь очищен');
+                    closeAdminUserModal();
+                    loadAdminPanel();
+                } else {
+                    alert(data.error || 'Ошибка');
+                }
+            } catch (e) {
+                alert('Ошибка соединения');
+            }
+        };
+
+        window.clearAllUsers = async function() {
+            if (!confirm('ОЧИСТИТЬ РАЗМЕР ВСЕМ ПОЛЬЗОВАТЕЛЯМ?')) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/admin/clear_all`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id)
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert('Все пользователи очищены');
+                    size = 0;
+                    updateSize();
+                    loadAdminPanel();
+                } else {
+                    alert(data.error || 'Ошибка');
+                }
+            } catch (e) {
+                alert('Ошибка соединения');
+            }
+        };
+
+        window.banUser = async function(targetId) {
+            if (!confirm('Забанить пользователя?')) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/admin/ban_user`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        target_id: targetId
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert('Пользователь забанен');
+                    closeAdminUserModal();
+                } else {
+                    alert(data.error || 'Ошибка');
+                }
+            } catch (e) {
+                alert('Ошибка соединения');
+            }
+        };
+
+        window.unbanUser = async function(targetId) {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/unban_user`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        target_id: targetId
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert('Пользователь разбанен');
+                    closeAdminUserModal();
+                } else {
+                    alert(data.error || 'Ошибка');
+                }
+            } catch (e) {
+                alert('Ошибка соединения');
+            }
+        };
+
+        window.resetUserCooldown = async function(targetId) {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/reset_all_cooldowns`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id)
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert('Кулдаун сброшен');
+                    closeAdminUserModal();
+                } else {
+                    alert(data.error || 'Ошибка');
+                }
+            } catch (e) {
+                alert('Ошибка соединения');
+            }
+        };
+
+        function renderPromoCodesList() {
+            const listEl = document.getElementById('promoCodesList');
+            if (!listEl) return;
+            
+            listEl.innerHTML = promoCodes.map(p => `
+                <div class="promocode-item">
+                    <div>
+                        <span class="promocode-code">${p.code}</span>
+                        <span style="margin-left: 10px; font-size: 0.8rem;">${p.used_count}/${p.max_uses}</span>
+                    </div>
+                    <div>
+                        <span style="color: #4caf50;">+${p.reward_size} СМ</span>
+                        ${p.is_active ? '✅' : '❌'}
+                    </div>
+                </div>
+            `).join('');
+            
+            if (promoCodes.length === 0) {
+                listEl.innerHTML = '<div style="text-align: center; padding: 10px;">НЕТ ПРОМОКОДОВ</div>';
+            }
         }
+
+        window.showPromoModal = function() {
+            adminPromoModal.style.display = 'flex';
+        };
+
+        window.closeAdminPromoModal = function() {
+            adminPromoModal.style.display = 'none';
+            document.getElementById('promoCodeInput').value = '';
+            document.getElementById('promoMaxUsesInput').value = '1';
+            document.getElementById('promoRewardInput').value = '5';
+        };
+
+        window.createPromoCode = async function() {
+            const code = document.getElementById('promoCodeInput').value.trim().toUpperCase();
+            const maxUses = parseInt(document.getElementById('promoMaxUsesInput').value);
+            const reward = parseInt(document.getElementById('promoRewardInput').value);
+            
+            if (!code) {
+                alert('Введите код');
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API_URL}/api/admin/promocode/create`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        code: code,
+                        max_uses: maxUses,
+                        reward_size: reward
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert('Промокод создан');
+                    closeAdminPromoModal();
+                    loadAdminPanel();
+                } else {
+                    alert(data.error || 'Ошибка');
+                }
+            } catch (e) {
+                alert('Ошибка соединения');
+            }
+        };
+
+        window.showTimerModal = function() {
+            document.getElementById('timerStatus').innerHTML = `
+                СТАТУС: ${globalTimerEnabled ? '✅ ВКЛ' : '❌ ВЫКЛ'}<br>
+                ДО ОКОНЧАНИЯ: ${timerDisplay.textContent}
+            `;
+            adminTimerModal.style.display = 'flex';
+        };
+
+        window.closeAdminTimerModal = function() {
+            adminTimerModal.style.display = 'none';
+        };
+
+        window.toggleTimer = async function() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/timer/toggle`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id)
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.enabled !== undefined) {
+                    globalTimerEnabled = data.enabled;
+                    alert(`Таймер ${globalTimerEnabled ? 'включен' : 'выключен'}`);
+                    closeAdminTimerModal();
+                }
+            } catch (e) {
+                alert('Ошибка соединения');
+            }
+        };
+
+        window.setTimerDays = async function() {
+            const days = parseInt(document.getElementById('timerDaysInput').value);
+            
+            try {
+                const res = await fetch(`${API_URL}/api/admin/timer/set`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        days: days
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.end_date) {
+                    globalTimerEndDate = data.end_date;
+                    alert(`Таймер установлен на ${days} дней`);
+                    closeAdminTimerModal();
+                }
+            } catch (e) {
+                alert('Ошибка соединения');
+            }
+        };
+
+        window.restartTimer = async function() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/timer/restart`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id)
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.enabled !== undefined) {
+                    globalTimerEnabled = data.enabled;
+                    globalTimerEndDate = data.end_date;
+                    alert('Таймер перезапущен на 30 дней');
+                }
+            } catch (e) {
+                alert('Ошибка соединения');
+            }
+        };
+
+        window.showCooldownModal = function() {
+            document.getElementById('cooldownStatus').innerHTML = `
+                ТЕКУЩИЙ КУЛДАУН: ${clickCooldown} СЕКУНД
+            `;
+            document.getElementById('cooldownInput').value = clickCooldown;
+            adminCooldownModal.style.display = 'flex';
+        };
+
+        window.closeAdminCooldownModal = function() {
+            adminCooldownModal.style.display = 'none';
+        };
+
+        window.setCooldown = async function() {
+            const seconds = parseInt(document.getElementById('cooldownInput').value);
+            
+            try {
+                const res = await fetch(`${API_URL}/api/admin/set_cooldown`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        seconds: seconds
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.cooldown) {
+                    clickCooldown = data.cooldown;
+                    alert(`Кулдаун установлен на ${clickCooldown} секунд`);
+                    closeAdminCooldownModal();
+                }
+            } catch (e) {
+                alert('Ошибка соединения');
+            }
+        };
+
+        window.resetAllCooldowns = async function() {
+            if (!confirm('Сбросить кулдаун всем пользователям?')) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/admin/reset_all_cooldowns`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id)
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert(`Кулдаун сброшен для ${data.count} пользователей`);
+                } else {
+                    alert(data.error || 'Ошибка');
+                }
+            } catch (e) {
+                alert('Ошибка соединения');
+            }
+        };
+
+        window.addAdmin = async function() {
+            const newAdminId = document.getElementById('newAdminId').value.trim();
+            if (!newAdminId) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/admin/add_admin`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        target_id: newAdminId
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert('Админ добавлен');
+                    loadAdminPanel();
+                } else {
+                    alert(data.error || 'Ошибка');
+                }
+            } catch (e) {
+                alert('Ошибка соединения');
+            }
+        };
+
+        window.removeAdmin = async function() {
+            const adminId = document.getElementById('newAdminId').value.trim();
+            if (!adminId) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/admin/remove_admin`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        target_id: adminId
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert('Админ удален');
+                    loadAdminPanel();
+                } else {
+                    alert(data.error || 'Ошибка');
+                }
+            } catch (e) {
+                alert('Ошибка соединения');
+            }
+        };
 
         // ========== ЛИДЕРБОРД ==========
         window.loadLeaderboard = async function() {
@@ -2092,8 +2873,48 @@
             loadClanData();
         };
 
+        async function showClanLeaderboard() {
+            const tabContent = document.getElementById('clanTabContent');
+            if (!tabContent) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/clan/leaderboard`);
+                const clans = await res.json();
+                
+                if (clans.length === 0) {
+                    tabContent.innerHTML = '<div style="text-align: center; padding: 20px;">ПОКА НЕТ КЛАНОВ</div>';
+                    return;
+                }
+                
+                let html = '';
+                clans.forEach((clan, i) => {
+                    html += `
+                        <div class="clan-leaderboard-item">
+                            <div class="clan-leaderboard-rank">${i + 1}</div>
+                            <div class="clan-leaderboard-info">
+                                <div style="display: flex; align-items: center;">
+                                    <span class="clan-leaderboard-name">${clan.name}</span>
+                                    <span class="clan-leaderboard-tag">${clan.tag}</span>
+                                </div>
+                                <div class="clan-leaderboard-stats">
+                                    <span>👥 ${clan.members_count}</span>
+                                    <span>📏 ${clan.total_size} СМ</span>
+                                    <span>👤 ${clan.owner_name}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                tabContent.innerHTML = html;
+            } catch (e) {
+                console.error('Clan leaderboard error:', e);
+                tabContent.innerHTML = '<div style="text-align: center; padding: 20px;">ОШИБКА ЗАГРУЗКИ</div>';
+            }
+        }
+
         async function loadClanLeaderboard() {
-            const listEl = document.getElementById('clanLeaderboardList') || document.getElementById('clanTabContent');
+            const listEl = document.getElementById('clanLeaderboardList');
             if (!listEl) return;
             
             try {
@@ -2108,7 +2929,7 @@
                 let html = '';
                 clans.forEach((clan, i) => {
                     html += `
-                        <div class="clan-leaderboard-item" onclick="showClanInfo(${clan.id})">
+                        <div class="clan-leaderboard-item">
                             <div class="clan-leaderboard-rank">${i + 1}</div>
                             <div class="clan-leaderboard-info">
                                 <div style="display: flex; align-items: center;">
@@ -2131,10 +2952,6 @@
                 listEl.innerHTML = '<div style="text-align: center; padding: 20px;">ОШИБКА ЗАГРУЗКИ</div>';
             }
         }
-
-        window.showClanInfo = function(clanId) {
-            alert('Функция в разработке');
-        };
 
         // ===== МОДАЛЬНЫЕ ОКНА =====
         window.showCreateClanModal = function() {
@@ -2275,6 +3092,31 @@
             }
         };
 
+        window.deleteClan = async function() {
+            if (!confirm('УДАЛИТЬ КЛАН? Это действие нельзя отменить.')) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/clan/leave`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id)
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    currentClan = null;
+                    loadClanData();
+                } else {
+                    alert(data.error || 'Ошибка');
+                }
+            } catch (e) {
+                alert('Ошибка соединения с сервером');
+            }
+        };
+
         // ========== ПОКУПКА СКИНА ==========
         window.buySkin = async function(skinId, requiredPrice) {
             if (size < requiredPrice) {
@@ -2324,7 +3166,11 @@
         window.shareReferralCode = function() {
             const code = document.getElementById('referralCode').textContent;
             const text = `🚀 ПРИСОЕДИНЯЙСЯ К ИГРЕ! МОЙ РЕФЕРАЛЬНЫЙ КОД: ${code}`;
-            tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(text)}`);
+            if (tg.openTelegramLink) {
+                tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(text)}`);
+            } else {
+                window.open(`https://t.me/share/url?url=${encodeURIComponent(text)}`);
+            }
         };
 
         window.getReferralLink = function() {
