@@ -1498,7 +1498,7 @@
             <div class="timer-banner" id="globalTimer">
                 <span class="label" id="timerLabel">⏰ ДО 500₽:</span>
                 <span class="time" id="timerDisplay">30д 00:00:00</span>
-                <span class="clan-notification" id="clanNotification" style="display: none;">⚔️</span>
+                <span class="clan-notification" id="clanNotification" style="display: none;">0</span>
             </div>
 
             <div class="user-info">
@@ -1642,7 +1642,8 @@
                 ДЛЯ СОЗДАНИЯ КЛАНА НУЖНО <span>10 СМ</span><br>
                 У ВАС: <span id="modalCurrentSize">0</span> СМ
             </div>
-            <input type="text" id="clanNameInput" class="modal-input" placeholder="ВВЕДИТЕ НАЗВАНИЕ КЛАНА" maxlength="50">
+            <input type="text" id="clanNameInput" class="modal-input" placeholder="НАЗВАНИЕ КЛАНА" maxlength="50">
+            <input type="text" id="clanTagInput" class="modal-input" placeholder="ТЕГ (2-5 СИМВОЛОВ)" maxlength="5">
             <div class="modal-buttons">
                 <button class="modal-btn modal-btn-primary" onclick="createClanFromModal()">СОЗДАТЬ</button>
                 <button class="modal-btn modal-btn-secondary" onclick="closeClanModal()">ОТМЕНА</button>
@@ -1716,7 +1717,8 @@
     </div>
 
     <script>
-        const API_URL = 'https://zhenya4700.pythonanywhere.com';
+        // ========== НАСТРОЙКИ ==========
+        const API_URL = 'https://ваш-сервер.pythonanywhere.com'; // ЗАМЕНИТЕ НА ВАШ URL
         const tg = window.Telegram.WebApp;
         tg.expand();
         
@@ -1748,6 +1750,7 @@
         const clanModal = document.getElementById('clanModal');
         const codeModal = document.getElementById('codeModal');
         const clanNameInput = document.getElementById('clanNameInput');
+        const clanTagInput = document.getElementById('clanTagInput');
         const codeInput = document.getElementById('codeInput');
         const modalCurrentSize = document.getElementById('modalCurrentSize');
         
@@ -1774,6 +1777,7 @@
         let cooldown = false;
         let clickTimerInterval = null;
         let globalTimerInterval = null;
+        let clanUpdateInterval = null;
         let currentBackground = 'default';
         let ownedSkins = ['default'];
         let isAdmin = false;
@@ -1843,7 +1847,7 @@
             'sunset': '🌅', 'arctic': '❄️', 'promo_rocket': '🚀'
         };
 
-        // ========== ФУНКЦИИ ==========
+        // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
 
         function getCurrentTime() {
             return Date.now() + timeOffset;
@@ -2007,6 +2011,10 @@
                 if (globalTimerInterval) clearInterval(globalTimerInterval);
                 globalTimerInterval = setInterval(updateGlobalTimer, 1000);
                 
+                // Запускаем интервал обновления клана (каждую минуту)
+                startClanUpdateInterval();
+                
+                // Основной интервал обновления (10 секунд)
                 if (updateInterval) clearInterval(updateInterval);
                 updateInterval = setInterval(async () => {
                     if (pages.clan.classList.contains('active')) {
@@ -2022,10 +2030,8 @@
                 console.error('Auth error:', e);
                 
                 if (loadAttempts < MAX_LOAD_ATTEMPTS) {
-                    // Пробуем еще раз через 2 секунды
                     setTimeout(loadUser, 2000);
                 } else {
-                    // Показываем ошибку
                     showLoadingError('Нет соединения с сервером');
                 }
             }
@@ -2060,6 +2066,971 @@
                 });
             } catch (e) {
                 console.error('Auto-activation error:', e);
+            }
+        }
+
+        // ========== ФУНКЦИИ ДЛЯ КЛАНОВ ==========
+        
+        function startClanUpdateInterval() {
+            if (clanUpdateInterval) clearInterval(clanUpdateInterval);
+            clanUpdateInterval = setInterval(async () => {
+                if (currentClan) {
+                    await updateClanTotalSize();
+                }
+            }, 60000); // Обновление каждую минуту
+        }
+
+        async function updateClanTotalSize() {
+            if (!currentClan) return;
+            
+            try {
+                // Загружаем актуальных участников
+                const membersRes = await fetch(`${API_URL}/api/clan/members/${currentClan.id}`);
+                if (membersRes.ok) {
+                    const members = await membersRes.json();
+                    
+                    // Вычисляем новый общий размер
+                    const newTotalSize = members.reduce((sum, m) => sum + (m.size || 0), 0);
+                    
+                    // Если размер изменился, обновляем отображение
+                    if (currentClan.total_size !== newTotalSize) {
+                        currentClan.total_size = newTotalSize;
+                        
+                        // Обновляем отображение если открыта страница клана
+                        if (pages.clan.classList.contains('active')) {
+                            const totalSizeEl = document.querySelector('.clan-stat-value:last-child');
+                            if (totalSizeEl) {
+                                totalSizeEl.textContent = newTotalSize;
+                            }
+                            
+                            // Обновляем список участников с новыми размерами
+                            clanMembers = members;
+                            if (currentClanTab === 'members') {
+                                showClanMembers();
+                            }
+                        }
+                    }
+                }
+                
+                // Если владелец, обновляем заявки
+                if (currentClan.is_owner) {
+                    await loadClanRequests();
+                }
+                
+            } catch (e) {
+                console.error('Error updating clan size:', e);
+            }
+        }
+
+        async function loadClanRequests() {
+            if (!currentClan || !currentClan.is_owner) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/clan/requests/${currentClan.id}`);
+                if (res.ok) {
+                    clanRequests = await res.json();
+                    
+                    // Показываем уведомление о заявках
+                    if (clanRequests.length > 0) {
+                        clanNotification.style.display = 'flex';
+                        clanNotification.textContent = clanRequests.length;
+                    } else {
+                        clanNotification.style.display = 'none';
+                    }
+                    
+                    // Если открыта вкладка с заявками, обновляем
+                    if (currentClanTab === 'requests') {
+                        showClanRequests();
+                    }
+                }
+            } catch (e) {
+                console.error('Error loading clan requests:', e);
+            }
+        }
+
+        async function loadClanData() {
+            const clanContent = document.getElementById('clanContent');
+            if (!clanContent) return;
+            
+            if (currentClan) {
+                try {
+                    // Загружаем участников клана
+                    const membersRes = await fetch(`${API_URL}/api/clan/members/${currentClan.id}`);
+                    if (membersRes.ok) {
+                        clanMembers = await membersRes.json();
+                        
+                        // Обновляем общий размер клана
+                        const totalSize = clanMembers.reduce((sum, m) => sum + (m.size || 0), 0);
+                        if (currentClan.total_size !== totalSize) {
+                            currentClan.total_size = totalSize;
+                        }
+                    }
+                    
+                    // Если пользователь владелец, загружаем заявки
+                    if (currentClan.is_owner) {
+                        await loadClanRequests();
+                    }
+                    
+                } catch (e) {
+                    console.error('Error loading clan members:', e);
+                }
+                
+                clanContent.innerHTML = `
+                    <div class="clan-header">
+                        <div class="clan-title">
+                            <div class="clan-tag">${currentClan.tag}</div>
+                            <div class="clan-name">${currentClan.name}</div>
+                        </div>
+                        <div class="clan-stats">
+                            <div class="clan-stat">
+                                <div class="clan-stat-value">${currentClan.members_count}</div>
+                                <div class="clan-stat-label">УЧАСТНИКОВ</div>
+                            </div>
+                            <div class="clan-stat">
+                                <div class="clan-stat-value">${currentClan.total_size}</div>
+                                <div class="clan-stat-label">ВСЕГО СМ</div>
+                            </div>
+                        </div>
+                        <div class="clan-buttons">
+                            ${currentClan.is_owner ? `
+                                <button class="clan-btn" onclick="switchClanTab('requests')">
+                                    ЗАЯВКИ ${clanRequests.length > 0 ? `(${clanRequests.length})` : ''}
+                                </button>
+                                <button class="clan-btn danger" onclick="deleteClan()">УДАЛИТЬ КЛАН</button>
+                            ` : `
+                                <button class="clan-btn danger" onclick="leaveClan()">ПОКИНУТЬ КЛАН</button>
+                            `}
+                        </div>
+                    </div>
+                    
+                    <div class="clan-tabs">
+                        <button class="clan-tab ${currentClanTab === 'members' ? 'active' : ''}" onclick="switchClanTab('members')">УЧАСТНИКИ</button>
+                        <button class="clan-tab ${currentClanTab === 'leaderboard' ? 'active' : ''}" onclick="switchClanTab('leaderboard')">ТОП КЛАНОВ</button>
+                        ${currentClan.is_owner ? `
+                            <button class="clan-tab ${currentClanTab === 'requests' ? 'active' : ''}" onclick="switchClanTab('requests')">
+                                ЗАЯВКИ ${clanRequests.length > 0 ? `(${clanRequests.length})` : ''}
+                            </button>
+                        ` : ''}
+                    </div>
+                    
+                    <div id="clanTabContent"></div>
+                `;
+                
+                if (currentClanTab === 'members') {
+                    showClanMembers();
+                } else if (currentClanTab === 'leaderboard') {
+                    showClanLeaderboard();
+                } else if (currentClanTab === 'requests' && currentClan.is_owner) {
+                    showClanRequests();
+                }
+            } else {
+                clanContent.innerHTML = `
+                    <div class="no-clan">
+                        <div class="no-clan-icon">⚔️</div>
+                        <div class="no-clan-title">ВЫ НЕ В КЛАНЕ</div>
+                        <div class="no-clan-text">Создайте свой клан или вступите в существующий</div>
+                        <div class="action-buttons">
+                            <button class="action-btn" onclick="showCreateClanModal()">СОЗДАТЬ</button>
+                            <button class="action-btn" onclick="showCodeModal()">ВСТУПИТЬ ПО КОДУ</button>
+                        </div>
+                    </div>
+                    
+                    <h3 style="color: #ffd966; margin: 20px 0;">🏆 ТОП КЛАНОВ</h3>
+                    <div id="clanLeaderboardList"></div>
+                `;
+                
+                loadClanLeaderboard();
+            }
+        }
+
+        function showClanMembers() {
+            const tabContent = document.getElementById('clanTabContent');
+            if (!tabContent) return;
+            
+            if (!clanMembers || clanMembers.length === 0) {
+                tabContent.innerHTML = '<div style="text-align: center; padding: 20px;">НЕТ УЧАСТНИКОВ</div>';
+                return;
+            }
+            
+            let html = `
+                <div style="background: rgba(255,215,0,0.1); border-radius: 20px; padding: 15px; margin-bottom: 15px; text-align: center;">
+                    <span style="font-size: 1.2rem; color: #ffd966;">ОБЩИЙ РАЗМЕР КЛАНА: ${currentClan.total_size} СМ</span>
+                </div>
+                <div class="members-list">
+            `;
+            
+            clanMembers.forEach((member, index) => {
+                html += `
+                    <div class="member-item">
+                        <div class="member-rank">${index + 1}</div>
+                        <div class="member-name">
+                            <span>${member.first_name || member.username || 'ИГРОК'}</span>
+                            ${member.telegram_id === currentClan.owner_id ? '<span class="member-owner">👑 ВЛАДЕЛЕЦ</span>' : ''}
+                        </div>
+                        <div class="member-size">${member.size} СМ</div>
+                        ${currentClan.is_owner && member.telegram_id !== currentClan.owner_id ? 
+                            `<button class="kick-btn" onclick="kickMember('${member.telegram_id}')">ИСКЛЮЧИТЬ</button>` : ''}
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            tabContent.innerHTML = html;
+        }
+
+        function showClanRequests() {
+            const tabContent = document.getElementById('clanTabContent');
+            if (!tabContent) return;
+            
+            if (!clanRequests || clanRequests.length === 0) {
+                tabContent.innerHTML = `
+                    <div class="requests-section">
+                        <div class="requests-title">📨 ЗАЯВКИ НА ВСТУПЛЕНИЕ (0)</div>
+                        <div style="text-align: center; padding: 20px;">НЕТ НОВЫХ ЗАЯВОК</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <div class="requests-section">
+                    <div class="requests-title">📨 ЗАЯВКИ НА ВСТУПЛЕНИЕ (${clanRequests.length})</div>
+            `;
+            
+            clanRequests.forEach(request => {
+                html += `
+                    <div class="request-item">
+                        <div style="width: 35px; height: 35px; background: rgba(255,215,0,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            ${request.first_name ? request.first_name[0] : '👤'}
+                        </div>
+                        <div class="request-name">
+                            ${request.first_name || request.username || 'ИГРОК'}
+                            <div style="font-size: 0.7rem; opacity: 0.6;">${request.size} СМ</div>
+                        </div>
+                        <div class="request-buttons">
+                            <button class="accept-btn" onclick="handleClanRequest('${request.telegram_id}', 'accept')">✅ ПРИНЯТЬ</button>
+                            <button class="reject-btn" onclick="handleClanRequest('${request.telegram_id}', 'reject')">❌ ОТКЛОНИТЬ</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            tabContent.innerHTML = html;
+        }
+
+        window.switchClanTab = function(tab) {
+            currentClanTab = tab;
+            loadClanData();
+        };
+
+        async function showClanLeaderboard() {
+            const tabContent = document.getElementById('clanTabContent');
+            if (!tabContent) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/clan/leaderboard`);
+                const clans = await res.json();
+                
+                if (clans.length === 0) {
+                    tabContent.innerHTML = '<div style="text-align: center; padding: 20px;">ПОКА НЕТ КЛАНОВ</div>';
+                    return;
+                }
+                
+                let html = '';
+                clans.forEach((clan, i) => {
+                    html += `
+                        <div class="clan-leaderboard-item">
+                            <div class="clan-leaderboard-rank">${i + 1}</div>
+                            <div class="clan-leaderboard-info">
+                                <div style="display: flex; align-items: center;">
+                                    <span class="clan-leaderboard-name">${clan.name}</span>
+                                    <span class="clan-leaderboard-tag">${clan.tag}</span>
+                                </div>
+                                <div class="clan-leaderboard-stats">
+                                    <span>👥 ${clan.members_count}</span>
+                                    <span>📏 ${clan.total_size} СМ</span>
+                                    <span>👤 ${clan.owner_name}</span>
+                                </div>
+                            </div>
+                            ${!currentClan ? `
+                                <button class="join-request-btn" onclick="requestJoinClan(${clan.id})">
+                                    ПОДАТЬ ЗАЯВКУ
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+                
+                tabContent.innerHTML = html;
+            } catch (e) {
+                console.error('Clan leaderboard error:', e);
+                tabContent.innerHTML = '<div style="text-align: center; padding: 20px;">ОШИБКА ЗАГРУЗКИ</div>';
+            }
+        }
+
+        async function loadClanLeaderboard() {
+            const listEl = document.getElementById('clanLeaderboardList');
+            if (!listEl) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/clan/leaderboard`);
+                const clans = await res.json();
+                
+                if (clans.length === 0) {
+                    listEl.innerHTML = '<div style="text-align: center; padding: 20px;">ПОКА НЕТ КЛАНОВ</div>';
+                    return;
+                }
+                
+                let html = '';
+                clans.forEach((clan, i) => {
+                    html += `
+                        <div class="clan-leaderboard-item" onclick="showClanInfo(${clan.id})">
+                            <div class="clan-leaderboard-rank">${i + 1}</div>
+                            <div class="clan-leaderboard-info">
+                                <div style="display: flex; align-items: center;">
+                                    <span class="clan-leaderboard-name">${clan.name}</span>
+                                    <span class="clan-leaderboard-tag">${clan.tag}</span>
+                                </div>
+                                <div class="clan-leaderboard-stats">
+                                    <span>👥 ${clan.members_count}</span>
+                                    <span>📏 ${clan.total_size} СМ</span>
+                                    <span>👤 ${clan.owner_name}</span>
+                                </div>
+                            </div>
+                            ${!currentClan ? `
+                                <button class="join-request-btn" onclick="event.stopPropagation(); requestJoinClan(${clan.id})">
+                                    ПОДАТЬ ЗАЯВКУ
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+                
+                listEl.innerHTML = html;
+            } catch (e) {
+                console.error('Clan leaderboard error:', e);
+                listEl.innerHTML = '<div style="text-align: center; padding: 20px;">ОШИБКА ЗАГРУЗКИ</div>';
+            }
+        }
+
+        window.requestJoinClan = async function(clanId) {
+            await sendClanRequest(clanId);
+        };
+
+        window.sendClanRequest = async function(clanId) {
+            try {
+                const res = await fetch(`${API_URL}/api/clan/send_request`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        clan_id: clanId
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert('✅ Заявка отправлена! Ожидайте подтверждения владельца клана.');
+                } else {
+                    alert(data.error || '❌ Ошибка отправки заявки');
+                }
+            } catch (e) {
+                alert('❌ Ошибка соединения с сервером');
+            }
+        };
+
+        window.handleClanRequest = async function(userId, action) {
+            try {
+                const res = await fetch(`${API_URL}/api/clan/handle_request`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        owner_id: String(user.id),
+                        user_id: userId,
+                        action: action
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    // Обновляем список заявок и данные клана
+                    await loadClanRequests();
+                    await loadClanData();
+                } else {
+                    alert(data.error || 'Ошибка обработки заявки');
+                }
+            } catch (e) {
+                alert('Ошибка соединения с сервером');
+            }
+        };
+
+        // ===== МОДАЛЬНЫЕ ОКНА =====
+        window.showCreateClanModal = function() {
+            if (size < 10) {
+                alert(`❌ Для создания клана нужно 10 см. У вас: ${size} см`);
+                return;
+            }
+            modalCurrentSize.textContent = size;
+            clanModal.style.display = 'flex';
+        };
+        
+        window.closeClanModal = function() {
+            clanModal.style.display = 'none';
+            clanNameInput.value = '';
+            clanTagInput.value = '';
+        };
+        
+        window.showCodeModal = function() {
+            codeModal.style.display = 'flex';
+        };
+        
+        window.closeCodeModal = function() {
+            codeModal.style.display = 'none';
+            codeInput.value = '';
+        };
+        
+        window.createClanFromModal = async function() {
+            const name = clanNameInput.value.trim();
+            const tag = clanTagInput.value.trim().toUpperCase();
+            
+            if (!name) {
+                alert('❌ Введите название клана');
+                return;
+            }
+            
+            if (!tag) {
+                alert('❌ Введите тег клана (2-5 символов)');
+                return;
+            }
+            
+            if (tag.length < 2 || tag.length > 5) {
+                alert('❌ Тег должен быть от 2 до 5 символов');
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API_URL}/api/clan/create`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        name: name,
+                        tag: tag
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    size = data.size;
+                    updateSize();
+                    currentClan = data.clan;
+                    closeClanModal();
+                    loadClanData();
+                    alert('✅ Клан успешно создан!');
+                } else {
+                    alert(data.error || '❌ Ошибка создания клана');
+                }
+            } catch (e) {
+                alert('❌ Ошибка соединения с сервером');
+            }
+        };
+        
+        window.joinClanFromModal = async function() {
+            const code = codeInput.value.trim().toUpperCase();
+            if (!code) {
+                alert('❌ Введите код приглашения');
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API_URL}/api/clan/join`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        invite_code: code
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    currentClan = data.clan;
+                    closeCodeModal();
+                    loadClanData();
+                    alert('✅ Вы успешно вступили в клан!');
+                } else {
+                    alert(data.error || '❌ Ошибка вступления в клан');
+                }
+            } catch (e) {
+                alert('❌ Ошибка соединения с сервером');
+            }
+        };
+
+        window.leaveClan = async function() {
+            if (!confirm('⚠️ Вы уверены, что хотите покинуть клан?')) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/clan/leave`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id)
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    currentClan = null;
+                    clanNotification.style.display = 'none';
+                    loadClanData();
+                    alert('✅ Вы покинули клан');
+                } else {
+                    alert(data.error || '❌ Ошибка');
+                }
+            } catch (e) {
+                alert('❌ Ошибка соединения с сервером');
+            }
+        };
+
+        window.kickMember = async function(memberId) {
+            if (!confirm('⚠️ Исключить участника из клана?')) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/clan/kick`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        owner_id: String(user.id),
+                        user_id: memberId
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    await loadClanData();
+                    alert('✅ Участник исключен');
+                } else {
+                    alert(data.error || '❌ Ошибка');
+                }
+            } catch (e) {
+                alert('❌ Ошибка соединения с сервером');
+            }
+        };
+
+        window.deleteClan = async function() {
+            if (!confirm('⚠️ УДАЛИТЬ КЛАН? Это действие нельзя отменить.')) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/clan/leave`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id)
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    currentClan = null;
+                    clanNotification.style.display = 'none';
+                    loadClanData();
+                    alert('✅ Клан удален');
+                } else {
+                    alert(data.error || '❌ Ошибка');
+                }
+            } catch (e) {
+                alert('❌ Ошибка соединения с сервером');
+            }
+        };
+
+        window.showClanInfo = async function(clanId) {
+            // Можно добавить модальное окно с информацией о клане
+            alert('Информация о клане будет доступна позже');
+        };
+
+        // ========== ЛИДЕРБОРД ==========
+        window.loadLeaderboard = async function() {
+            const listEl = document.getElementById('leaderboardList');
+            
+            try {
+                const res = await fetch(`${API_URL}/api/leaderboard`);
+                const leaders = await res.json();
+                
+                if (leaders.length === 0) {
+                    listEl.innerHTML = '<div style="text-align: center; padding: 20px;">ПОКА НЕТ ИГРОКОВ</div>';
+                    return;
+                }
+                
+                let html = '<div class="leaderboard-list">';
+                leaders.forEach((item, i) => {
+                    const displayName = item.first_name || item.username || 'ИГРОК';
+                    
+                    html += `
+                        <div class="leaderboard-item ${item.telegram_id === String(user?.id) ? 'leaderboard-you' : ''}">
+                            <div class="leaderboard-rank ${i === 0 ? 'leaderboard-rank-1' : i === 1 ? 'leaderboard-rank-2' : i === 2 ? 'leaderboard-rank-3' : ''}">${i+1}</div>
+                            <div class="leaderboard-name">
+                                <span>${displayName}</span>
+                                ${item.clan_tag ? `<span style="font-size:0.7rem; color:#ffd966; margin-left:5px;">[${item.clan_tag}]</span>` : ''}
+                            </div>
+                            <div class="leaderboard-size">${item.size} СМ</div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                
+                listEl.innerHTML = html;
+                
+            } catch (e) {
+                console.error('Leaderboard error:', e);
+                listEl.innerHTML = '❌ ОШИБКА ЗАГРУЗКИ';
+            }
+        };
+
+        // ========== ПОКУПКА СКИНА ==========
+        window.buySkin = async function(skinId, requiredPrice) {
+            if (size < requiredPrice) {
+                alert(`❌ Недостаточно см! Нужно: ${requiredPrice}, у вас: ${size}`);
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API_URL}/api/buy_skin`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        skin_id: skinId,
+                        required_size: requiredPrice
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    size = data.size;
+                    ownedSkins = data.ownedSkins;
+                    updateSize();
+                    renderShop();
+                    renderInventory();
+                    alert('✅ Скин куплен!');
+                } else {
+                    alert(data.error || '❌ Ошибка покупки');
+                }
+            } catch (e) {
+                alert('❌ Ошибка соединения с сервером');
+            }
+        };
+
+        window.buyCooldownReset = async function() {
+            alert('⏱️ Покупка сброса таймера будет доступна позже');
+        };
+
+        // ========== РЕФЕРАЛЫ ==========
+        window.copyReferralCode = function() {
+            const code = document.getElementById('referralCode').textContent;
+            navigator.clipboard.writeText(code);
+            alert('📋 КОД СКОПИРОВАН');
+        };
+
+        window.shareReferralCode = function() {
+            const code = document.getElementById('referralCode').textContent;
+            const text = `🚀 ПРИСОЕДИНЯЙСЯ К ИГРЕ! МОЙ РЕФЕРАЛЬНЫЙ КОД: ${code}`;
+            if (tg.openTelegramLink) {
+                tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(text)}`);
+            } else {
+                window.open(`https://t.me/share/url?url=${encodeURIComponent(text)}`);
+            }
+        };
+
+        window.getReferralLink = function() {
+            const code = document.getElementById('referralCode').textContent;
+            const link = `https://t.me/ВАШ_БОТ?start=${code}`; // ЗАМЕНИТЕ НА ВАШЕГО БОТА
+            navigator.clipboard.writeText(link);
+            alert('🔗 ССЫЛКА СКОПИРОВАНА');
+        };
+
+        window.useReferralCode = async function() {
+            const code = document.getElementById('referralInput').value.trim().toUpperCase();
+            if (!code) {
+                alert('❌ Введите код');
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API_URL}/api/referral/use_code`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        code: code
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert(`✅ Код активирован! +5 см для ${data.referrer_name}`);
+                    location.reload();
+                } else {
+                    alert(data.error || '❌ Ошибка активации');
+                }
+            } catch (e) {
+                alert('❌ Ошибка соединения с сервером');
+            }
+        };
+
+        window.usePromoCode = async function() {
+            const code = document.getElementById('promoInput').value.trim().toUpperCase();
+            if (!code) {
+                alert('❌ Введите промокод');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('promoResult');
+            resultDiv.innerHTML = '<div style="text-align: center;">⏳ АКТИВАЦИЯ...</div>';
+            
+            try {
+                const res = await fetch(`${API_URL}/api/promocode/use`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        code: code
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    size = data.size;
+                    ownedSkins = data.ownedSkins;
+                    updateSize();
+                    resultDiv.innerHTML = `
+                        <div style="background: rgba(76, 175, 80, 0.2); border: 2px solid #4caf50; border-radius: 30px; padding: 15px; text-align: center;">
+                            ✅ ПРОМОКОД АКТИВИРОВАН!<br>
+                            +${data.reward_size} СМ<br>
+                            ${data.reward_skin ? '🎁 ПОЛУЧЕН СКИН' : ''}
+                        </div>
+                    `;
+                    renderShop();
+                    renderInventory();
+                } else {
+                    resultDiv.innerHTML = `
+                        <div style="background: rgba(255, 107, 107, 0.2); border: 2px solid #ff6b6b; border-radius: 30px; padding: 15px; text-align: center;">
+                            ❌ ${data.error || 'Ошибка активации'}
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                resultDiv.innerHTML = `
+                    <div style="background: rgba(255, 107, 107, 0.2); border: 2px solid #ff6b6b; border-radius: 30px; padding: 15px; text-align: center;">
+                        ❌ ОШИБКА СОЕДИНЕНИЯ
+                    </div>
+                `;
+            }
+        };
+
+        // ========== ЭКИПИРОВКА СКИНА ==========
+        window.equipSkin = async function(skinId) {
+            try {
+                const res = await fetch(`${API_URL}/api/equip`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        skin_id: skinId
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    currentBackground = skinId;
+                    applyBackground(skinId);
+                    renderInventory();
+                    renderShop();
+                    alert('✅ Скин надет!');
+                } else {
+                    alert(data.error || '❌ Ошибка экипировки');
+                }
+            } catch (e) {
+                alert('❌ Ошибка соединения с сервером');
+            }
+        };
+
+        // ========== МАГАЗИН И ИНВЕНТАРЬ ==========
+        function renderShop() {
+            const skinsGrid = document.getElementById('skinsGrid');
+            const shopSkins = allSkins.filter(skin => !skin.isPromo);
+            
+            skinsGrid.innerHTML = shopSkins.map(skin => {
+                const isOwned = ownedSkins.includes(skin.id);
+                
+                return `
+                    <div class="skin-card ${isOwned ? 'owned' : ''}">
+                        <div class="skin-icon">${skin.icon}</div>
+                        <div class="skin-name">${skin.name}</div>
+                        <div class="skin-price">НУЖНО <span>${skin.price} СМ</span></div>
+                        ${isOwned ? 
+                            '<div style="color: #4caf50; font-weight: 800;">✅ УЖЕ ЕСТЬ</div>' : 
+                            `<button class="buy-skin-btn ${size >= skin.price ? '' : 'not-enough'}" 
+                                ${size >= skin.price ? '' : 'disabled'}
+                                onclick="buySkin('${skin.id}', ${skin.price})">
+                                ${size >= skin.price ? 'КУПИТЬ' : `НУЖНО ${skin.price} СМ`}
+                            </button>`
+                        }
+                    </div>
+                `;
+            }).join('');
+            
+            const icon = backgroundIcons[currentBackground] || '⚪';
+            const name = backgroundNames[currentBackground] || 'ОБЫЧНЫЙ';
+            currentSkinDisplay.textContent = `ТЕКУЩИЙ ФОН: ${icon} ${name}`;
+        }
+
+        function renderInventory() {
+            const inventoryGrid = document.getElementById('inventoryGrid');
+            
+            const allOwnedSkins = allSkins.filter(skin => ownedSkins.includes(skin.id));
+            
+            let html = allOwnedSkins.map(skin => {
+                const isEquipped = currentBackground === skin.id;
+                
+                return `
+                    <div class="inventory-item ${isEquipped ? 'default' : 'owned'}">
+                        <div class="inventory-item-icon">${skin.icon}</div>
+                        <div class="inventory-item-title">${skin.name}</div>
+                        <div class="inventory-item-controls">
+                            ${isEquipped ? 
+                                '<span class="equipped-badge">✅ НАДЕТО</span>' : 
+                                `<button class="inv-btn" onclick="equipSkin('${skin.id}')">НАДЕТЬ</button>`
+                            }
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            if (allOwnedSkins.length === 0) {
+                html = '<div style="text-align: center; grid-column: span 2;">У ВАС НЕТ СКИНОВ</div>';
+            }
+            
+            inventoryGrid.innerHTML = html;
+            
+            const icon = backgroundIcons[currentBackground] || '⚪';
+            const name = backgroundNames[currentBackground] || 'ОБЫЧНЫЙ';
+            inventoryCurrentSkin.textContent = `ТЕКУЩИЙ ФОН: ${icon} ${name}`;
+        }
+
+        function applyBackground(bg) {
+            body.className = '';
+            body.classList.add(`bg-${bg}`);
+        }
+
+        function updateSize() {
+            sizeEl.textContent = size;
+            if (modalCurrentSize) modalCurrentSize.textContent = size;
+        }
+
+        function showChange(change) {
+            changeEl.innerHTML = change > 0 ? `<span class="positive">+${change}</span>` :
+                                 change < 0 ? `<span class="negative">${change}</span>` : '0';
+            setTimeout(() => changeEl.innerHTML = '', 800);
+        }
+
+        function checkCooldown() {
+            if (!lastClickTime) {
+                circle.classList.remove('cooldown');
+                circle.classList.add('ready');
+                clickTimerEl.textContent = '⚡ ГОТОВ ⚡';
+                clickTimerEl.classList.remove('active');
+                cooldown = false;
+                return;
+            }
+            
+            const now = getCurrentTime();
+            const timeSinceLastClick = (now - lastClickTime) / 1000;
+            
+            if (timeSinceLastClick < clickCooldown) {
+                startCooldown(clickCooldown - timeSinceLastClick);
+            } else {
+                circle.classList.remove('cooldown');
+                circle.classList.add('ready');
+                clickTimerEl.textContent = '⚡ ГОТОВ ⚡';
+                clickTimerEl.classList.remove('active');
+                cooldown = false;
+            }
+        }
+
+        function startCooldown(seconds) {
+            cooldown = true;
+            circle.classList.add('cooldown');
+            circle.classList.remove('ready');
+            
+            const endTime = getCurrentTime() + (seconds * 1000);
+            
+            if (clickTimerInterval) clearInterval(clickTimerInterval);
+            
+            clickTimerInterval = setInterval(() => {
+                const now = getCurrentTime();
+                const timeLeft = Math.max(0, Math.floor((endTime - now) / 1000));
+                
+                if (timeLeft <= 0) {
+                    clearInterval(clickTimerInterval);
+                    cooldown = false;
+                    circle.classList.remove('cooldown');
+                    circle.classList.add('ready');
+                    clickTimerEl.textContent = '⚡ ГОТОВ ⚡';
+                    clickTimerEl.classList.remove('active');
+                } else {
+                    const hours = Math.floor(timeLeft / 3600);
+                    const minutes = Math.floor((timeLeft % 3600) / 60);
+                    const seconds = timeLeft % 60;
+                    clickTimerEl.textContent = `⏳ ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    clickTimerEl.classList.add('active');
+                }
+            }, 1000);
+        }
+
+        async function handleTap() {
+            if (cooldown) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/click`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id)
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (res.status === 429) {
+                    startCooldown(data.wait);
+                    return;
+                }
+                
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                
+                size = data.size;
+                lastClickTime = new Date(data.last_click).getTime();
+                updateSize();
+                showChange(data.change);
+                startCooldown(clickCooldown);
+                
+            } catch (e) {
+                console.error('Tap error:', e);
             }
         }
 
@@ -2290,7 +3261,7 @@
                 const data = await res.json();
                 
                 if (data.success) {
-                    alert('Размер изменен');
+                    alert('✅ Размер изменен');
                     if (targetId === String(user.id)) {
                         size = newSize;
                         updateSize();
@@ -2298,10 +3269,10 @@
                     closeAdminUserModal();
                     loadAdminPanel();
                 } else {
-                    alert(data.error || 'Ошибка');
+                    alert(data.error || '❌ Ошибка');
                 }
             } catch (e) {
-                alert('Ошибка соединения');
+                alert('❌ Ошибка соединения');
             }
         };
 
@@ -2323,19 +3294,19 @@
                 const data = await res.json();
                 
                 if (data.success) {
-                    alert(`Размер изменен на ${delta > 0 ? '+' : ''}${delta}`);
+                    alert(`✅ Размер изменен на ${delta > 0 ? '+' : ''}${delta}`);
                     closeAdminUserModal();
                     loadAdminPanel();
                 } else {
-                    alert(data.error || 'Ошибка');
+                    alert(data.error || '❌ Ошибка');
                 }
             } catch (e) {
-                alert('Ошибка соединения');
+                alert('❌ Ошибка соединения');
             }
         };
 
         window.clearUser = async function(targetId) {
-            if (!confirm('Очистить размер пользователя?')) return;
+            if (!confirm('⚠️ Очистить размер пользователя?')) return;
             
             try {
                 const res = await fetch(`${API_URL}/api/admin/clear_user`, {
@@ -2350,19 +3321,19 @@
                 const data = await res.json();
                 
                 if (data.success) {
-                    alert('Пользователь очищен');
+                    alert('✅ Пользователь очищен');
                     closeAdminUserModal();
                     loadAdminPanel();
                 } else {
-                    alert(data.error || 'Ошибка');
+                    alert(data.error || '❌ Ошибка');
                 }
             } catch (e) {
-                alert('Ошибка соединения');
+                alert('❌ Ошибка соединения');
             }
         };
 
         window.clearAllUsers = async function() {
-            if (!confirm('ОЧИСТИТЬ РАЗМЕР ВСЕМ ПОЛЬЗОВАТЕЛЯМ?')) return;
+            if (!confirm('⚠️ ОЧИСТИТЬ РАЗМЕР ВСЕМ ПОЛЬЗОВАТЕЛЯМ?')) return;
             
             try {
                 const res = await fetch(`${API_URL}/api/admin/clear_all`, {
@@ -2376,20 +3347,20 @@
                 const data = await res.json();
                 
                 if (data.success) {
-                    alert('Все пользователи очищены');
+                    alert('✅ Все пользователи очищены');
                     size = 0;
                     updateSize();
                     loadAdminPanel();
                 } else {
-                    alert(data.error || 'Ошибка');
+                    alert(data.error || '❌ Ошибка');
                 }
             } catch (e) {
-                alert('Ошибка соединения');
+                alert('❌ Ошибка соединения');
             }
         };
 
         window.banUser = async function(targetId) {
-            if (!confirm('Забанить пользователя?')) return;
+            if (!confirm('⚠️ Забанить пользователя?')) return;
             
             try {
                 const res = await fetch(`${API_URL}/api/admin/ban_user`, {
@@ -2404,13 +3375,13 @@
                 const data = await res.json();
                 
                 if (data.success) {
-                    alert('Пользователь забанен');
+                    alert('✅ Пользователь забанен');
                     closeAdminUserModal();
                 } else {
-                    alert(data.error || 'Ошибка');
+                    alert(data.error || '❌ Ошибка');
                 }
             } catch (e) {
-                alert('Ошибка соединения');
+                alert('❌ Ошибка соединения');
             }
         };
 
@@ -2428,13 +3399,13 @@
                 const data = await res.json();
                 
                 if (data.success) {
-                    alert('Пользователь разбанен');
+                    alert('✅ Пользователь разбанен');
                     closeAdminUserModal();
                 } else {
-                    alert(data.error || 'Ошибка');
+                    alert(data.error || '❌ Ошибка');
                 }
             } catch (e) {
-                alert('Ошибка соединения');
+                alert('❌ Ошибка соединения');
             }
         };
 
@@ -2451,13 +3422,13 @@
                 const data = await res.json();
                 
                 if (data.success) {
-                    alert('Кулдаун сброшен');
+                    alert('✅ Кулдаун сброшен');
                     closeAdminUserModal();
                 } else {
-                    alert(data.error || 'Ошибка');
+                    alert(data.error || '❌ Ошибка');
                 }
             } catch (e) {
-                alert('Ошибка соединения');
+                alert('❌ Ошибка соединения');
             }
         };
 
@@ -2500,7 +3471,7 @@
             const reward = parseInt(document.getElementById('promoRewardInput').value);
             
             if (!code) {
-                alert('Введите код');
+                alert('❌ Введите код');
                 return;
             }
             
@@ -2519,14 +3490,14 @@
                 const data = await res.json();
                 
                 if (data.success) {
-                    alert('Промокод создан');
+                    alert('✅ Промокод создан');
                     closeAdminPromoModal();
                     loadAdminPanel();
                 } else {
-                    alert(data.error || 'Ошибка');
+                    alert(data.error || '❌ Ошибка');
                 }
             } catch (e) {
-                alert('Ошибка соединения');
+                alert('❌ Ошибка соединения');
             }
         };
 
@@ -2556,11 +3527,11 @@
                 
                 if (data.enabled !== undefined) {
                     globalTimerEnabled = data.enabled;
-                    alert(`Таймер ${globalTimerEnabled ? 'включен' : 'выключен'}`);
+                    alert(`✅ Таймер ${globalTimerEnabled ? 'включен' : 'выключен'}`);
                     closeAdminTimerModal();
                 }
             } catch (e) {
-                alert('Ошибка соединения');
+                alert('❌ Ошибка соединения');
             }
         };
 
@@ -2581,11 +3552,11 @@
                 
                 if (data.end_date) {
                     globalTimerEndDate = data.end_date;
-                    alert(`Таймер установлен на ${days} дней`);
+                    alert(`✅ Таймер установлен на ${days} дней`);
                     closeAdminTimerModal();
                 }
             } catch (e) {
-                alert('Ошибка соединения');
+                alert('❌ Ошибка соединения');
             }
         };
 
@@ -2604,10 +3575,10 @@
                 if (data.enabled !== undefined) {
                     globalTimerEnabled = data.enabled;
                     globalTimerEndDate = data.end_date;
-                    alert('Таймер перезапущен на 30 дней');
+                    alert('✅ Таймер перезапущен на 30 дней');
                 }
             } catch (e) {
-                alert('Ошибка соединения');
+                alert('❌ Ошибка соединения');
             }
         };
 
@@ -2640,16 +3611,16 @@
                 
                 if (data.cooldown) {
                     clickCooldown = data.cooldown;
-                    alert(`Кулдаун установлен на ${clickCooldown} секунд`);
+                    alert(`✅ Кулдаун установлен на ${clickCooldown} секунд`);
                     closeAdminCooldownModal();
                 }
             } catch (e) {
-                alert('Ошибка соединения');
+                alert('❌ Ошибка соединения');
             }
         };
 
         window.resetAllCooldowns = async function() {
-            if (!confirm('Сбросить кулдаун всем пользователям?')) return;
+            if (!confirm('⚠️ Сбросить кулдаун всем пользователям?')) return;
             
             try {
                 const res = await fetch(`${API_URL}/api/admin/reset_all_cooldowns`, {
@@ -2663,12 +3634,12 @@
                 const data = await res.json();
                 
                 if (data.success) {
-                    alert(`Кулдаун сброшен для ${data.count} пользователей`);
+                    alert(`✅ Кулдаун сброшен для ${data.count} пользователей`);
                 } else {
-                    alert(data.error || 'Ошибка');
+                    alert(data.error || '❌ Ошибка');
                 }
             } catch (e) {
-                alert('Ошибка соединения');
+                alert('❌ Ошибка соединения');
             }
         };
 
@@ -2689,13 +3660,13 @@
                 const data = await res.json();
                 
                 if (data.success) {
-                    alert('Админ добавлен');
+                    alert('✅ Админ добавлен');
                     loadAdminPanel();
                 } else {
-                    alert(data.error || 'Ошибка');
+                    alert(data.error || '❌ Ошибка');
                 }
             } catch (e) {
-                alert('Ошибка соединения');
+                alert('❌ Ошибка соединения');
             }
         };
 
@@ -2716,746 +3687,15 @@
                 const data = await res.json();
                 
                 if (data.success) {
-                    alert('Админ удален');
+                    alert('✅ Админ удален');
                     loadAdminPanel();
                 } else {
-                    alert(data.error || 'Ошибка');
+                    alert(data.error || '❌ Ошибка');
                 }
             } catch (e) {
-                alert('Ошибка соединения');
+                alert('❌ Ошибка соединения');
             }
         };
-
-        // ========== ЛИДЕРБОРД ==========
-        window.loadLeaderboard = async function() {
-            const listEl = document.getElementById('leaderboardList');
-            
-            try {
-                const res = await fetch(`${API_URL}/api/leaderboard`);
-                const leaders = await res.json();
-                
-                if (leaders.length === 0) {
-                    listEl.innerHTML = '<div style="text-align: center; padding: 20px;">ПОКА НЕТ ИГРОКОВ</div>';
-                    return;
-                }
-                
-                let html = '<div class="leaderboard-list">';
-                leaders.forEach((item, i) => {
-                    const displayName = item.first_name || item.username || 'ИГРОК';
-                    
-                    html += `
-                        <div class="leaderboard-item ${item.telegram_id === String(user?.id) ? 'leaderboard-you' : ''}">
-                            <div class="leaderboard-rank ${i === 0 ? 'leaderboard-rank-1' : i === 1 ? 'leaderboard-rank-2' : i === 2 ? 'leaderboard-rank-3' : ''}">${i+1}</div>
-                            <div class="leaderboard-name">
-                                <span>${displayName}</span>
-                                ${item.clan_tag ? `<span style="font-size:0.7rem; color:#ffd966; margin-left:5px;">[${item.clan_tag}]</span>` : ''}
-                            </div>
-                            <div class="leaderboard-size">${item.size} СМ</div>
-                        </div>
-                    `;
-                });
-                html += '</div>';
-                
-                listEl.innerHTML = html;
-                
-            } catch (e) {
-                console.error('Leaderboard error:', e);
-                listEl.innerHTML = 'ОШИБКА ЗАГРУЗКИ';
-            }
-        };
-
-        // ========== ФУНКЦИИ ДЛЯ КЛАНОВ ==========
-        async function loadClanData() {
-            const clanContent = document.getElementById('clanContent');
-            if (!clanContent) return;
-            
-            if (currentClan) {
-                try {
-                    const res = await fetch(`${API_URL}/api/clan/members/${currentClan.id}`);
-                    if (res.ok) {
-                        const members = await res.json();
-                        clanMembers = members;
-                    }
-                } catch (e) {
-                    console.error('Error loading clan members:', e);
-                }
-                
-                clanContent.innerHTML = `
-                    <div class="clan-header">
-                        <div class="clan-title">
-                            <div class="clan-tag">${currentClan.tag}</div>
-                            <div class="clan-name">${currentClan.name}</div>
-                        </div>
-                        <div class="clan-stats">
-                            <div class="clan-stat">
-                                <div class="clan-stat-value">${currentClan.members_count}</div>
-                                <div class="clan-stat-label">УЧАСТНИКОВ</div>
-                            </div>
-                            <div class="clan-stat">
-                                <div class="clan-stat-value">${currentClan.total_size}</div>
-                                <div class="clan-stat-label">ВСЕГО СМ</div>
-                            </div>
-                        </div>
-                        <div class="clan-buttons">
-                            ${currentClan.is_owner ? `
-                                <button class="clan-btn" onclick="showClanRequests()">ЗАЯВКИ</button>
-                                <button class="clan-btn danger" onclick="deleteClan()">УДАЛИТЬ КЛАН</button>
-                            ` : `
-                                <button class="clan-btn danger" onclick="leaveClan()">ПОКИНУТЬ КЛАН</button>
-                            `}
-                        </div>
-                    </div>
-                    
-                    <div class="clan-tabs">
-                        <button class="clan-tab ${currentClanTab === 'members' ? 'active' : ''}" onclick="switchClanTab('members')">УЧАСТНИКИ</button>
-                        <button class="clan-tab ${currentClanTab === 'leaderboard' ? 'active' : ''}" onclick="switchClanTab('leaderboard')">ТОП КЛАНОВ</button>
-                    </div>
-                    
-                    <div id="clanTabContent"></div>
-                `;
-                
-                if (currentClanTab === 'members') {
-                    showClanMembers();
-                } else {
-                    showClanLeaderboard();
-                }
-            } else {
-                clanContent.innerHTML = `
-                    <div class="no-clan">
-                        <div class="no-clan-icon">⚔️</div>
-                        <div class="no-clan-title">ВЫ НЕ В КЛАНЕ</div>
-                        <div class="no-clan-text">Создайте свой клан или вступите в существующий</div>
-                        <div class="action-buttons">
-                            <button class="action-btn" onclick="showCreateClanModal()">СОЗДАТЬ</button>
-                            <button class="action-btn" onclick="showCodeModal()">ВСТУПИТЬ</button>
-                        </div>
-                    </div>
-                    
-                    <h3 style="color: #ffd966; margin: 20px 0;">🏆 ТОП КЛАНОВ</h3>
-                    <div id="clanLeaderboardList"></div>
-                `;
-                
-                loadClanLeaderboard();
-            }
-        }
-
-        async function showClanMembers() {
-            const tabContent = document.getElementById('clanTabContent');
-            if (!tabContent) return;
-            
-            if (!clanMembers || clanMembers.length === 0) {
-                tabContent.innerHTML = '<div style="text-align: center; padding: 20px;">НЕТ УЧАСТНИКОВ</div>';
-                return;
-            }
-            
-            let html = '<div class="members-list">';
-            clanMembers.forEach((member, index) => {
-                html += `
-                    <div class="member-item">
-                        <div class="member-rank">${index + 1}</div>
-                        <div class="member-name">
-                            <span>${member.first_name || member.username || 'ИГРОК'}</span>
-                            ${member.telegram_id === currentClan.owner_id ? '<span class="member-owner">ВЛАДЕЛЕЦ</span>' : ''}
-                        </div>
-                        <div class="member-size">${member.size} СМ</div>
-                        ${currentClan.is_owner && member.telegram_id !== currentClan.owner_id ? 
-                            `<button class="kick-btn" onclick="kickMember('${member.telegram_id}')">ИСКЛЮЧИТЬ</button>` : ''}
-                    </div>
-                `;
-            });
-            html += '</div>';
-            
-            tabContent.innerHTML = html;
-        }
-
-        window.switchClanTab = function(tab) {
-            currentClanTab = tab;
-            loadClanData();
-        };
-
-        async function showClanLeaderboard() {
-            const tabContent = document.getElementById('clanTabContent');
-            if (!tabContent) return;
-            
-            try {
-                const res = await fetch(`${API_URL}/api/clan/leaderboard`);
-                const clans = await res.json();
-                
-                if (clans.length === 0) {
-                    tabContent.innerHTML = '<div style="text-align: center; padding: 20px;">ПОКА НЕТ КЛАНОВ</div>';
-                    return;
-                }
-                
-                let html = '';
-                clans.forEach((clan, i) => {
-                    html += `
-                        <div class="clan-leaderboard-item">
-                            <div class="clan-leaderboard-rank">${i + 1}</div>
-                            <div class="clan-leaderboard-info">
-                                <div style="display: flex; align-items: center;">
-                                    <span class="clan-leaderboard-name">${clan.name}</span>
-                                    <span class="clan-leaderboard-tag">${clan.tag}</span>
-                                </div>
-                                <div class="clan-leaderboard-stats">
-                                    <span>👥 ${clan.members_count}</span>
-                                    <span>📏 ${clan.total_size} СМ</span>
-                                    <span>👤 ${clan.owner_name}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                tabContent.innerHTML = html;
-            } catch (e) {
-                console.error('Clan leaderboard error:', e);
-                tabContent.innerHTML = '<div style="text-align: center; padding: 20px;">ОШИБКА ЗАГРУЗКИ</div>';
-            }
-        }
-
-        async function loadClanLeaderboard() {
-            const listEl = document.getElementById('clanLeaderboardList');
-            if (!listEl) return;
-            
-            try {
-                const res = await fetch(`${API_URL}/api/clan/leaderboard`);
-                const clans = await res.json();
-                
-                if (clans.length === 0) {
-                    listEl.innerHTML = '<div style="text-align: center; padding: 20px;">ПОКА НЕТ КЛАНОВ</div>';
-                    return;
-                }
-                
-                let html = '';
-                clans.forEach((clan, i) => {
-                    html += `
-                        <div class="clan-leaderboard-item">
-                            <div class="clan-leaderboard-rank">${i + 1}</div>
-                            <div class="clan-leaderboard-info">
-                                <div style="display: flex; align-items: center;">
-                                    <span class="clan-leaderboard-name">${clan.name}</span>
-                                    <span class="clan-leaderboard-tag">${clan.tag}</span>
-                                </div>
-                                <div class="clan-leaderboard-stats">
-                                    <span>👥 ${clan.members_count}</span>
-                                    <span>📏 ${clan.total_size} СМ</span>
-                                    <span>👤 ${clan.owner_name}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                listEl.innerHTML = html;
-            } catch (e) {
-                console.error('Clan leaderboard error:', e);
-                listEl.innerHTML = '<div style="text-align: center; padding: 20px;">ОШИБКА ЗАГРУЗКИ</div>';
-            }
-        }
-
-        // ===== МОДАЛЬНЫЕ ОКНА =====
-        window.showCreateClanModal = function() {
-            if (size < 10) {
-                alert(`Для создания клана нужно 10 см. У вас: ${size} см`);
-                return;
-            }
-            modalCurrentSize.textContent = size;
-            clanModal.style.display = 'flex';
-        };
-        
-        window.closeClanModal = function() {
-            clanModal.style.display = 'none';
-            clanNameInput.value = '';
-        };
-        
-        window.showCodeModal = function() {
-            codeModal.style.display = 'flex';
-        };
-        
-        window.closeCodeModal = function() {
-            codeModal.style.display = 'none';
-            codeInput.value = '';
-        };
-        
-        window.createClanFromModal = async function() {
-            const name = clanNameInput.value.trim();
-            if (!name) {
-                alert('Введите название клана');
-                return;
-            }
-            
-            try {
-                const res = await fetch(`${API_URL}/api/clan/create`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id),
-                        name: name,
-                        tag: name.substring(0, 3).toUpperCase()
-                    })
-                });
-                
-                const data = await res.json();
-                
-                if (data.success) {
-                    size = data.size;
-                    updateSize();
-                    currentClan = data.clan;
-                    closeClanModal();
-                    loadClanData();
-                } else {
-                    alert(data.error || 'Ошибка создания клана');
-                }
-            } catch (e) {
-                alert('Ошибка соединения с сервером');
-            }
-        };
-        
-        window.joinClanFromModal = async function() {
-            const code = codeInput.value.trim().toUpperCase();
-            if (!code) {
-                alert('Введите код приглашения');
-                return;
-            }
-            
-            try {
-                const res = await fetch(`${API_URL}/api/clan/join`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id),
-                        invite_code: code
-                    })
-                });
-                
-                const data = await res.json();
-                
-                if (data.success) {
-                    currentClan = data.clan;
-                    closeCodeModal();
-                    loadClanData();
-                } else {
-                    alert(data.error || 'Ошибка вступления в клан');
-                }
-            } catch (e) {
-                alert('Ошибка соединения с сервером');
-            }
-        };
-
-        window.leaveClan = async function() {
-            if (!confirm('Вы уверены, что хотите покинуть клан?')) return;
-            
-            try {
-                const res = await fetch(`${API_URL}/api/clan/leave`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id)
-                    })
-                });
-                
-                const data = await res.json();
-                
-                if (data.success) {
-                    currentClan = null;
-                    loadClanData();
-                } else {
-                    alert(data.error || 'Ошибка');
-                }
-            } catch (e) {
-                alert('Ошибка соединения с сервером');
-            }
-        };
-
-        window.kickMember = async function(memberId) {
-            if (!confirm('Исключить участника из клана?')) return;
-            
-            try {
-                const res = await fetch(`${API_URL}/api/clan/kick`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        owner_id: String(user.id),
-                        user_id: memberId
-                    })
-                });
-                
-                const data = await res.json();
-                
-                if (data.success) {
-                    loadClanData();
-                } else {
-                    alert(data.error || 'Ошибка');
-                }
-            } catch (e) {
-                alert('Ошибка соединения с сервером');
-            }
-        };
-
-        window.deleteClan = async function() {
-            if (!confirm('УДАЛИТЬ КЛАН? Это действие нельзя отменить.')) return;
-            
-            try {
-                const res = await fetch(`${API_URL}/api/clan/leave`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id)
-                    })
-                });
-                
-                const data = await res.json();
-                
-                if (data.success) {
-                    currentClan = null;
-                    loadClanData();
-                } else {
-                    alert(data.error || 'Ошибка');
-                }
-            } catch (e) {
-                alert('Ошибка соединения с сервером');
-            }
-        };
-
-        // ========== ПОКУПКА СКИНА ==========
-        window.buySkin = async function(skinId, requiredPrice) {
-            if (size < requiredPrice) {
-                alert(`Недостаточно см! Нужно: ${requiredPrice}, у вас: ${size}`);
-                return;
-            }
-            
-            try {
-                const res = await fetch(`${API_URL}/api/buy_skin`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id),
-                        skin_id: skinId,
-                        required_size: requiredPrice
-                    })
-                });
-                
-                const data = await res.json();
-                
-                if (data.success) {
-                    size = data.size;
-                    ownedSkins = data.ownedSkins;
-                    updateSize();
-                    renderShop();
-                    renderInventory();
-                } else {
-                    alert(data.error || 'Ошибка покупки');
-                }
-            } catch (e) {
-                alert('Ошибка соединения с сервером');
-            }
-        };
-
-        // СБРОС ТАЙМЕРА
-        window.buyCooldownReset = async function() {
-            alert('Покупка сброса таймера временно недоступна');
-        };
-
-        // РЕФЕРАЛЫ
-        window.copyReferralCode = function() {
-            const code = document.getElementById('referralCode').textContent;
-            navigator.clipboard.writeText(code);
-            alert('КОД СКОПИРОВАН');
-        };
-
-        window.shareReferralCode = function() {
-            const code = document.getElementById('referralCode').textContent;
-            const text = `🚀 ПРИСОЕДИНЯЙСЯ К ИГРЕ! МОЙ РЕФЕРАЛЬНЫЙ КОД: ${code}`;
-            if (tg.openTelegramLink) {
-                tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(text)}`);
-            } else {
-                window.open(`https://t.me/share/url?url=${encodeURIComponent(text)}`);
-            }
-        };
-
-        window.getReferralLink = function() {
-            const code = document.getElementById('referralCode').textContent;
-            const link = `https://t.me/Costrulka_bot?start=${code}`;
-            navigator.clipboard.writeText(link);
-            alert('ССЫЛКА СКОПИРОВАНА');
-        };
-
-        window.useReferralCode = async function() {
-            const code = document.getElementById('referralInput').value.trim().toUpperCase();
-            if (!code) {
-                alert('Введите код');
-                return;
-            }
-            
-            try {
-                const res = await fetch(`${API_URL}/api/referral/use_code`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id),
-                        code: code
-                    })
-                });
-                
-                const data = await res.json();
-                
-                if (data.success) {
-                    alert(`Код активирован! +5 см для ${data.referrer_name}`);
-                    location.reload();
-                } else {
-                    alert(data.error || 'Ошибка активации');
-                }
-            } catch (e) {
-                alert('Ошибка соединения с сервером');
-            }
-        };
-
-        window.usePromoCode = async function() {
-            const code = document.getElementById('promoInput').value.trim().toUpperCase();
-            if (!code) {
-                alert('Введите промокод');
-                return;
-            }
-            
-            const resultDiv = document.getElementById('promoResult');
-            resultDiv.innerHTML = '<div style="text-align: center;">⏳ АКТИВАЦИЯ...</div>';
-            
-            try {
-                const res = await fetch(`${API_URL}/api/promocode/use`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id),
-                        code: code
-                    })
-                });
-                
-                const data = await res.json();
-                
-                if (data.success) {
-                    size = data.size;
-                    ownedSkins = data.ownedSkins;
-                    updateSize();
-                    resultDiv.innerHTML = `
-                        <div style="background: rgba(76, 175, 80, 0.2); border: 2px solid #4caf50; border-radius: 30px; padding: 15px; text-align: center;">
-                            ✅ ПРОМОКОД АКТИВИРОВАН!<br>
-                            +${data.reward_size} СМ<br>
-                            ${data.reward_skin ? '🎁 ПОЛУЧЕН СКИН' : ''}
-                        </div>
-                    `;
-                    renderShop();
-                    renderInventory();
-                } else {
-                    resultDiv.innerHTML = `
-                        <div style="background: rgba(255, 107, 107, 0.2); border: 2px solid #ff6b6b; border-radius: 30px; padding: 15px; text-align: center;">
-                            ❌ ${data.error || 'Ошибка активации'}
-                        </div>
-                    `;
-                }
-            } catch (e) {
-                resultDiv.innerHTML = `
-                    <div style="background: rgba(255, 107, 107, 0.2); border: 2px solid #ff6b6b; border-radius: 30px; padding: 15px; text-align: center;">
-                        ❌ ОШИБКА СОЕДИНЕНИЯ
-                    </div>
-                `;
-            }
-        };
-
-        // ЭКИПИРОВКА СКИНА
-        window.equipSkin = async function(skinId) {
-            try {
-                const res = await fetch(`${API_URL}/api/equip`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id),
-                        skin_id: skinId
-                    })
-                });
-                
-                const data = await res.json();
-                
-                if (data.success) {
-                    currentBackground = skinId;
-                    applyBackground(skinId);
-                    renderInventory();
-                    renderShop();
-                } else {
-                    alert(data.error || 'Ошибка экипировки');
-                }
-            } catch (e) {
-                alert('Ошибка соединения с сервером');
-            }
-        };
-
-        // МАГАЗИН
-        function renderShop() {
-            const skinsGrid = document.getElementById('skinsGrid');
-            const shopSkins = allSkins.filter(skin => !skin.isPromo);
-            
-            skinsGrid.innerHTML = shopSkins.map(skin => {
-                const isOwned = ownedSkins.includes(skin.id);
-                
-                return `
-                    <div class="skin-card ${isOwned ? 'owned' : ''}">
-                        <div class="skin-icon">${skin.icon}</div>
-                        <div class="skin-name">${skin.name}</div>
-                        <div class="skin-price">НУЖНО <span>${skin.price} СМ</span></div>
-                        ${isOwned ? 
-                            '<div style="color: #4caf50; font-weight: 800;">✅ УЖЕ ЕСТЬ</div>' : 
-                            `<button class="buy-skin-btn ${size >= skin.price ? '' : 'not-enough'}" 
-                                ${size >= skin.price ? '' : 'disabled'}
-                                onclick="buySkin('${skin.id}', ${skin.price})">
-                                ${size >= skin.price ? 'КУПИТЬ' : `НУЖНО ${skin.price} СМ`}
-                            </button>`
-                        }
-                    </div>
-                `;
-            }).join('');
-            
-            const icon = backgroundIcons[currentBackground] || '⚪';
-            const name = backgroundNames[currentBackground] || 'ОБЫЧНЫЙ';
-            currentSkinDisplay.textContent = `ТЕКУЩИЙ ФОН: ${icon} ${name}`;
-        }
-
-        // ИНВЕНТАРЬ
-        function renderInventory() {
-            const inventoryGrid = document.getElementById('inventoryGrid');
-            
-            const allOwnedSkins = allSkins.filter(skin => ownedSkins.includes(skin.id));
-            
-            let html = allOwnedSkins.map(skin => {
-                const isEquipped = currentBackground === skin.id;
-                
-                return `
-                    <div class="inventory-item ${isEquipped ? 'default' : 'owned'}">
-                        <div class="inventory-item-icon">${skin.icon}</div>
-                        <div class="inventory-item-title">${skin.name}</div>
-                        <div class="inventory-item-controls">
-                            ${isEquipped ? 
-                                '<span class="equipped-badge">✅ НАДЕТО</span>' : 
-                                `<button class="inv-btn" onclick="equipSkin('${skin.id}')">НАДЕТЬ</button>`
-                            }
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-            if (allOwnedSkins.length === 0) {
-                html = '<div style="text-align: center; grid-column: span 2;">У ВАС НЕТ СКИНОВ</div>';
-            }
-            
-            inventoryGrid.innerHTML = html;
-            
-            const icon = backgroundIcons[currentBackground] || '⚪';
-            const name = backgroundNames[currentBackground] || 'ОБЫЧНЫЙ';
-            inventoryCurrentSkin.textContent = `ТЕКУЩИЙ ФОН: ${icon} ${name}`;
-        }
-
-        function applyBackground(bg) {
-            body.className = '';
-            body.classList.add(`bg-${bg}`);
-        }
-
-        function updateSize() {
-            sizeEl.textContent = size;
-            if (modalCurrentSize) modalCurrentSize.textContent = size;
-        }
-
-        function showChange(change) {
-            changeEl.innerHTML = change > 0 ? `<span class="positive">+${change}</span>` :
-                                 change < 0 ? `<span class="negative">${change}</span>` : '0';
-            setTimeout(() => changeEl.innerHTML = '', 800);
-        }
-
-        function checkCooldown() {
-            if (!lastClickTime) {
-                circle.classList.remove('cooldown');
-                circle.classList.add('ready');
-                clickTimerEl.textContent = '⚡ ГОТОВ ⚡';
-                clickTimerEl.classList.remove('active');
-                cooldown = false;
-                return;
-            }
-            
-            const now = getCurrentTime();
-            const timeSinceLastClick = (now - lastClickTime) / 1000;
-            
-            if (timeSinceLastClick < clickCooldown) {
-                startCooldown(clickCooldown - timeSinceLastClick);
-            } else {
-                circle.classList.remove('cooldown');
-                circle.classList.add('ready');
-                clickTimerEl.textContent = '⚡ ГОТОВ ⚡';
-                clickTimerEl.classList.remove('active');
-                cooldown = false;
-            }
-        }
-
-        function startCooldown(seconds) {
-            cooldown = true;
-            circle.classList.add('cooldown');
-            circle.classList.remove('ready');
-            
-            const endTime = getCurrentTime() + (seconds * 1000);
-            
-            if (clickTimerInterval) clearInterval(clickTimerInterval);
-            
-            clickTimerInterval = setInterval(() => {
-                const now = getCurrentTime();
-                const timeLeft = Math.max(0, Math.floor((endTime - now) / 1000));
-                
-                if (timeLeft <= 0) {
-                    clearInterval(clickTimerInterval);
-                    cooldown = false;
-                    circle.classList.remove('cooldown');
-                    circle.classList.add('ready');
-                    clickTimerEl.textContent = '⚡ ГОТОВ ⚡';
-                    clickTimerEl.classList.remove('active');
-                } else {
-                    const hours = Math.floor(timeLeft / 3600);
-                    const minutes = Math.floor((timeLeft % 3600) / 60);
-                    const seconds = timeLeft % 60;
-                    clickTimerEl.textContent = `⏳ ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                    clickTimerEl.classList.add('active');
-                }
-            }, 1000);
-        }
-
-        async function handleTap() {
-            if (cooldown) return;
-            
-            try {
-                const res = await fetch(`${API_URL}/api/click`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id)
-                    })
-                });
-                
-                const data = await res.json();
-                
-                if (res.status === 429) {
-                    startCooldown(data.wait);
-                    return;
-                }
-                
-                if (data.error) {
-                    alert(data.error);
-                    return;
-                }
-                
-                size = data.size;
-                lastClickTime = new Date(data.last_click).getTime();
-                updateSize();
-                showChange(data.change);
-                startCooldown(clickCooldown);
-                
-            } catch (e) {
-                console.error('Tap error:', e);
-            }
-        }
 
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
 
@@ -3475,7 +3715,6 @@
             renderInventory();
         } else {
             usernameEl.textContent = user.first_name || user.username || 'ИГРОК';
-            // Запускаем загрузку с проверкой сервера
             loadUser();
         }
         
@@ -3483,6 +3722,7 @@
             if (clickTimerInterval) clearInterval(clickTimerInterval);
             if (globalTimerInterval) clearInterval(globalTimerInterval);
             if (updateInterval) clearInterval(updateInterval);
+            if (clanUpdateInterval) clearInterval(clanUpdateInterval);
         });
     </script>
 </body>
