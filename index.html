@@ -93,11 +93,35 @@
             flex-shrink: 0;
             text-align: center;
             border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .timer-banner .label { font-size: 0.9rem; opacity: 0.9; }
-        .timer-banner .time { font-size: 1.3rem; font-family: monospace; letter-spacing: 2px; font-weight: 800; }
+        .timer-banner .label { 
+            font-size: 0.9rem; 
+            opacity: 0.9;
+            margin-right: 5px;
+        }
+        .timer-banner .time { 
+            font-size: 1.2rem; 
+            font-family: monospace; 
+            letter-spacing: 1px; 
+            font-weight: 800;
+            white-space: nowrap;
+        }
         .timer-banner.disabled { background: linear-gradient(145deg, #95a5a6, #7f8c8d); box-shadow: 0 6px 0 #4a4a4a; }
+
+        .clan-notification {
+            background: #ff6b6b;
+            color: white;
+            border-radius: 20px;
+            padding: 3px 8px;
+            font-size: 0.7rem;
+            font-weight: 900;
+            margin-left: 5px;
+            border: 1px solid white;
+        }
 
         .user-info {
             display: flex;
@@ -421,6 +445,10 @@
             color: #ffd966;
             border: 1px solid #ffd966;
             font-weight: 600;
+            white-space: nowrap;
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
         .leaderboard-size {
@@ -511,13 +539,17 @@
         }
         
         .clan-tag {
-            font-size: 2rem;
+            font-size: 1.3rem;
             font-weight: 900;
             color: #ffd966;
             text-shadow: 0 2px 0 #b3540b;
             background: rgba(0,0,0,0.3);
             padding: 5px 15px;
             border-radius: 30px;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         
         .clan-name {
@@ -607,6 +639,7 @@
             transition: all 0.2s;
             text-align: center;
             font-weight: 700;
+            position: relative;
         }
         
         .clan-tab.active {
@@ -732,6 +765,10 @@
             font-weight: 800;
             color: #ffd966;
             font-size: 1.1rem;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         
         .clan-leaderboard-tag {
@@ -741,6 +778,10 @@
             background: rgba(255, 255, 255, 0.1);
             padding: 2px 8px;
             border-radius: 12px;
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         
         .clan-leaderboard-stats {
@@ -759,6 +800,7 @@
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s;
+            font-size: 0.8rem;
         }
         .join-request-btn:hover {
             background: rgba(76, 175, 80, 0.4);
@@ -1387,19 +1429,20 @@
         /* Уведомления */
         .notification-badge {
             position: absolute;
-            top: -5px;
-            right: -5px;
+            top: -8px;
+            right: -8px;
             background: #ff6b6b;
             color: white;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 0.7rem;
+            width: 22px;
+            height: 22px;
+            font-size: 0.8rem;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 900;
             border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
     </style>
 </head>
@@ -1411,17 +1454,18 @@
 
     <div class="app-wrapper" id="gameContent" style="display: none;">
         <div class="game-container">
-            <!-- Глобальный таймер -->
+            <!-- Глобальный таймер с кнопкой клана -->
             <div class="timer-banner" id="globalTimer">
-                <div class="label" id="timerLabel">⏰ До получения 500 рублей:</div>
-                <div class="time" id="timerDisplay">30д 00:00:00</div>
+                <span class="label" id="timerLabel">⏰ ДО 500₽:</span>
+                <span class="time" id="timerDisplay">30д 00:00:00</span>
+                <span class="clan-notification" id="clanNotification" style="display: none;">⚔️</span>
             </div>
 
             <div class="user-info">
-                <div class="rank-badge" id="rankDisplay">🏆 Место в рейтинге: ...</div>
+                <div class="rank-badge" id="rankDisplay">🏆 МЕСТО В РЕЙТИНГЕ: ...</div>
                 <div class="user-row">
                     <div class="avatar" id="avatar">👤</div>
-                    <div class="username" id="username">Загрузка...</div>
+                    <div class="username" id="username">ЗАГРУЗКА...</div>
                 </div>
             </div>
 
@@ -1431,7 +1475,7 @@
                     <h1>⚡ MEM-метр ⚡</h1>
                     <div class="tap-area" id="tapCircle"></div>
                     <div class="size-display" id="sizeValue">0</div>
-                    <div class="size-label">сантиметров</div>
+                    <div class="size-label">САНТИМЕТРОВ</div>
                     <div class="change-indicator" id="changeIndicator"></div>
                     <div class="timer-text" id="clickTimer">⚡ ГОТОВ ⚡</div>
                 </div>
@@ -1442,13 +1486,13 @@
                         <h2>🏆 ТОП ИГРОКОВ</h2>
                         <button class="refresh-btn" onclick="loadLeaderboard()">🔄</button>
                     </div>
-                    <div id="leaderboardList">Загрузка...</div>
+                    <div id="leaderboardList">ЗАГРУЗКА...</div>
                 </div>
 
                 <!-- Магазин -->
                 <div class="page" id="shopPage">
                     <h2>🏪 МАГАЗИН</h2>
-                    <div class="current-skin" id="currentSkinDisplay">Текущий фон: ОБЫЧНЫЙ</div>
+                    <div class="current-skin" id="currentSkinDisplay">ТЕКУЩИЙ ФОН: ОБЫЧНЫЙ</div>
                     
                     <!-- Сброс таймера за 35 звезд -->
                     <div class="cooldown-reset-card" id="cooldownResetBtn">
@@ -1456,7 +1500,7 @@
                             <div class="cooldown-reset-icon">⏱️</div>
                             <div class="cooldown-reset-text">
                                 <div class="cooldown-reset-title">СБРОС ТАЙМЕРА</div>
-                                <div class="cooldown-reset-desc">Мгновенный сброс ожидания</div>
+                                <div class="cooldown-reset-desc">МГНОВЕННЫЙ СБРОС ОЖИДАНИЯ</div>
                             </div>
                         </div>
                         <div class="cooldown-reset-price">⭐️ 35</div>
@@ -1469,7 +1513,7 @@
                 <!-- Инвентарь -->
                 <div class="page" id="inventoryPage">
                     <h2>🎒 ИНВЕНТАРЬ</h2>
-                    <div class="current-skin" id="inventoryCurrentSkin">Текущий фон: ОБЫЧНЫЙ</div>
+                    <div class="current-skin" id="inventoryCurrentSkin">ТЕКУЩИЙ ФОН: ОБЫЧНЫЙ</div>
                     <div class="inventory-grid" id="inventoryGrid"></div>
                 </div>
 
@@ -1623,6 +1667,7 @@
         const timerLabel = document.getElementById('timerLabel');
         const navMenu = document.getElementById('navMenu');
         const cooldownResetBtn = document.getElementById('cooldownResetBtn');
+        const clanNotification = document.getElementById('clanNotification');
         
         // Модальные окна
         const clanModal = document.getElementById('clanModal');
@@ -1666,6 +1711,7 @@
         let clanRequests = [];
         let currentClanTab = 'members';
         let updateInterval = null;
+        let lastRequestCheck = 0;
         
         // ВСЕ СКИНЫ
         const allSkins = [
@@ -1734,13 +1780,13 @@
         function updateGlobalTimer() {
             if (!globalTimerEnabled || !globalTimerEndDate) {
                 globalTimerEl.classList.add('disabled');
-                timerDisplay.textContent = '⏸️ ТАЙМЕР ОСТАНОВЛЕН';
-                timerLabel.textContent = '⏰ ГЛОБАЛЬНЫЙ ТАЙМЕР:';
+                timerDisplay.textContent = '⏸️ СТОП';
+                timerLabel.textContent = '⏰ ТАЙМЕР:';
                 return;
             }
             
             globalTimerEl.classList.remove('disabled');
-            timerLabel.textContent = '⏰ ДО ПОЛУЧЕНИЯ 500 ₽:';
+            timerLabel.textContent = '⏰ ДО 500₽:';
             
             const now = getCurrentTime();
             const endDate = new Date(globalTimerEndDate);
@@ -1756,7 +1802,7 @@
             const diff = endTimeUTC - now;
             
             if (diff <= 0) {
-                timerDisplay.textContent = '🎉 ПОЛУЧИТЬ 500 ₽';
+                timerDisplay.textContent = '🎉 ПОЛУЧИТЬ';
                 return;
             }
             
@@ -1766,7 +1812,7 @@
             const minutes = Math.floor((totalSeconds % 3600) / 60);
             const seconds = totalSeconds % 60;
             
-            timerDisplay.textContent = `${days}д ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            timerDisplay.textContent = `${days}д ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
         }
 
         window.switchPage = function(page) {
@@ -1877,11 +1923,16 @@
                 
                 // Запускаем автообновление данных клана каждые 10 секунд
                 if (updateInterval) clearInterval(updateInterval);
-                updateInterval = setInterval(() => {
+                updateInterval = setInterval(async () => {
                     if (pages.clan.classList.contains('active')) {
-                        loadClanData();
+                        await loadClanData();
                     }
-                    loadLeaderboard();
+                    await loadLeaderboard();
+                    
+                    // Проверяем новые заявки если мы владелец клана
+                    if (currentClan && currentClan.owner_id === String(user.id)) {
+                        await checkNewRequests();
+                    }
                 }, 10000);
                 
                 // Загружаем топ кланов
@@ -1891,6 +1942,25 @@
                 console.error('Auth error:', e);
                 loading.style.display = 'none';
                 gameContent.style.display = 'flex';
+            }
+        }
+
+        async function checkNewRequests() {
+            if (!currentClan) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/clan/requests/${currentClan.id}`);
+                const newRequests = await res.json();
+                
+                if (newRequests.length > clanRequests.length) {
+                    // Есть новые заявки
+                    clanNotification.style.display = 'inline';
+                    tg.HapticNotification.impactOccurred('medium');
+                }
+                
+                clanRequests = newRequests;
+            } catch (e) {
+                console.error('Check requests error:', e);
             }
         }
 
@@ -1981,7 +2051,7 @@
                 const res = await fetch(`${API_URL}/api/leaderboard/all`);
                 const leaders = await res.json();
                 const userRank = leaders.findIndex(l => l.telegram_id === String(user.id)) + 1;
-                rankDisplay.textContent = userRank > 0 ? `🏆 МЕСТО В РЕЙТИНГЕ: ${userRank}` : '🏆 МЕСТО В РЕЙТИНГЕ: ...';
+                rankDisplay.textContent = userRank > 0 ? `🏆 МЕСТО: ${userRank}` : '🏆 МЕСТО: ...';
             } catch (e) {
                 console.error('Rank error:', e);
             }
@@ -2059,6 +2129,13 @@
             try {
                 const res = await fetch(`${API_URL}/api/clan/requests/${clanId}`);
                 clanRequests = await res.json();
+                
+                // Показываем уведомление если есть новые заявки
+                if (currentClan && currentClan.owner_id === String(user.id) && clanRequests.length > 0) {
+                    clanNotification.style.display = 'inline';
+                } else {
+                    clanNotification.style.display = 'none';
+                }
             } catch (e) {
                 console.error('Error loading clan requests:', e);
             }
@@ -2089,8 +2166,8 @@
                             <span class="clan-leaderboard-rank">${i+1}</span>
                             <div class="clan-leaderboard-info">
                                 <div>
-                                    <span class="clan-leaderboard-name">${clan.name}</span>
-                                    <span class="clan-leaderboard-tag">[${clan.tag}]</span>
+                                    <span class="clan-leaderboard-name" title="${clan.name}">${clan.name}</span>
+                                    <span class="clan-leaderboard-tag" title="${clan.tag}">[${clan.tag}]</span>
                                 </div>
                                 <div class="clan-leaderboard-stats">
                                     <span>👥 ${clan.members_count}/20</span>
@@ -2108,7 +2185,7 @@
             clanContent.innerHTML = html;
         }
 
-        window.sendJoinRequest = function(clanId, clanName) {
+        window.sendJoinRequest = async function(clanId, clanName) {
             tg.showPopup({
                 title: '📝 ПОДАТЬ ЗАЯВКУ',
                 message: `Отправить заявку в клан "${clanName}"?\n\nВладелец клана рассмотрит вашу заявку.`,
@@ -2129,6 +2206,8 @@
                             })
                         });
                         
+                        const data = await res.json();
+                        
                         if (res.ok) {
                             tg.showPopup({
                                 title: '✅ ЗАЯВКА ОТПРАВЛЕНА',
@@ -2136,7 +2215,6 @@
                                 buttons: [{type: 'ok'}]
                             });
                         } else {
-                            const data = await res.json();
                             tg.showPopup({
                                 title: '❌ ОШИБКА',
                                 message: data.error || 'Не удалось отправить заявку',
@@ -2145,6 +2223,11 @@
                         }
                     } catch (e) {
                         console.error('Send request error:', e);
+                        tg.showPopup({
+                            title: '❌ ОШИБКА',
+                            message: 'Ошибка подключения к серверу',
+                            buttons: [{type: 'ok'}]
+                        });
                     }
                 }
             });
@@ -2157,7 +2240,7 @@
             let html = `
                 <div class="clan-header">
                     <div class="clan-title">
-                        <span class="clan-tag">[${currentClan.tag}]</span>
+                        <span class="clan-tag" title="${currentClan.tag}">[${currentClan.tag}]</span>
                         <span class="clan-name">${currentClan.name}</span>
                     </div>
                     <div class="clan-stats">
@@ -2180,9 +2263,16 @@
                 </div>
                 
                 <div class="clan-tabs">
-                    <div class="clan-tab ${currentClanTab === 'members' ? 'active' : ''}" onclick="switchClanTab('members')">👥 УЧАСТНИКИ</div>
-                    <div class="clan-tab ${currentClanTab === 'requests' ? 'active' : ''}" onclick="switchClanTab('requests')">📝 ЗАЯВКИ ${isOwner && clanRequests.length > 0 ? '<span class="notification-badge" style="position: relative; top: -10px;">'+clanRequests.length+'</span>' : ''}</div>
-                    <div class="clan-tab ${currentClanTab === 'leaderboard' ? 'active' : ''}" onclick="switchClanTab('leaderboard')">🏆 ТОП КЛАНОВ</div>
+                    <div class="clan-tab ${currentClanTab === 'members' ? 'active' : ''}" onclick="switchClanTab('members')">
+                        👥 УЧАСТНИКИ
+                    </div>
+                    <div class="clan-tab ${currentClanTab === 'requests' ? 'active' : ''}" onclick="switchClanTab('requests')">
+                        📝 ЗАЯВКИ
+                        ${isOwner && clanRequests.length > 0 ? '<span class="notification-badge">'+clanRequests.length+'</span>' : ''}
+                    </div>
+                    <div class="clan-tab ${currentClanTab === 'leaderboard' ? 'active' : ''}" onclick="switchClanTab('leaderboard')">
+                        🏆 ТОП КЛАНОВ
+                    </div>
                 </div>
                 
                 <div id="clanTabContent"></div>
@@ -2206,20 +2296,24 @@
             
             let html = `<div class="members-list">`;
             
-            clanMembers.forEach((member, i) => {
-                const isMemberOwner = member.telegram_id === currentClan.owner_id;
-                html += `
-                    <div class="member-item">
-                        <span class="member-rank">${i+1}</span>
-                        <span class="member-name">${member.first_name || member.username || 'ИГРОК'}</span>
-                        <span class="member-size">${member.size} СМ</span>
-                        ${isMemberOwner ? '<span class="member-owner">👑 ВЛАДЕЛЕЦ</span>' : ''}
-                        ${isOwner && !isMemberOwner ? 
-                            `<button class="kick-btn" onclick="kickMember('${member.telegram_id}')">🔨 КИКНУТЬ</button>` : 
-                            ''}
-                    </div>
-                `;
-            });
+            if (clanMembers.length === 0) {
+                html += `<p style="text-align: center; opacity: 0.7;">НЕТ УЧАСТНИКОВ</p>`;
+            } else {
+                clanMembers.forEach((member, i) => {
+                    const isMemberOwner = member.telegram_id === currentClan.owner_id;
+                    html += `
+                        <div class="member-item">
+                            <span class="member-rank">${i+1}</span>
+                            <span class="member-name">${member.first_name || member.username || 'ИГРОК'}</span>
+                            <span class="member-size">${member.size} СМ</span>
+                            ${isMemberOwner ? '<span class="member-owner">👑</span>' : ''}
+                            ${isOwner && !isMemberOwner ? 
+                                `<button class="kick-btn" onclick="kickMember('${member.telegram_id}')">🔨 КИКНУТЬ</button>` : 
+                                ''}
+                        </div>
+                    `;
+                });
+            }
             
             html += `</div>`;
             tabContent.innerHTML = html;
@@ -2276,7 +2370,14 @@
                         message: action === 'accept' ? 'Новый участник в клане!' : 'Заявка отклонена',
                         buttons: [{type: 'ok'}]
                     });
-                    loadClanData();
+                    
+                    // Обновляем данные
+                    await loadClanData();
+                    
+                    // Убираем уведомление если заявок больше нет
+                    if (clanRequests.length === 0) {
+                        clanNotification.style.display = 'none';
+                    }
                 }
             } catch (e) {
                 console.error('Handle request error:', e);
@@ -2302,7 +2403,7 @@
                         message: 'Игрок удален из клана',
                         buttons: [{type: 'ok'}]
                     });
-                    loadClanData();
+                    await loadClanData();
                 }
             } catch (e) {
                 console.error('Kick error:', e);
@@ -2314,31 +2415,43 @@
             
             let html = `<div class="members-list">`;
             
-            clanLeaderboard.forEach((clan, i) => {
-                html += `
-                    <div class="clan-leaderboard-item" ${clan.id !== currentClan.id ? 'onclick="sendJoinRequest(' + clan.id + ', \'' + clan.name + '\')"' : ''}>
-                        <span class="clan-leaderboard-rank">${i+1}</span>
-                        <div class="clan-leaderboard-info">
-                            <div>
-                                <span class="clan-leaderboard-name">${clan.name}</span>
-                                <span class="clan-leaderboard-tag">[${clan.tag}]</span>
-                                ${clan.id === currentClan.id ? ' (ВАШ)' : ''}
+            if (clanLeaderboard.length === 0) {
+                html += `<p style="text-align: center; opacity: 0.7;">ПОКА НЕТ КЛАНОВ</p>`;
+            } else {
+                clanLeaderboard.forEach((clan, i) => {
+                    html += `
+                        <div class="clan-leaderboard-item" onclick="showClanDetails(${clan.id})">
+                            <span class="clan-leaderboard-rank">${i+1}</span>
+                            <div class="clan-leaderboard-info">
+                                <div>
+                                    <span class="clan-leaderboard-name" title="${clan.name}">${clan.name}</span>
+                                    <span class="clan-leaderboard-tag" title="${clan.tag}">[${clan.tag}]</span>
+                                    ${clan.id === currentClan?.id ? ' (ВАШ)' : ''}
+                                </div>
+                                <div class="clan-leaderboard-stats">
+                                    <span>👥 ${clan.members_count}/20</span>
+                                    <span>📏 ${clan.total_size} СМ</span>
+                                </div>
                             </div>
-                            <div class="clan-leaderboard-stats">
-                                <span>👥 ${clan.members_count}/20</span>
-                                <span>📏 ${clan.total_size} СМ</span>
-                            </div>
+                            ${clan.id !== currentClan?.id ? 
+                                '<button class="join-request-btn" onclick="event.stopPropagation(); sendJoinRequest(' + clan.id + ', \'' + clan.name + '\')">📝 ЗАЯВКА</button>' : 
+                                ''}
                         </div>
-                        ${clan.id !== currentClan.id ? 
-                            '<button class="join-request-btn" onclick="event.stopPropagation(); sendJoinRequest(' + clan.id + ', \'' + clan.name + '\')">📝 ЗАЯВКА</button>' : 
-                            ''}
-                    </div>
-                `;
-            });
+                    `;
+                });
+            }
             
             html += `</div>`;
             tabContent.innerHTML = html;
         }
+
+        window.showClanDetails = function(clanId) {
+            tg.showPopup({
+                title: 'ℹ️ ИНФОРМАЦИЯ',
+                message: 'Чтобы вступить, нажмите кнопку "ЗАЯВКА"',
+                buttons: [{type: 'ok'}]
+            });
+        };
 
         window.switchClanTab = function(tab) {
             currentClanTab = tab;
@@ -2375,30 +2488,30 @@
             codeModal.style.display = 'none';
         };
         
-window.createClanFromModal = function() {
-    const name = clanNameInput.value.trim();
-    
-    if (!name) {
-        tg.showPopup({
-            title: '❌ ОШИБКА',
-            message: 'ВВЕДИТЕ НАЗВАНИЕ КЛАНА',
-            buttons: [{type: 'ok'}]
-        });
-        return;
-    }
-    
-    if (name.length < 3) {
-        tg.showPopup({
-            title: '❌ ОШИБКА',
-            message: 'НАЗВАНИЕ ДОЛЖНО БЫТЬ НЕ МЕНЕЕ 3 СИМВОЛОВ',
-            buttons: [{type: 'ok'}]
-        });
-        return;
-    }
-    
-    // Используем название как name, а тег делаем таким же
-    createClan(name, name);
-};
+        window.createClanFromModal = function() {
+            const name = clanNameInput.value.trim();
+            
+            if (!name) {
+                tg.showPopup({
+                    title: '❌ ОШИБКА',
+                    message: 'ВВЕДИТЕ НАЗВАНИЕ КЛАНА',
+                    buttons: [{type: 'ok'}]
+                });
+                return;
+            }
+            
+            if (name.length < 3) {
+                tg.showPopup({
+                    title: '❌ ОШИБКА',
+                    message: 'НАЗВАНИЕ ДОЛЖНО БЫТЬ НЕ МЕНЕЕ 3 СИМВОЛОВ',
+                    buttons: [{type: 'ok'}]
+                });
+                return;
+            }
+            
+            // Используем название как name, а тег делаем таким же
+            createClan(name, name);
+        };
         
         window.joinClanFromModal = function() {
             const code = codeInput.value.trim().toUpperCase();
@@ -2415,58 +2528,58 @@ window.createClanFromModal = function() {
             joinClan(code);
         };
 
-window.createClan = async function(name, tag) {
-    closeClanModal();
-    
-    try {
-        console.log('Sending clan data:', { name, tag }); // Для отладки
-        
-        const res = await fetch(`${API_URL}/api/clan/create`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                telegram_id: String(user.id),
-                name: name,
-                tag: tag  // tag = name (полное название клана)
-            })
-        });
-        
-        const data = await res.json();
-        console.log('Server response:', data); // Для отладки
-        
-        if (res.ok) {
-            size = data.size;
-            updateSize();
-            tg.showPopup({
-                title: '✅ КЛАН СОЗДАН!',
-                message: `КОД ДЛЯ ПРИГЛАШЕНИЯ: ${data.clan.invite_code}`,
-                buttons: [{type: 'ok'}]
-            });
-            loadUser();
-            switchPage('clan');
-        } else if (res.status === 402) {
-            tg.showPopup({
-                title: '❌ НЕДОСТАТОЧНО РАЗМЕРА',
-                message: `НУЖНО ${data.required} СМ, А У ВАС ${data.current} СМ`,
-                buttons: [{type: 'ok'}]
-            });
-        } else {
-            tg.showPopup({
-                title: '❌ ОШИБКА',
-                message: data.error || 'НЕИЗВЕСТНАЯ ОШИБКА',
-                buttons: [{type: 'ok'}]
-            });
-        }
-        
-    } catch (e) {
-        console.error('Create clan error:', e);
-        tg.showPopup({
-            title: '❌ ОШИБКА',
-            message: 'НЕ УДАЛОСЬ ПОДКЛЮЧИТЬСЯ К СЕРВЕРУ',
-            buttons: [{type: 'ok'}]
-        });
-    }
-};
+        window.createClan = async function(name, tag) {
+            closeClanModal();
+            
+            try {
+                console.log('Sending clan data:', { name, tag });
+                
+                const res = await fetch(`${API_URL}/api/clan/create`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        telegram_id: String(user.id),
+                        name: name,
+                        tag: tag
+                    })
+                });
+                
+                const data = await res.json();
+                console.log('Server response:', data);
+                
+                if (res.ok) {
+                    size = data.size;
+                    updateSize();
+                    tg.showPopup({
+                        title: '✅ КЛАН СОЗДАН!',
+                        message: `КОД ДЛЯ ПРИГЛАШЕНИЯ: ${data.clan.invite_code}`,
+                        buttons: [{type: 'ok'}]
+                    });
+                    loadUser();
+                    switchPage('clan');
+                } else if (res.status === 402) {
+                    tg.showPopup({
+                        title: '❌ НЕДОСТАТОЧНО РАЗМЕРА',
+                        message: `НУЖНО ${data.required} СМ, А У ВАС ${data.current} СМ`,
+                        buttons: [{type: 'ok'}]
+                    });
+                } else {
+                    tg.showPopup({
+                        title: '❌ ОШИБКА',
+                        message: data.error || 'НЕИЗВЕСТНАЯ ОШИБКА',
+                        buttons: [{type: 'ok'}]
+                    });
+                }
+                
+            } catch (e) {
+                console.error('Create clan error:', e);
+                tg.showPopup({
+                    title: '❌ ОШИБКА',
+                    message: 'НЕ УДАЛОСЬ ПОДКЛЮЧИТЬСЯ К СЕРВЕРУ',
+                    buttons: [{type: 'ok'}]
+                });
+            }
+        };
 
         window.joinClan = async function(code) {
             closeCodeModal();
@@ -2998,7 +3111,7 @@ window.createClan = async function(name, tag) {
                 let html = '';
                 leaders.forEach((item, i) => {
                     const displayName = item.first_name || item.username || 'ИГРОК';
-                    const clanTag = item.clan_tag ? `<span class="clan-tag-in-leaderboard">[${item.clan_tag}]</span>` : '';
+                    const clanTag = item.clan_tag ? `<span class="clan-tag-in-leaderboard" title="${item.clan_tag}">[${item.clan_tag}]</span>` : '';
                     
                     html += `
                         <div class="leaderboard-item ${user && item.telegram_id === String(user.id) ? 'leaderboard-you' : ''}">
@@ -3014,13 +3127,15 @@ window.createClan = async function(name, tag) {
                 if (!leaders.some(l => l.telegram_id === String(user.id)) && allLeaders.length > 0) {
                     const userRank = allLeaders.findIndex(l => l.telegram_id === String(user.id)) + 1;
                     if (userRank > 0) {
+                        const userClanTag = currentClan ? `<span class="clan-tag-in-leaderboard" title="${currentClan.tag}">[${currentClan.tag}]</span>` : '';
+                        
                         html += `
                             <div class="leaderboard-divider">
                                 <span>ВАШЕ МЕСТО</span>
                             </div>
                             <div class="your-rank-item">
                                 <div class="leaderboard-rank">${userRank}</div>
-                                <div class="leaderboard-name">${user.first_name || user.username || 'ИГРОК'}</div>
+                                <div class="leaderboard-name">${user.first_name || user.username || 'ИГРОК'} ${userClanTag}</div>
                                 <div class="leaderboard-size">${size} СМ</div>
                                 <a href="tg://user?id=${user.id}" class="profile-btn">👤</a>
                             </div>
@@ -3495,4 +3610,3 @@ window.createClan = async function(name, tag) {
     </script>
 </body>
 </html>
-
