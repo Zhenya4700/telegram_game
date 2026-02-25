@@ -1719,13 +1719,24 @@
     <script>
         // ========== НАСТРОЙКИ ==========
         const API_URL = 'https://ваш-сервер.pythonanywhere.com'; // ЗАМЕНИТЕ НА ВАШ URL
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        
-        const startParam = tg.initDataUnsafe?.start_param || '';
-        console.log('Start param:', startParam);
-        
-        const user = tg.initDataUnsafe?.user;
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+const startParam = tg.initDataUnsafe?.start_param || '';
+console.log('Start param:', startParam);
+
+// ========== ТЕСТОВЫЙ РЕЖИМ ==========
+// Раскомментируйте для теста в браузере
+const user = {
+    id: 1234567898765432,
+    first_name: "ТЕСТ",
+    username: "test_user"
+};
+
+// Закомментируйте эту строку для теста
+// const user = tg.initDataUnsafe?.user;
+
+console.log('👤 Тестовый пользователь:', user);
         
         // Элементы
         const body = document.getElementById('body');
@@ -3727,3 +3738,4 @@
     </script>
 </body>
 </html>
+
