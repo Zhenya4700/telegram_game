@@ -206,8 +206,39 @@
         .page { display: none; flex: 1; flex-direction: column; align-items: center; justify-content: flex-start; }
         .page.active { display: flex; }
 
-        h1 { font-size: 2rem; margin: 5px 0; background: linear-gradient(135deg, #ffd966, #ffaa00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center; font-weight: 900; text-shadow: 0 2px 5px rgba(0,0,0,0.3); }
-        h2 { font-size: 1.5rem; margin-bottom: 15px; color: #ffd966; text-align: center; width: 100%; font-weight: 800; text-shadow: 0 2px 0 #b3540b; }
+        .game-title {
+            font-size: 2rem;
+            margin: 5px 0;
+            background: linear-gradient(135deg, #ffd966, #ffaa00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            font-weight: 900;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 5px 15px;
+            border-radius: 30px;
+        }
+        
+        .game-title:hover {
+            background: rgba(255, 215, 0, 0.1);
+            -webkit-text-fill-color: #ffd966;
+        }
+        
+        .game-title.admin-mode {
+            border: 2px dashed #ff6b6b;
+        }
+
+        h2 { 
+            font-size: 1.5rem; 
+            margin-bottom: 15px; 
+            color: #ffd966; 
+            text-align: center; 
+            width: 100%; 
+            font-weight: 800; 
+            text-shadow: 0 2px 0 #b3540b; 
+        }
 
         /* ===== КРУГЛАЯ КНОПКА С РАКЕТОЙ В ЦЕНТРЕ ===== */
         .tap-area {
@@ -408,6 +439,7 @@
             justify-content: center;
             font-weight: bold;
             font-size: 1rem;
+            flex-shrink: 0;
         }
         
         .leaderboard-rank-1 {
@@ -435,6 +467,14 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            min-width: 0;
+            overflow: hidden;
+        }
+        
+        .leaderboard-name span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
         .clan-tag-in-leaderboard {
@@ -449,6 +489,7 @@
             max-width: 100px;
             overflow: hidden;
             text-overflow: ellipsis;
+            flex-shrink: 0;
         }
         
         .leaderboard-size {
@@ -456,6 +497,8 @@
             color: #ffd966;
             font-size: 1.1rem;
             text-shadow: 0 2px 0 #b3540b;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
         
         .profile-btn {
@@ -471,6 +514,7 @@
             text-decoration: none;
             font-size: 1.1rem;
             transition: all 0.2s;
+            flex-shrink: 0;
         }
         .profile-btn:hover {
             background: rgba(255, 255, 255, 0.2);
@@ -682,6 +726,7 @@
             font-size: 0.9rem;
             color: #ffd966;
             font-weight: 700;
+            flex-shrink: 0;
         }
         
         .member-name {
@@ -690,6 +735,10 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            min-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
         
         .member-size {
@@ -698,6 +747,7 @@
             font-size: 1.1rem;
             text-shadow: 0 2px 0 #b3540b;
             margin-right: 10px;
+            flex-shrink: 0;
         }
         
         .member-owner {
@@ -707,6 +757,7 @@
             padding: 3px 10px;
             border-radius: 20px;
             font-weight: 700;
+            flex-shrink: 0;
         }
         
         .kick-btn {
@@ -719,6 +770,7 @@
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s;
+            flex-shrink: 0;
         }
         .kick-btn:hover {
             background: rgba(255, 107, 107, 0.4);
@@ -755,10 +807,12 @@
             font-weight: 900;
             color: #1a1e2c;
             font-size: 1.1rem;
+            flex-shrink: 0;
         }
         
         .clan-leaderboard-info {
             flex: 1;
+            min-width: 0;
         }
         
         .clan-leaderboard-name {
@@ -801,6 +855,7 @@
             cursor: pointer;
             transition: all 0.2s;
             font-size: 0.8rem;
+            flex-shrink: 0;
         }
         .join-request-btn:hover {
             background: rgba(76, 175, 80, 0.4);
@@ -1444,6 +1499,29 @@
             border: 2px solid white;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
+
+        /* Стили для ввода названия игры */
+        .title-input-container {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .title-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #ff6b6b;
+            border-radius: 40px;
+            padding: 12px 20px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .title-input:focus {
+            outline: none;
+            border-color: #ffd966;
+        }
     </style>
 </head>
 <body class="bg-default" id="body">
@@ -1472,7 +1550,15 @@
             <div class="content-area">
                 <!-- Главная -->
                 <div class="page active" id="homePage">
-                    <h1>⚡ MEM-метр ⚡</h1>
+                    <div class="game-title" id="gameTitle" onclick="editGameTitle()">⚡ MEM-метр ⚡</div>
+                    <!-- Скрытое поле для ввода названия (появляется в админ-режиме) -->
+                    <div id="titleInputContainer" class="title-input-container" style="display: none;">
+                        <input type="text" id="titleInput" class="title-input" placeholder="ВВЕДИТЕ НАЗВАНИЕ ИГРЫ" maxlength="30">
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <button class="inv-btn" style="flex: 1;" onclick="saveGameTitle()">💾 СОХРАНИТЬ</button>
+                            <button class="inv-btn" style="flex: 1;" onclick="cancelEditTitle()">✕ ОТМЕНА</button>
+                        </div>
+                    </div>
                     <div class="tap-area" id="tapCircle"></div>
                     <div class="size-display" id="sizeValue">0</div>
                     <div class="size-label">САНТИМЕТРОВ</div>
@@ -1668,6 +1754,9 @@
         const navMenu = document.getElementById('navMenu');
         const cooldownResetBtn = document.getElementById('cooldownResetBtn');
         const clanNotification = document.getElementById('clanNotification');
+        const gameTitle = document.getElementById('gameTitle');
+        const titleInputContainer = document.getElementById('titleInputContainer');
+        const titleInput = document.getElementById('titleInput');
         
         // Модальные окна
         const clanModal = document.getElementById('clanModal');
@@ -1703,6 +1792,7 @@
         let timeOffset = 0;
         let referralCode = '';
         let referralsCount = 0;
+        let gameTitleText = '⚡ MEM-метр ⚡';
         
         // Данные клана
         let currentClan = null;
@@ -1841,6 +1931,30 @@
             else if (page === 'clan') loadClanData();
         };
 
+        // Функции для изменения названия игры
+        window.editGameTitle = function() {
+            if (!isAdmin) return;
+            
+            gameTitle.style.display = 'none';
+            titleInputContainer.style.display = 'block';
+            titleInput.value = gameTitleText.replace(/[⚡]/g, '').trim();
+            titleInput.focus();
+        };
+        
+        window.saveGameTitle = function() {
+            const newTitle = titleInput.value.trim();
+            if (newTitle) {
+                gameTitleText = `⚡ ${newTitle} ⚡`;
+                gameTitle.textContent = gameTitleText;
+            }
+            cancelEditTitle();
+        };
+        
+        window.cancelEditTitle = function() {
+            gameTitle.style.display = 'block';
+            titleInputContainer.style.display = 'none';
+        };
+
         async function loadUser() {
             try {
                 const res = await fetch(`${API_URL}/api/auth`, {
@@ -1912,6 +2026,9 @@
                         
                         loadAdminPanel();
                     }
+                    
+                    // Добавляем класс для админ-режима
+                    gameTitle.classList.add('admin-mode');
                 }
                 
                 loading.style.display = 'none';
@@ -1937,6 +2054,7 @@
                 
                 // Загружаем топ кланов
                 await loadClanLeaderboard();
+                await loadLeaderboard();
                 
             } catch (e) {
                 console.error('Auth error:', e);
@@ -2304,7 +2422,7 @@
                     html += `
                         <div class="member-item">
                             <span class="member-rank">${i+1}</span>
-                            <span class="member-name">${member.first_name || member.username || 'ИГРОК'}</span>
+                            <span class="member-name" title="${member.first_name || member.username || 'ИГРОК'}">${member.first_name || member.username || 'ИГРОК'}</span>
                             <span class="member-size">${member.size} СМ</span>
                             ${isMemberOwner ? '<span class="member-owner">👑</span>' : ''}
                             ${isOwner && !isMemberOwner ? 
@@ -3108,7 +3226,7 @@
                 }
                 
                 // Показываем топ-10
-                let html = '';
+                let html = '<div class="leaderboard-list">';
                 leaders.forEach((item, i) => {
                     const displayName = item.first_name || item.username || 'ИГРОК';
                     const clanTag = item.clan_tag ? `<span class="clan-tag-in-leaderboard" title="${item.clan_tag}">[${item.clan_tag}]</span>` : '';
@@ -3116,12 +3234,15 @@
                     html += `
                         <div class="leaderboard-item ${user && item.telegram_id === String(user.id) ? 'leaderboard-you' : ''}">
                             <div class="leaderboard-rank ${i === 0 ? 'leaderboard-rank-1' : i === 1 ? 'leaderboard-rank-2' : i === 2 ? 'leaderboard-rank-3' : ''}">${i+1}</div>
-                            <div class="leaderboard-name">${displayName} ${clanTag}</div>
+                            <div class="leaderboard-name">
+                                <span title="${displayName}">${displayName}</span> ${clanTag}
+                            </div>
                             <div class="leaderboard-size">${item.size} СМ</div>
                             <a href="tg://user?id=${item.telegram_id}" class="profile-btn">👤</a>
                         </div>
                     `;
                 });
+                html += '</div>';
                 
                 // Если пользователь не в топ-10, показываем его место
                 if (!leaders.some(l => l.telegram_id === String(user.id)) && allLeaders.length > 0) {
@@ -3135,7 +3256,9 @@
                             </div>
                             <div class="your-rank-item">
                                 <div class="leaderboard-rank">${userRank}</div>
-                                <div class="leaderboard-name">${user.first_name || user.username || 'ИГРОК'} ${userClanTag}</div>
+                                <div class="leaderboard-name">
+                                    <span title="${user.first_name || user.username || 'ИГРОК'}">${user.first_name || user.username || 'ИГРОК'}</span> ${userClanTag}
+                                </div>
                                 <div class="leaderboard-size">${size} СМ</div>
                                 <a href="tg://user?id=${user.id}" class="profile-btn">👤</a>
                             </div>
