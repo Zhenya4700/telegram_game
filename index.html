@@ -3170,71 +3170,92 @@
             }
         };
 
-        // ЛИДЕРБОРД
-        window.loadLeaderboard = async function() {
-            const listEl = document.getElementById('leaderboardList');
-            
-            try {
-                const res = await fetch(`${API_URL}/api/leaderboard`);
-                const leaders = await res.json();
-                
-                // Получаем полный список для определения места пользователя
-                const allRes = await fetch(`${API_URL}/api/leaderboard/all`);
-                const allLeaders = await allRes.json();
-                
-                if (leaders.length === 0) {
-                    listEl.innerHTML = '<div style="text-align: center; padding: 20px;">ПОКА НЕТ ИГРОКОВ</div>';
-                    return;
-                }
-                
-                // Показываем топ-10
-                let html = '<div class="leaderboard-list">';
-                leaders.forEach((item, i) => {
-                    const displayName = item.first_name || item.username || 'ИГРОК';
-                    const clanTag = item.clan_tag ? `<span class="clan-tag-in-leaderboard" title="${item.clan_tag}">[${item.clan_tag}]</span>` : '';
-                    
-                    html += `
-                        <div class="leaderboard-item ${user && item.telegram_id === String(user.id) ? 'leaderboard-you' : ''}">
-                            <div class="leaderboard-rank ${i === 0 ? 'leaderboard-rank-1' : i === 1 ? 'leaderboard-rank-2' : i === 2 ? 'leaderboard-rank-3' : ''}">${i+1}</div>
-                            <div class="leaderboard-name">
-                                <span title="${displayName}">${displayName}</span> ${clanTag}
-                            </div>
-                            <div class="leaderboard-size">${item.size} СМ</div>
-                            <a href="tg://user?id=${item.telegram_id}" class="profile-btn">👤</a>
-                        </div>
-                    `;
-                });
-                html += '</div>';
-                
-                // Если пользователь не в топ-10, показываем его место
-                if (!leaders.some(l => l.telegram_id === String(user.id)) && allLeaders.length > 0) {
-                    const userRank = allLeaders.findIndex(l => l.telegram_id === String(user.id)) + 1;
-                    if (userRank > 0) {
-                        const userClanTag = currentClan ? `<span class="clan-tag-in-leaderboard" title="${currentClan.tag}">[${currentClan.tag}]</span>` : '';
-                        
-                        html += `
-                            <div class="leaderboard-divider">
-                                <span>ВАШЕ МЕСТО</span>
-                            </div>
-                            <div class="your-rank-item">
-                                <div class="leaderboard-rank">${userRank}</div>
-                                <div class="leaderboard-name">
-                                    <span title="${user.first_name || user.username || 'ИГРОК'}">${user.first_name || user.username || 'ИГРОК'}</span> ${userClanTag}
-                                </div>
-                                <div class="leaderboard-size">${size} СМ</div>
-                                <a href="tg://user?id=${user.id}" class="profile-btn">👤</a>
-                            </div>
-                        `;
-                    }
-                }
-                
-                listEl.innerHTML = html;
-                
-            } catch (e) {
-                console.error('Leaderboard error:', e);
-                listEl.innerHTML = 'ОШИБКА ЗАГРУЗКИ';
+// ЛИДЕРБОРД - ИСПРАВЛЕННАЯ ВЕРСИЯ
+window.loadLeaderboard = async function() {
+    const listEl = document.getElementById('leaderboardList');
+    
+    try {
+        // Получаем топ-10
+        const res = await fetch(`${API_URL}/api/leaderboard`);
+        const leaders = await res.json();
+        
+        // Получаем полный список для определения места пользователя
+        // Используем тот же эндпоинт без лимита
+        let allLeaders = [];
+        try {
+            const allRes = await fetch(`${API_URL}/api/leaderboard?all=true`);
+            if (allRes.ok) {
+                allLeaders = await allRes.json();
+            } else {
+                // Если параметр не работает, используем тот же список
+                allLeaders = leaders;
             }
-        };
+        } catch (e) {
+            console.log('Using same list for ranking');
+            allLeaders = leaders;
+        }
+        
+        if (leaders.length === 0) {
+            listEl.innerHTML = '<div style="text-align: center; padding: 20px;">ПОКА НЕТ ИГРОКОВ</div>';
+            return;
+        }
+        
+        // Показываем топ-10
+        let html = '<div class="leaderboard-list">';
+        leaders.forEach((item, i) => {
+            const displayName = item.first_name || item.username || 'ИГРОК';
+            const clanTag = item.clan_tag ? `<span class="clan-tag-in-leaderboard" title="${item.clan_tag}">[${item.clan_tag}]</span>` : '';
+            
+            html += `
+                <div class="leaderboard-item ${user && item.telegram_id === String(user.id) ? 'leaderboard-you' : ''}">
+                    <div class="leaderboard-rank ${i === 0 ? 'leaderboard-rank-1' : i === 1 ? 'leaderboard-rank-2' : i === 2 ? 'leaderboard-rank-3' : ''}">${i+1}</div>
+                    <div class="leaderboard-name">
+                        <span title="${displayName}">${displayName}</span> ${clanTag}
+                    </div>
+                    <div class="leaderboard-size">${item.size} СМ</div>
+                    <a href="tg://user?id=${item.telegram_id}" class="profile-btn">👤</a>
+                </div>
+            `;
+        });
+        html += '</div>';
+        
+        // Находим место текущего пользователя
+        let userRank = -1;
+        if (user && allLeaders.length > 0) {
+            userRank = allLeaders.findIndex(l => l.telegram_id === String(user.id)) + 1;
+        }
+        
+        // Если пользователь не в топ-10, показываем его место
+        if (user && !leaders.some(l => l.telegram_id === String(user.id)) && userRank > 0) {
+            // Находим данные пользователя
+            const userData = allLeaders.find(l => l.telegram_id === String(user.id));
+            const userSize = userData ? userData.size : size;
+            const userClanTag = userData && userData.clan_tag ? 
+                `<span class="clan-tag-in-leaderboard" title="${userData.clan_tag}">[${userData.clan_tag}]</span>` : 
+                (currentClan ? `<span class="clan-tag-in-leaderboard" title="${currentClan.tag}">[${currentClan.tag}]</span>` : '');
+            
+            html += `
+                <div class="leaderboard-divider">
+                    <span>ВАШЕ МЕСТО</span>
+                </div>
+                <div class="your-rank-item">
+                    <div class="leaderboard-rank">${userRank}</div>
+                    <div class="leaderboard-name">
+                        <span title="${user.first_name || user.username || 'ИГРОК'}">${user.first_name || user.username || 'ИГРОК'}</span> ${userClanTag}
+                    </div>
+                    <div class="leaderboard-size">${userSize} СМ</div>
+                    <a href="tg://user?id=${user.id}" class="profile-btn">👤</a>
+                </div>
+            `;
+        }
+        
+        listEl.innerHTML = html;
+        
+    } catch (e) {
+        console.error('Leaderboard error:', e);
+        listEl.innerHTML = 'ОШИБКА ЗАГРУЗКИ';
+    }
+};
 
         // МАГАЗИН
         function renderShop() {
@@ -3695,3 +3716,4 @@
     </script>
 </body>
 </html>
+
