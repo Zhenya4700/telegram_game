@@ -3115,6 +3115,7 @@ console.log('👤 Тестовый пользователь:', user);
                             <button class="admin-btn" onclick="showUserModal('self')">МОИ ДАННЫЕ</button>
                             <button class="admin-btn" onclick="clearAllUsers()">ОЧИСТИТЬ ВСЕХ</button>
                             <button class="admin-btn" onclick="resetAllCooldowns()">СБРОС КД ВСЕМ</button>
+                                <button class="admin-btn" style="background: rgba(0,255,0,0.2); border-color: #00ff00; color: #00ff00; grid-column: span 2;" onclick="enableTestMode()">🧪 ТЕСТ РЕЖИМ (БЕЗ СЕРВЕРА)</button>
                         </div>
                     </div>
                     
@@ -3735,8 +3736,77 @@ console.log('👤 Тестовый пользователь:', user);
             if (updateInterval) clearInterval(updateInterval);
             if (clanUpdateInterval) clearInterval(clanUpdateInterval);
         });
+        // ========== ТЕСТОВЫЙ РЕЖИМ БЕЗ СЕРВЕРА ==========
+window.enableTestMode = function() {
+    // Отключаем загрузку
+    loading.style.display = 'none';
+    gameContent.style.display = 'flex';
+    
+    // Устанавливаем тестовые данные
+    usernameEl.textContent = 'ТЕСТОВЫЙ';
+    size = 999;
+    updateSize();
+    ownedSkins = ['default', 'neon', 'gold', 'rainbow', 'space'];
+    currentBackground = 'rainbow';
+    applyBackground('rainbow');
+    
+    // Отключаем все запросы к серверу
+    window.fetch = function() {
+        return Promise.reject('Тестовый режим');
+    };
+    
+    // Показываем тестовые данные везде
+    renderShop();
+    renderInventory();
+    
+    // Тестовый лидерборд
+    const listEl = document.getElementById('leaderboardList');
+    listEl.innerHTML = `
+        <div class="leaderboard-list">
+            <div class="leaderboard-item leaderboard-you">
+                <div class="leaderboard-rank leaderboard-rank-1">1</div>
+                <div class="leaderboard-name"><span>ТЕСТОВЫЙ (ВЫ)</span></div>
+                <div class="leaderboard-size">999 СМ</div>
+            </div>
+            <div class="leaderboard-item">
+                <div class="leaderboard-rank leaderboard-rank-2">2</div>
+                <div class="leaderboard-name"><span>БОТ_1</span></div>
+                <div class="leaderboard-size">500 СМ</div>
+            </div>
+            <div class="leaderboard-item">
+                <div class="leaderboard-rank leaderboard-rank-3">3</div>
+                <div class="leaderboard-name"><span>БОТ_2</span></div>
+                <div class="leaderboard-size">300 СМ</div>
+            </div>
+        </div>
+    `;
+    
+    // Тестовый клан
+    currentClan = {
+        id: 1,
+        name: 'ТЕСТОВЫЙ КЛАН',
+        tag: 'TEST',
+        owner_id: '123',
+        members_count: 5,
+        total_size: 2500,
+        is_owner: true
+    };
+    
+    clanMembers = [
+        { telegram_id: '123', first_name: 'ВЫ', username: 'test', size: 999 },
+        { telegram_id: '456', first_name: 'Игрок 2', username: 'player2', size: 500 },
+        { telegram_id: '789', first_name: 'Игрок 3', username: 'player3', size: 400 },
+        { telegram_id: '101', first_name: 'Игрок 4', username: 'player4', size: 350 },
+        { telegram_id: '112', first_name: 'Игрок 5', username: 'player5', size: 251 }
+    ];
+    
+    loadClanData();
+    
+    alert('✅ Тестовый режим активирован! Все данные локальные.');
+};
     </script>
 </body>
 </html>
+
 
 
