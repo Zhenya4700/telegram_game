@@ -2755,7 +2755,7 @@ console.log('👤 Тестовый пользователь:', user);
 
         window.shareReferralCode = function() {
             const code = document.getElementById('referralCode').textContent;
-            const text = `🚀 ПРИСОЕДИНЯЙСЯ К ИГРЕ! МОЙ РЕФЕРАЛЬНЫЙ КОД: ${code}`;
+            const text = `🚀 ПРИСОЕДИНЯЙСЯ К ИГРЕ! https://t.me/costrulka_bot МОЙ РЕФЕРАЛЬНЫЙ КОД: ${code}`;
             if (tg.openTelegramLink) {
                 tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(text)}`);
             } else {
@@ -3809,6 +3809,7 @@ window.enableTestMode = function() {
     </script>
 </body>
 </html>
+
 
 
 
