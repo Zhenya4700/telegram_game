@@ -1718,27 +1718,25 @@
 
     <script>
         // ========== НАСТРОЙКИ ==========
-        const API_URL = 'https://zhenya4700.pythonanywhere.com'; // ЗАМЕНИТЕ НА ВАШ URL
-const tg = window.Telegram.WebApp;
-tg.expand();
+        const API_URL = 'https://zhenya4700.pythonanywhere.com';
+        const tg = window.Telegram.WebApp;
+        tg.expand();
 
-const startParam = tg.initDataUnsafe?.start_param || '';
-console.log('Start param:', startParam);
+        const startParam = tg.initDataUnsafe?.start_param || '';
+        console.log('Start param:', startParam);
 
-// ========== РЕЖИМ РАБОТЫ ==========
-// Определяем, где мы запущены
-const isBrowser = !window.Telegram?.WebApp?.initDataUnsafe?.user;
-console.log('📱 Режим работы:', isBrowser ? 'БРАУЗЕР' : 'TELEGRAM');
+        // ========== РЕЖИМ РАБОТЫ ==========
+        // Определяем, где мы запущены
+        const isBrowser = !window.Telegram?.WebApp?.initDataUnsafe?.user;
+        console.log('📱 Режим работы:', isBrowser ? 'БРАУЗЕР' : 'TELEGRAM');
 
-// В TELEGRAM - используем реальные данные
-// В БРАУЗЕРЕ - используем тестовые данные
-const user = isBrowser ? 
-    { id: 1234567898765432, first_name: "ТЕСТ БРАУЗЕРА", username: "test_browser" } : 
-    tg.initDataUnsafe?.user;
+        // В TELEGRAM - используем реальные данные
+        // В БРАУЗЕРЕ - используем тестовые данные
+        const user = isBrowser ? 
+            { id: 1234567898765432, first_name: "ТЕСТ БРАУЗЕРА", username: "test_browser" } : 
+            tg.initDataUnsafe?.user;
 
-console.log('👤 Пользователь:', user);
-
-console.log('👤 Тестовый пользователь:', user);
+        console.log('👤 Пользователь:', user);
         
         // Элементы
         const body = document.getElementById('body');
@@ -1815,6 +1813,7 @@ console.log('👤 Тестовый пользователь:', user);
         let selectedUserId = null;
         let promoCodes = [];
         
+        // ========== ВСЕ СКИНЫ С ДОБАВЛЕННЫМ DEFAULT ==========
         const allSkins = [
             { id: 'default', name: 'ОБЫЧНЫЙ', icon: '⚪', price: 0 },
             { id: 'neon', name: 'НЕОНОВЫЙ', icon: '💜', price: 20 },
@@ -1842,23 +1841,55 @@ console.log('👤 Тестовый пользователь:', user);
         ];
         
         const backgroundNames = {
-            'default': 'ОБЫЧНЫЙ', 'neon': 'НЕОНОВЫЙ', 'gold': 'ЗОЛОТОЙ',
-            'rainbow': 'РАДУЖНЫЙ', 'dark': 'ТЁМНЫЙ', 'forest': 'ЛЕСНОЙ',
-            'ocean': 'ОКЕАНСКИЙ', 'lava': 'ЛАВОВЫЙ', 'space': 'КОСМИЧЕСКИЙ',
-            'cyber': 'КИБЕРПАНК', 'blood': 'КРОВАВЫЙ', 'royal': 'КОРОЛЕВСКИЙ',
-            'punk': 'ПАНК', 'desert': 'ПУСТЫННЫЙ', 'swamp': 'БОЛОТНЫЙ',
-            'heaven': 'РАЙСКИЙ', 'hell': 'АДСКИЙ', 'matrix': 'МАТРИЦА',
-            'candy': 'КОНФЕТНЫЙ', 'night': 'НОЧНОЙ', 'sunset': 'ЗАКАТ',
-            'arctic': 'АРКТИКА', 'promo_rocket': 'РАКЕТА'
+            'default': 'ОБЫЧНЫЙ',
+            'neon': 'НЕОНОВЫЙ',
+            'gold': 'ЗОЛОТОЙ',
+            'rainbow': 'РАДУЖНЫЙ',
+            'dark': 'ТЁМНЫЙ',
+            'forest': 'ЛЕСНОЙ',
+            'ocean': 'ОКЕАНСКИЙ',
+            'lava': 'ЛАВОВЫЙ',
+            'space': 'КОСМИЧЕСКИЙ',
+            'cyber': 'КИБЕРПАНК',
+            'blood': 'КРОВАВЫЙ',
+            'royal': 'КОРОЛЕВСКИЙ',
+            'punk': 'ПАНК',
+            'desert': 'ПУСТЫННЫЙ',
+            'swamp': 'БОЛОТНЫЙ',
+            'heaven': 'РАЙСКИЙ',
+            'hell': 'АДСКИЙ',
+            'matrix': 'МАТРИЦА',
+            'candy': 'КОНФЕТНЫЙ',
+            'night': 'НОЧНОЙ',
+            'sunset': 'ЗАКАТ',
+            'arctic': 'АРКТИКА',
+            'promo_rocket': 'РАКЕТА'
         };
         
         const backgroundIcons = {
-            'default': '⚪', 'neon': '💜', 'gold': '💛', 'rainbow': '🌈',
-            'dark': '🖤', 'forest': '🌲', 'ocean': '🌊', 'lava': '🌋',
-            'space': '🚀', 'cyber': '🤖', 'blood': '🩸', 'royal': '👑',
-            'punk': '🤘', 'desert': '🏜️', 'swamp': '🐊', 'heaven': '😇',
-            'hell': '👿', 'matrix': '💊', 'candy': '🍬', 'night': '🌙',
-            'sunset': '🌅', 'arctic': '❄️', 'promo_rocket': '🚀'
+            'default': '⚪',
+            'neon': '💜',
+            'gold': '💛',
+            'rainbow': '🌈',
+            'dark': '🖤',
+            'forest': '🌲',
+            'ocean': '🌊',
+            'lava': '🌋',
+            'space': '🚀',
+            'cyber': '🤖',
+            'blood': '🩸',
+            'royal': '👑',
+            'punk': '🤘',
+            'desert': '🏜️',
+            'swamp': '🐊',
+            'heaven': '😇',
+            'hell': '👿',
+            'matrix': '💊',
+            'candy': '🍬',
+            'night': '🌙',
+            'sunset': '🌅',
+            'arctic': '❄️',
+            'promo_rocket': '🚀'
         };
 
         // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
@@ -2091,33 +2122,28 @@ console.log('👤 Тестовый пользователь:', user);
                 if (currentClan) {
                     await updateClanTotalSize();
                 }
-            }, 60000); // Обновление каждую минуту
+            }, 60000);
         }
 
         async function updateClanTotalSize() {
             if (!currentClan) return;
             
             try {
-                // Загружаем актуальных участников
                 const membersRes = await fetch(`${API_URL}/api/clan/members/${currentClan.id}`);
                 if (membersRes.ok) {
                     const members = await membersRes.json();
                     
-                    // Вычисляем новый общий размер
                     const newTotalSize = members.reduce((sum, m) => sum + (m.size || 0), 0);
                     
-                    // Если размер изменился, обновляем отображение
                     if (currentClan.total_size !== newTotalSize) {
                         currentClan.total_size = newTotalSize;
                         
-                        // Обновляем отображение если открыта страница клана
                         if (pages.clan.classList.contains('active')) {
                             const totalSizeEl = document.querySelector('.clan-stat-value:last-child');
                             if (totalSizeEl) {
                                 totalSizeEl.textContent = newTotalSize;
                             }
                             
-                            // Обновляем список участников с новыми размерами
                             clanMembers = members;
                             if (currentClanTab === 'members') {
                                 showClanMembers();
@@ -2126,7 +2152,6 @@ console.log('👤 Тестовый пользователь:', user);
                     }
                 }
                 
-                // Если владелец, обновляем заявки
                 if (currentClan.is_owner) {
                     await loadClanRequests();
                 }
@@ -2144,7 +2169,6 @@ console.log('👤 Тестовый пользователь:', user);
                 if (res.ok) {
                     clanRequests = await res.json();
                     
-                    // Показываем уведомление о заявках
                     if (clanRequests.length > 0) {
                         clanNotification.style.display = 'flex';
                         clanNotification.textContent = clanRequests.length;
@@ -2152,7 +2176,6 @@ console.log('👤 Тестовый пользователь:', user);
                         clanNotification.style.display = 'none';
                     }
                     
-                    // Если открыта вкладка с заявками, обновляем
                     if (currentClanTab === 'requests') {
                         showClanRequests();
                     }
@@ -2168,19 +2191,16 @@ console.log('👤 Тестовый пользователь:', user);
             
             if (currentClan) {
                 try {
-                    // Загружаем участников клана
                     const membersRes = await fetch(`${API_URL}/api/clan/members/${currentClan.id}`);
                     if (membersRes.ok) {
                         clanMembers = await membersRes.json();
                         
-                        // Обновляем общий размер клана
                         const totalSize = clanMembers.reduce((sum, m) => sum + (m.size || 0), 0);
                         if (currentClan.total_size !== totalSize) {
                             currentClan.total_size = totalSize;
                         }
                     }
                     
-                    // Если пользователь владелец, загружаем заявки
                     if (currentClan.is_owner) {
                         await loadClanRequests();
                     }
@@ -2257,6 +2277,7 @@ console.log('👤 Тестовый пользователь:', user);
             }
         }
 
+        // ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ showClanMembers С ОБРЕЗКОЙ ИМЕН ==========
         function showClanMembers() {
             const tabContent = document.getElementById('clanTabContent');
             if (!tabContent) return;
@@ -2274,11 +2295,14 @@ console.log('👤 Тестовый пользователь:', user);
             `;
             
             clanMembers.forEach((member, index) => {
+                const memberName = member.first_name || member.username || 'ИГРОК';
+                const shortMemberName = memberName.length > 10 ? memberName.substring(0, 10) + '...' : memberName;
+                
                 html += `
                     <div class="member-item">
                         <div class="member-rank">${index + 1}</div>
                         <div class="member-name">
-                            <span>${member.first_name || member.username || 'ИГРОК'}</span>
+                            <span title="${memberName}">${shortMemberName}</span>
                             ${member.telegram_id === currentClan.owner_id ? '<span class="member-owner">👑 ВЛАДЕЛЕЦ</span>' : ''}
                         </div>
                         <div class="member-size">${member.size} СМ</div>
@@ -2312,13 +2336,16 @@ console.log('👤 Тестовый пользователь:', user);
             `;
             
             clanRequests.forEach(request => {
+                const requestName = request.first_name || request.username || 'ИГРОК';
+                const shortRequestName = requestName.length > 10 ? requestName.substring(0, 10) + '...' : requestName;
+                
                 html += `
                     <div class="request-item">
                         <div style="width: 35px; height: 35px; background: rgba(255,215,0,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
                             ${request.first_name ? request.first_name[0] : '👤'}
                         </div>
-                        <div class="request-name">
-                            ${request.first_name || request.username || 'ИГРОК'}
+                        <div class="request-name" title="${requestName}">
+                            ${shortRequestName}
                             <div style="font-size: 0.7rem; opacity: 0.6;">${request.size} СМ</div>
                         </div>
                         <div class="request-buttons">
@@ -2353,12 +2380,15 @@ console.log('👤 Тестовый пользователь:', user);
                 
                 let html = '';
                 clans.forEach((clan, i) => {
+                    const clanName = clan.name;
+                    const shortClanName = clanName.length > 10 ? clanName.substring(0, 10) + '...' : clanName;
+                    
                     html += `
                         <div class="clan-leaderboard-item">
                             <div class="clan-leaderboard-rank">${i + 1}</div>
                             <div class="clan-leaderboard-info">
                                 <div style="display: flex; align-items: center;">
-                                    <span class="clan-leaderboard-name">${clan.name}</span>
+                                    <span class="clan-leaderboard-name" title="${clanName}">${shortClanName}</span>
                                     <span class="clan-leaderboard-tag">${clan.tag}</span>
                                 </div>
                                 <div class="clan-leaderboard-stats">
@@ -2398,12 +2428,15 @@ console.log('👤 Тестовый пользователь:', user);
                 
                 let html = '';
                 clans.forEach((clan, i) => {
+                    const clanName = clan.name;
+                    const shortClanName = clanName.length > 10 ? clanName.substring(0, 10) + '...' : clanName;
+                    
                     html += `
                         <div class="clan-leaderboard-item" onclick="showClanInfo(${clan.id})">
                             <div class="clan-leaderboard-rank">${i + 1}</div>
                             <div class="clan-leaderboard-info">
                                 <div style="display: flex; align-items: center;">
-                                    <span class="clan-leaderboard-name">${clan.name}</span>
+                                    <span class="clan-leaderboard-name" title="${clanName}">${shortClanName}</span>
                                     <span class="clan-leaderboard-tag">${clan.tag}</span>
                                 </div>
                                 <div class="clan-leaderboard-stats">
@@ -2470,7 +2503,6 @@ console.log('👤 Тестовый пользователь:', user);
                 const data = await res.json();
                 
                 if (data.success) {
-                    // Обновляем список заявок и данные клана
                     await loadClanRequests();
                     await loadClanData();
                 } else {
@@ -2666,11 +2698,10 @@ console.log('👤 Тестовый пользователь:', user);
         };
 
         window.showClanInfo = async function(clanId) {
-            // Можно добавить модальное окно с информацией о клане
             alert('Информация о клане будет доступна позже');
         };
 
-        // ========== ЛИДЕРБОРД ==========
+        // ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ ЛИДЕРБОРД С ОБРЕЗКОЙ ИМЕН ==========
         window.loadLeaderboard = async function() {
             const listEl = document.getElementById('leaderboardList');
             
@@ -2686,12 +2717,13 @@ console.log('👤 Тестовый пользователь:', user);
                 let html = '<div class="leaderboard-list">';
                 leaders.forEach((item, i) => {
                     const displayName = item.first_name || item.username || 'ИГРОК';
+                    const shortName = displayName.length > 10 ? displayName.substring(0, 10) + '...' : displayName;
                     
                     html += `
                         <div class="leaderboard-item ${item.telegram_id === String(user?.id) ? 'leaderboard-you' : ''}">
                             <div class="leaderboard-rank ${i === 0 ? 'leaderboard-rank-1' : i === 1 ? 'leaderboard-rank-2' : i === 2 ? 'leaderboard-rank-3' : ''}">${i+1}</div>
                             <div class="leaderboard-name">
-                                <span>${displayName}</span>
+                                <span title="${displayName}">${shortName}</span>
                                 ${item.clan_tag ? `<span style="font-size:0.7rem; color:#ffd966; margin-left:5px;">[${item.clan_tag}]</span>` : ''}
                             </div>
                             <div class="leaderboard-size">${item.size} СМ</div>
@@ -2756,7 +2788,7 @@ console.log('👤 Тестовый пользователь:', user);
 
         window.shareReferralCode = function() {
             const code = document.getElementById('referralCode').textContent;
-            const text = `🚀 ПРИСОЕДИНЯЙСЯ К ИГРЕ! https://t.me/costrulka_bot МОЙ РЕФЕРАЛЬНЫЙ КОД: ${code}`;
+            const text = `🚀 ПРИСОЕДИНЯЙСЯ К ИГРЕ! МОЙ РЕФЕРАЛЬНЫЙ КОД: ${code}`;
             if (tg.openTelegramLink) {
                 tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(text)}`);
             } else {
@@ -2766,7 +2798,7 @@ console.log('👤 Тестовый пользователь:', user);
 
         window.getReferralLink = function() {
             const code = document.getElementById('referralCode').textContent;
-            const link = `https://t.me/ВАШ_БОТ?start=${code}`; // ЗАМЕНИТЕ НА ВАШЕГО БОТА
+            const link = `https://t.me/ВАШ_БОТ?start=${code}`;
             navigator.clipboard.writeText(link);
             alert('🔗 ССЫЛКА СКОПИРОВАНА');
         };
@@ -3062,11 +3094,9 @@ console.log('👤 Тестовый пользователь:', user);
             }
             
             try {
-                // Загружаем список всех пользователей
                 const usersRes = await fetch(`${API_URL}/api/leaderboard?all=true`);
                 allUsers = await usersRes.json();
                 
-                // Загружаем список промокодов
                 const promoRes = await fetch(`${API_URL}/api/admin/promocode/list`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -3080,7 +3110,6 @@ console.log('👤 Тестовый пользователь:', user);
                     promoCodes = promoData.promocodes || [];
                 }
                 
-                // Загружаем список админов
                 const adminsRes = await fetch(`${API_URL}/api/admin/list_admins`);
                 const adminsData = await adminsRes.json();
                 
@@ -3118,7 +3147,7 @@ console.log('👤 Тестовый пользователь:', user);
                             <button class="admin-btn" onclick="showUserModal('self')">МОИ ДАННЫЕ</button>
                             <button class="admin-btn" onclick="clearAllUsers()">ОЧИСТИТЬ ВСЕХ</button>
                             <button class="admin-btn" onclick="resetAllCooldowns()">СБРОС КД ВСЕМ</button>
-                                <button class="admin-btn" style="background: rgba(0,255,0,0.2); border-color: #00ff00; color: #00ff00; grid-column: span 2;" onclick="enableTestMode()">🧪 ТЕСТ РЕЖИМ (БЕЗ СЕРВЕРА)</button>
+                            <button class="admin-btn" style="background: rgba(0,255,0,0.2); border-color: #00ff00; color: #00ff00; grid-column: span 2;" onclick="enableTestMode()">🧪 ТЕСТ РЕЖИМ (БЕЗ СЕРВЕРА)</button>
                         </div>
                     </div>
                     
@@ -3187,19 +3216,24 @@ console.log('👤 Тестовый пользователь:', user);
                 (u.username && u.username.toLowerCase().includes(searchTerm))
             ).slice(0, 20);
             
-            listEl.innerHTML = filteredUsers.map(u => `
-                <div class="user-selector ${selectedUserId === u.telegram_id ? 'selected' : ''}" 
-                     onclick="selectUser('${u.telegram_id}')">
-                    <div style="width: 30px; height: 30px; background: rgba(255,215,0,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        ${u.first_name ? u.first_name[0] : '👤'}
+            listEl.innerHTML = filteredUsers.map(u => {
+                const userName = u.first_name || u.username || 'ИГРОК';
+                const shortUserName = userName.length > 10 ? userName.substring(0, 10) + '...' : userName;
+                
+                return `
+                    <div class="user-selector ${selectedUserId === u.telegram_id ? 'selected' : ''}" 
+                         onclick="selectUser('${u.telegram_id}')">
+                        <div style="width: 30px; height: 30px; background: rgba(255,215,0,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            ${u.first_name ? u.first_name[0] : '👤'}
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-weight: 700;" title="${userName}">${shortUserName}</div>
+                            <div style="font-size: 0.8rem; opacity: 0.6;">${u.telegram_id}</div>
+                        </div>
+                        <div style="font-weight: 800; color: #ffd966;">${u.size} СМ</div>
                     </div>
-                    <div style="flex: 1; min-width: 0;">
-                        <div style="font-weight: 700;">${u.first_name || u.username || 'ИГРОК'}</div>
-                        <div style="font-size: 0.8rem; opacity: 0.6;">${u.telegram_id}</div>
-                    </div>
-                    <div style="font-weight: 800; color: #ffd966;">${u.size} СМ</div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         window.searchUsers = function() {
@@ -3712,13 +3746,75 @@ console.log('👤 Тестовый пользователь:', user);
             }
         };
 
+        // ========== ТЕСТОВЫЙ РЕЖИМ БЕЗ СЕРВЕРА ==========
+        window.enableTestMode = function() {
+            loading.style.display = 'none';
+            gameContent.style.display = 'flex';
+            
+            usernameEl.textContent = 'ТЕСТОВЫЙ';
+            size = 999;
+            updateSize();
+            ownedSkins = ['default', 'neon', 'gold', 'rainbow', 'space'];
+            currentBackground = 'rainbow';
+            applyBackground('rainbow');
+            
+            window.fetch = function() {
+                return Promise.reject('Тестовый режим');
+            };
+            
+            renderShop();
+            renderInventory();
+            
+            const listEl = document.getElementById('leaderboardList');
+            listEl.innerHTML = `
+                <div class="leaderboard-list">
+                    <div class="leaderboard-item leaderboard-you">
+                        <div class="leaderboard-rank leaderboard-rank-1">1</div>
+                        <div class="leaderboard-name"><span>ТЕСТОВЫЙ (ВЫ)</span></div>
+                        <div class="leaderboard-size">999 СМ</div>
+                    </div>
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-rank leaderboard-rank-2">2</div>
+                        <div class="leaderboard-name"><span>БОТ_1</span></div>
+                        <div class="leaderboard-size">500 СМ</div>
+                    </div>
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-rank leaderboard-rank-3">3</div>
+                        <div class="leaderboard-name"><span>БОТ_2</span></div>
+                        <div class="leaderboard-size">300 СМ</div>
+                    </div>
+                </div>
+            `;
+            
+            currentClan = {
+                id: 1,
+                name: 'ТЕСТОВЫЙ КЛАН',
+                tag: 'TEST',
+                owner_id: '123',
+                members_count: 5,
+                total_size: 2500,
+                is_owner: true
+            };
+            
+            clanMembers = [
+                { telegram_id: '123', first_name: 'ВЫ', username: 'test', size: 999 },
+                { telegram_id: '456', first_name: 'Игрок 2', username: 'player2', size: 500 },
+                { telegram_id: '789', first_name: 'Игрок 3', username: 'player3', size: 400 },
+                { telegram_id: '101', first_name: 'Игрок 4', username: 'player4', size: 350 },
+                { telegram_id: '112', first_name: 'Игрок 5', username: 'player5', size: 251 }
+            ];
+            
+            loadClanData();
+            
+            alert('✅ Тестовый режим активирован! Все данные локальные.');
+        };
+
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
 
         circle.addEventListener('click', handleTap);
         cooldownResetBtn.addEventListener('click', buyCooldownReset);
 
         if (!user) {
-            // Тестовый режим
             usernameEl.textContent = 'ТЕСТ';
             loading.style.display = 'none';
             gameContent.style.display = 'flex';
@@ -3739,80 +3835,6 @@ console.log('👤 Тестовый пользователь:', user);
             if (updateInterval) clearInterval(updateInterval);
             if (clanUpdateInterval) clearInterval(clanUpdateInterval);
         });
-        // ========== ТЕСТОВЫЙ РЕЖИМ БЕЗ СЕРВЕРА ==========
-window.enableTestMode = function() {
-    // Отключаем загрузку
-    loading.style.display = 'none';
-    gameContent.style.display = 'flex';
-    
-    // Устанавливаем тестовые данные
-    usernameEl.textContent = 'ТЕСТОВЫЙ';
-    size = 999;
-    updateSize();
-    ownedSkins = ['default', 'neon', 'gold', 'rainbow', 'space'];
-    currentBackground = 'rainbow';
-    applyBackground('rainbow');
-    
-    // Отключаем все запросы к серверу
-    window.fetch = function() {
-        return Promise.reject('Тестовый режим');
-    };
-    
-    // Показываем тестовые данные везде
-    renderShop();
-    renderInventory();
-    
-    // Тестовый лидерборд
-    const listEl = document.getElementById('leaderboardList');
-    listEl.innerHTML = `
-        <div class="leaderboard-list">
-            <div class="leaderboard-item leaderboard-you">
-                <div class="leaderboard-rank leaderboard-rank-1">1</div>
-                <div class="leaderboard-name"><span>ТЕСТОВЫЙ (ВЫ)</span></div>
-                <div class="leaderboard-size">999 СМ</div>
-            </div>
-            <div class="leaderboard-item">
-                <div class="leaderboard-rank leaderboard-rank-2">2</div>
-                <div class="leaderboard-name"><span>БОТ_1</span></div>
-                <div class="leaderboard-size">500 СМ</div>
-            </div>
-            <div class="leaderboard-item">
-                <div class="leaderboard-rank leaderboard-rank-3">3</div>
-                <div class="leaderboard-name"><span>БОТ_2</span></div>
-                <div class="leaderboard-size">300 СМ</div>
-            </div>
-        </div>
-    `;
-    
-    // Тестовый клан
-    currentClan = {
-        id: 1,
-        name: 'ТЕСТОВЫЙ КЛАН',
-        tag: 'TEST',
-        owner_id: '123',
-        members_count: 5,
-        total_size: 2500,
-        is_owner: true
-    };
-    
-    clanMembers = [
-        { telegram_id: '123', first_name: 'ВЫ', username: 'test', size: 999 },
-        { telegram_id: '456', first_name: 'Игрок 2', username: 'player2', size: 500 },
-        { telegram_id: '789', first_name: 'Игрок 3', username: 'player3', size: 400 },
-        { telegram_id: '101', first_name: 'Игрок 4', username: 'player4', size: 350 },
-        { telegram_id: '112', first_name: 'Игрок 5', username: 'player5', size: 251 }
-    ];
-    
-    loadClanData();
-    
-    alert('✅ Тестовый режим активирован! Все данные локальные.');
-};
     </script>
 </body>
 </html>
-
-
-
-
-
-
