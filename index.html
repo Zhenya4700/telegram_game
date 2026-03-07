@@ -2706,7 +2706,7 @@
             const listEl = document.getElementById('leaderboardList');
             
             try {
-                const res = await fetch(`${API_URL}/api/leaderboard`);
+                const res = await fetch(`${API_URL}/api/leaderboard?all=true`);
                 const leaders = await res.json();
                 
                 if (leaders.length === 0) {
@@ -3211,10 +3211,10 @@
             const searchTerm = document.getElementById('userSearchInput')?.value.toLowerCase() || '';
             
             const filteredUsers = allUsers.filter(u => 
-                u.telegram_id.includes(searchTerm) || 
-                (u.first_name && u.first_name.toLowerCase().includes(searchTerm)) ||
-                (u.username && u.username.toLowerCase().includes(searchTerm))
-            ).slice(0, 20);
+            u.telegram_id.includes(searchTerm) || 
+            (u.first_name && u.first_name.toLowerCase().includes(searchTerm)) ||
+            (u.username && u.username.toLowerCase().includes(searchTerm))
+            );
             
             listEl.innerHTML = filteredUsers.map(u => {
                 const userName = u.first_name || u.username || 'ИГРОК';
@@ -3838,3 +3838,4 @@
     </script>
 </body>
 </html>
+
