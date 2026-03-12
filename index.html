@@ -3046,39 +3046,66 @@
         }
 
         async function handleTap() {
-            if (cooldown) return;
-            
-            try {
-                const res = await fetch(`${API_URL}/api/click`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        telegram_id: String(user.id)
-                    })
-                });
-                
-                const data = await res.json();
-                
-                if (res.status === 429) {
-                    startCooldown(data.wait);
-                    return;
-                }
-                
-                if (data.error) {
-                    alert(data.error);
-                    return;
-                }
-                
-                size = data.size;
-                lastClickTime = new Date(data.last_click).getTime();
-                updateSize();
-                showChange(data.change);
-                startCooldown(clickCooldown);
-                
-            } catch (e) {
-                console.error('Tap error:', e);
-            }
+    if (cooldown) return;
+    
+    try {
+        const res = await fetch(`${API_URL}/api/click`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                telegram_id: String(user.id)
+            })
+        });
+        
+        const data = await res.json();
+        
+        if (res.status === 429) {
+            startCooldown(data.wait);
+            return;
         }
+        
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+        
+        // ПОЛУЧАЕМ ТЕКУЩИЙ РАЗМЕР И ИЗМЕНЕНИЕ
+        let newSize = data.size;
+        let change = data.change;
+        
+        // ЕСЛИ БЫЛО 0 СМ И ВЫПАЛО ОТРИЦАТЕЛЬНОЕ
+        if (size === 0 && change <= 0) {
+            // ГЕНЕРИРУЕМ СЛУЧАЙНОЕ ПОЛОЖИТЕЛЬНОЕ ЧИСЛО ОТ 1 ДО 20
+            change = Math.floor(Math.random() * 20) + 1;
+            newSize = change;
+            console.log('🔧 Было 0 см, принудительно меняем на +' + change);
+        }
+        
+        // ЕСЛИ ВЫПАЛО 0 (ХОТЯ НА СЕРВЕРЕ МЫ ЭТО УБРАЛИ, НО НА ВСЯКИЙ СЛУЧАЙ)
+        if (change === 0) {
+            change = 1;
+            newSize = Math.max(0, size + change);
+            console.log('🔧 Выпал 0, меняем на 1');
+        }
+        
+        // ПРОВЕРЯЕМ, ЧТО РАЗМЕР НЕ МЕНЬШЕ 0
+        if (newSize < 0) {
+            newSize = 0;
+            change = -size; // Корректируем отображаемое изменение
+            console.log('🔧 Размер был бы отрицательным, устанавливаем 0');
+        }
+        
+        // ОБНОВЛЯЕМ РАЗМЕР
+        size = newSize;
+        lastClickTime = new Date(data.last_click).getTime();
+        updateSize();
+        showChange(change);
+        startCooldown(clickCooldown);
+        
+    } catch (e) {
+        console.error('Tap error:', e);
+    }
+}
 
         // ========== АДМИН ПАНЕЛЬ ==========
         async function loadAdminPanel() {
@@ -3838,4 +3865,5 @@
     </script>
 </body>
 </html>
+
 
