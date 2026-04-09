@@ -79,13 +79,13 @@ def format_status_message(streams_info):
     for channel in CHANNELS:
         info = streams_info[channel]
         if info["is_live"]:
-            message += f"+ **{channel}** - **В ЭФИРЕ!**\n"
+            message += f"🥵 **{channel}** - **В ЭФИРЕ!**\n"
             message += f"   cмотрят: **{info['viewer_count']:,}**\n"
             message += f"   гей-м: {info['game_name']}\n"
             if info['title']:
                 message += f"   название: {info['title'][:50]}...\n"
         else:
-            message += f"- **{channel}** - Не стримит\n"
+            message += f"☠️ **{channel}** - Не стримит\n"
         message += "   ─────────────\n"
     
     
@@ -127,19 +127,19 @@ async def update_message():
                         parse_mode="Markdown"
                     )
                     last_text = message_text
-                    logger.info(f"✅ Сообщение обновлено в {datetime.now()}")
+                    logger.info(f"АЛАХ АКБАР! в {datetime.now()}")
                 except Exception as e:
-                    logger.warning(f"⚠️ Не удалось обновить: {e}")
+                    logger.warning(f"АЛАХ АКБАР!: {e}")
         
         except Exception as e:
-            logger.error(f"❌ Ошибка обновления: {e}")
+            logger.error(f"АЛАХ АКБАР!: {e}")
         
         await asyncio.sleep(CHECK_INTERVAL)
 
 # ===== КОМАНДЫ (для лички, опционально) =====
 @dp.message(Command("start"))
 async def cmd_start(message: Message):
-    await message.answer("✅ Бот работает и отправляет статусы в канал!")
+    await message.answer("АЛАХ АКБАР!")
 
 @dp.message(Command("status"))
 async def cmd_status(message: Message):
