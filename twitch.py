@@ -11,7 +11,7 @@ TELEGRAM_BOT_TOKEN = "8736801717:AAGeL6vFG3IViX2CjNmEPEYMYpiVRpjLwqw"
 TWITCH_CLIENT_ID = "olpgrne5q1u1s9ixy8k1ozrqfa1rrd"
 TWITCH_ACCESS_TOKEN = "zwbmp4qiozuroqvtyn7t4p8zdmrpoa"
 CHANNELS = ["zhenya4700", "costrulka"]
-CHECK_INTERVAL = 5  # Секунд между проверками
+CHECK_INTERVAL = 1  # Секунд между проверками
 
 # 👇 ЗАМЕНИ НА СВОЙ ID КАНАЛА (отрицательное число)
 CHANNEL_ID = -1003781568680  # ⚠️ ВСТАВЬ СВОЙ ID СЮДА!
@@ -79,16 +79,16 @@ def format_status_message(streams_info):
     for channel in CHANNELS:
         info = streams_info[channel]
         if info["is_live"]:
-            message += f"🟢 **{channel}** - **В ЭФИРЕ!**\n"
-            message += f"   👁️ Зрителей: **{info['viewer_count']:,}**\n"
-            message += f"   🎮 Игра: {info['game_name']}\n"
+            message += f"V **{channel}** - **В ЭФИРЕ!**\n"
+            message += f"   cмотрят: **{info['viewer_count']:,}**\n"
+            message += f"   гей-м: {info['game_name']}\n"
             if info['title']:
-                message += f"   📝 Тайтл: {info['title'][:50]}...\n"
+                message += f"   название: {info['title'][:50]}...\n"
         else:
-            message += f"🔴 **{channel}** - Не стримит\n"
+            message += f"X **{channel}** - Не стримит\n"
         message += "   ─────────────\n"
     
-    message += f"\n🔄 Обновляется каждые {CHECK_INTERVAL} секунд"
+    
     return message
 
 # ===== ФУНКЦИЯ ОБНОВЛЕНИЯ СООБЩЕНИЯ В КАНАЛЕ =====
