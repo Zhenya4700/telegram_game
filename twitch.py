@@ -74,7 +74,7 @@ def process_streams_data(streams_data):
 
 def format_status_message(streams_info):
     current_time = datetime.now().strftime("%H:%M:%S")
-    message = f"🎥 **СТАТУС СТРИМЕРОВ**\nОбновлено: {current_time}\n\n"
+    message = f"**СТРИМ**\nОбновлено: {current_time}\n\n"
     
     for channel in CHANNELS:
         info = streams_info[channel]
