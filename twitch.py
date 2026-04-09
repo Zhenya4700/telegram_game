@@ -79,13 +79,13 @@ def format_status_message(streams_info):
     for channel in CHANNELS:
         info = streams_info[channel]
         if info["is_live"]:
-            message += f"V **{channel}** - **В ЭФИРЕ!**\n"
+            message += f"+ **{channel}** - **В ЭФИРЕ!**\n"
             message += f"   cмотрят: **{info['viewer_count']:,}**\n"
             message += f"   гей-м: {info['game_name']}\n"
             if info['title']:
                 message += f"   название: {info['title'][:50]}...\n"
         else:
-            message += f"X **{channel}** - Не стримит\n"
+            message += f"- **{channel}** - Не стримит\n"
         message += "   ─────────────\n"
     
     
