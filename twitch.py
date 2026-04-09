@@ -14,7 +14,7 @@ CHANNELS = ["zhenya4700", "costrulka"]
 CHECK_INTERVAL = 5  # Секунд между проверками
 
 # 👇 ЗАМЕНИ НА СВОЙ ID КАНАЛА (отрицательное число)
-CHANNEL_ID = -1002184825617  # ⚠️ ВСТАВЬ СВОЙ ID СЮДА!
+CHANNEL_ID = -1003781568680  # ⚠️ ВСТАВЬ СВОЙ ID СЮДА!
 
 # ===== НАСТРОЙКА ЛОГГИРОВАНИЯ =====
 logging.basicConfig(level=logging.INFO)
