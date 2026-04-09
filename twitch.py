@@ -11,7 +11,7 @@ TELEGRAM_BOT_TOKEN = "8736801717:AAGeL6vFG3IViX2CjNmEPEYMYpiVRpjLwqw"
 TWITCH_CLIENT_ID = "olpgrne5q1u1s9ixy8k1ozrqfa1rrd"
 TWITCH_ACCESS_TOKEN = "zwbmp4qiozuroqvtyn7t4p8zdmrpoa"
 CHANNELS = ["zhenya4700", "costrulka"]
-CHECK_INTERVAL = 1  # Секунд между проверками
+CHECK_INTERVAL = 5  # Секунд между проверками
 
 # 👇 ЗАМЕНИ НА СВОЙ ID КАНАЛА (отрицательное число)
 CHANNEL_ID = -1003781568680  # ⚠️ ВСТАВЬ СВОЙ ID СЮДА!
